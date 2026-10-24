@@ -61,6 +61,15 @@ Sin base de datos: todo el estado vive en memoria en el proceso del servidor.
 Tipografías **Plus Jakarta Sans** y **Figtree** se cargan desde Google Fonts en
 `web/index.html`.
 
+## Pendiente: el contrato de datos original
+
+`CONTRATO_DATOS.md` y `monitor-cultivo.html` no estaban ni en el contenedor ni
+en el repositorio, así que **los tipos de `shared/src/tipos.ts` se escribieron a
+partir del enunciado del reto** (estructura, estados, hallazgos y el endpoint de
+las gafas), no del archivo original. Si aparece el `CONTRATO_DATOS.md` del
+equipo hay que contrastarlo con esos tipos: los nombres de campos pueden no
+coincidir exactamente.
+
 ## Decisiones que conviene saber
 
 - **Los iconos vienen de `lucide-react`**, no de archivos exportados: los
