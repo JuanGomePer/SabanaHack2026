@@ -6,6 +6,7 @@
 import { crearApp } from './app.js';
 import { cerrarDb, db } from './db.js';
 import { env } from './env.js';
+import { inventarioFotos } from './fotos.js';
 import { cargarConfiguracion } from './services/configuracion.js';
 import { arrancarLatido } from './services/demo.js';
 
@@ -18,6 +19,12 @@ async function arrancar(): Promise<void> {
 
   const servidor = app.listen(env.puerto, () => {
     console.log(`[vigía] API escuchando en http://localhost:${env.puerto}`);
+    // Deja ver de un vistazo si las fotos de server/fotos/ se encontraron.
+    const fotos = inventarioFotos();
+    const resumen = Object.entries(fotos)
+      .map(([carpeta, cuantas]) => `${carpeta}: ${cuantas}`)
+      .join(' · ');
+    console.log(`[vigía] fotos cargadas → ${resumen}`);
   });
 
   const apagar = async (señal: string) => {

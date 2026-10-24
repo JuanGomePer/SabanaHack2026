@@ -405,6 +405,11 @@
   padding: 5px 12px;
 }
 
+/* Planta sin hallazgos: el chip va en verde, no en el ámbar de alerta. */
+.foto-chip.sana {
+  background: var(--color-status-ok-cell);
+}
+
 .foto-pie {
   position: absolute;
   right: 14px;

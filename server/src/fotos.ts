@@ -20,13 +20,66 @@ import type { Hallazgo, TipoHallazgo } from '@vigia/shared/tipos';
 const aqui = path.dirname(fileURLToPath(import.meta.url));
 export const CARPETA_FOTOS = path.resolve(aqui, '..', 'fotos');
 
-/** Devuelve la ruta de la foto real del hallazgo, si existe. */
+const EXTENSIONES = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
+
+/** Carpeta de fotos de cada tipo de hallazgo, dentro de server/fotos/. */
+const CARPETA_POR_TIPO: Record<TipoHallazgo, string> = {
+  Botrytis: 'botrytis',
+  Alternaria: 'alternaria',
+  Oídio: 'oidio',
+};
+
+/** Carpeta de las fotos de plantas sin hallazgos. */
+export const CARPETA_SANA = 'sana';
+
+/** Devuelve la ruta de la foto propia del hallazgo, si existe. */
 export function fotoReal(idHallazgo: string): string | undefined {
-  for (const ext of ['jpg', 'jpeg', 'png', 'webp', 'svg']) {
+  for (const ext of EXTENSIONES) {
     const ruta = path.join(CARPETA_FOTOS, `${idHallazgo}.${ext}`);
     if (fs.existsSync(ruta)) return ruta;
   }
   return undefined;
+}
+
+/** Las imágenes de una carpeta, en orden estable. */
+function imagenesDe(carpeta: string): string[] {
+  const ruta = path.join(CARPETA_FOTOS, carpeta);
+  if (!fs.existsSync(ruta)) return [];
+  return fs
+    .readdirSync(ruta)
+    .filter((archivo) => EXTENSIONES.includes(path.extname(archivo).slice(1).toLowerCase()))
+    .sort()
+    .map((archivo) => path.join(ruta, archivo));
+}
+
+/** Número estable a partir de un identificador, para repartir las fotos. */
+function indiceDe(semilla: string, total: number): number {
+  let suma = 0;
+  for (let i = 0; i < semilla.length; i++) suma = (suma * 31 + semilla.charCodeAt(i)) >>> 0;
+  return suma % total;
+}
+
+/**
+ * Foto que le toca a un hallazgo según su tipo. Siempre la misma para el mismo
+ * hallazgo, así la demo no cambia de imagen al recargar.
+ */
+export function fotoDeTipo(tipo: TipoHallazgo, semilla: string): string | undefined {
+  const imagenes = imagenesDe(CARPETA_POR_TIPO[tipo]);
+  if (imagenes.length === 0) return undefined;
+  return imagenes[indiceDe(semilla, imagenes.length)];
+}
+
+/** Foto de una planta sin hallazgos. */
+export function fotoSana(semilla: string): string | undefined {
+  const imagenes = imagenesDe(CARPETA_SANA);
+  if (imagenes.length === 0) return undefined;
+  return imagenes[indiceDe(semilla, imagenes.length)];
+}
+
+/** Cuántas fotos hay por carpeta. Se registra al arrancar, para diagnóstico. */
+export function inventarioFotos(): Record<string, number> {
+  const carpetas = [...Object.values(CARPETA_POR_TIPO), CARPETA_SANA];
+  return Object.fromEntries(carpetas.map((c) => [c, imagenesDe(c).length]));
 }
 
 /** Pseudoaleatorio estable: el mismo hallazgo da siempre la misma imagen. */

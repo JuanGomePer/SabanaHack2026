@@ -195,7 +195,22 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
                       </span>
                     </>
                   ) : (
-                    <p className="cargando">Esta planta no tiene hallazgos del robot.</p>
+                    <>
+                      {/* Sin hallazgo se muestra la última foto de la ronda. Si
+                          no hay fotos en server/fotos/sana/, el servidor
+                          responde 404 y la imagen se oculta sola. */}
+                      <img
+                        src={`/api/fotos/planta/${planta.id}`}
+                        alt={`Última foto del robot en ${detalle.etiqueta}`}
+                        onError={(evento) => {
+                          evento.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <span className="foto-chip sana txt-etiqueta">Sin hallazgos</span>
+                      <span className="foto-pie txt-etiqueta">
+                        <Camera size={14} /> Robot X2 · {haceCuanto(planta.ultimaLectura)}
+                      </span>
+                    </>
                   )}
                 </div>
               )}
