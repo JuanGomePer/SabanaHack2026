@@ -181,6 +181,14 @@ export type EstadoSms = 'enviado' | 'entregado' | 'fallido';
 /** Cuándo se manda el SMS. */
 export type CuandoSms = 'siempre' | 'sin_internet';
 
+/** Un país para el selector de indicativo telefónico. La bandera es un emoji — sin imágenes, no hay nada que falle al abrir el dropdown. */
+export interface PaisTelefono {
+  nombre: string;
+  bandera: string;
+  /** Ej. "+57". */
+  codigo: string;
+}
+
 export interface DestinoSms {
   /** Ej. "SMS-1" */
   id: string;

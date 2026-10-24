@@ -14,6 +14,8 @@ import {
   LIMITE_SMS,
   NOTA_SMS,
   NOTA_SMS_REAL,
+  PAIS_TELEFONO_DEFECTO,
+  PAISES_TELEFONO,
   PLANTILLA_SMS,
   SMS,
   USUARIO,
@@ -80,19 +82,26 @@ export function actualizarPreferencias(
  * Deja el número en formato internacional legible: "+57 310 555 0142".
  * Devuelve null si no parece un número de celular.
  */
+/**
+ * Indicativos ordenados del más largo al más corto, para que un número que
+ * empieza por "+593…" (Ecuador, 3 dígitos) no se corte como si fuera "+59…".
+ */
+const INDICATIVOS_POR_LARGO = [...PAISES_TELEFONO].sort((a, b) => b.codigo.length - a.codigo.length);
+
 export function normalizarNumero(entrada: string): string | null {
   const limpio = String(entrada ?? '').replace(/[\s().-]/g, '');
   if (!/^\+?\d{7,15}$/.test(limpio)) return null;
 
-  // Sin indicativo se asume Colombia (+57), que es donde está el cultivo.
-  const internacional = limpio.startsWith('+')
-    ? limpio
-    : limpio.length === 10
-      ? `+57${limpio}`
-      : `+${limpio}`;
+  // Sin indicativo se asume Colombia, que es donde está el cultivo.
+  const internacional = limpio.startsWith('+') ? limpio : `${PAIS_TELEFONO_DEFECTO.codigo}${limpio}`;
 
-  const pais = internacional.slice(0, 3);
-  const resto = internacional.slice(3);
+  // Si el indicativo es uno de los del selector, se usa tal cual (soporta
+  // largos distintos: +1, +57, +593…); si no, se asume de 2 dígitos — el
+  // caso más común — para no rechazar un número de un país fuera de la lista.
+  const encontrado = INDICATIVOS_POR_LARGO.find((p) => internacional.startsWith(p.codigo));
+  const pais = encontrado?.codigo ?? internacional.slice(0, 3);
+  const resto = internacional.slice(pais.length);
+
   const grupos =
     resto.length === 10
       ? [resto.slice(0, 3), resto.slice(3, 6), resto.slice(6)]

@@ -1539,6 +1539,99 @@
   flex: 1 0 180px;
 }
 
+/* Campo compuesto: selector de indicativo + número, se comportan como un input. */
+.campo-telefono {
+  display: flex;
+  flex: 1 0 240px;
+  gap: 0;
+}
+
+.campo-telefono .selector-pais-boton {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 0;
+}
+
+.campo-telefono .campo-texto {
+  flex: 1;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  min-width: 0;
+}
+
+/* ── Selector de indicativo telefónico ───────────────────────────────────── */
+.selector-pais {
+  position: relative;
+}
+
+.selector-pais-boton {
+  height: 40px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surface);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-texto);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.selector-pais-boton:hover {
+  border-color: var(--color-brand-primary);
+}
+
+.selector-pais-lista {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 220px;
+  max-height: 260px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surface);
+  box-shadow: var(--sombra-flotante);
+}
+
+.selector-pais-lista button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: var(--font-texto);
+  font-size: 13px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.selector-pais-lista button:hover {
+  background: var(--color-bg-subtle);
+}
+
+.selector-pais-lista button.activo {
+  background: var(--color-brand-tint);
+  color: var(--color-brand-primary);
+  font-weight: 600;
+}
+
+.selector-pais-nombre {
+  flex: 1;
+}
+
 .error-sms {
   margin-top: 10px;
   color: var(--color-status-alert-fg);

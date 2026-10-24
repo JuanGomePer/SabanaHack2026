@@ -11,12 +11,14 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { MessageSquare, PlugZap, Plus, Send, Smartphone, Trash2, WifiOff } from 'lucide-react';
-import type { PrioridadAlerta, SmsRespuesta, VerificacionPasarela } from '@vigia/shared/tipos';
+import { PAIS_TELEFONO_DEFECTO } from '@vigia/shared/config';
+import type { PaisTelefono, PrioridadAlerta, SmsRespuesta, VerificacionPasarela } from '@vigia/shared/tipos';
 import { api } from '../api/cliente';
 import { Boton } from './Boton';
 import { Chip } from './Chip';
 import { Interruptor } from './Interruptor';
 import { Segmentado } from './Segmentado';
+import { SelectorPaisTelefono } from './SelectorPaisTelefono';
 import { hora } from '../utilidades/formato';
 
 const CUANDO = ['Siempre', 'Solo sin internet'] as const;
@@ -109,6 +111,7 @@ export function PanelSms({
   recargar: () => Promise<void>;
 }) {
   const [nombre, setNombre] = useState('');
+  const [pais, setPais] = useState<PaisTelefono>(PAIS_TELEFONO_DEFECTO);
   const [numero, setNumero] = useState('');
   const [error, setError] = useState<string>();
   const [aviso, setAviso] = useState<string>();
@@ -146,10 +149,11 @@ export function PanelSms({
     setOcupado(true);
     setError(undefined);
     try {
-      const respuesta = await api.agregarNumeroSms(nombre.trim(), limpio);
+      const respuesta = await api.agregarNumeroSms(nombre.trim(), `${pais.codigo}${limpio}`);
       setDatos(respuesta);
       setNombre('');
       setNumero('');
+      setPais(PAIS_TELEFONO_DEFECTO);
       mostrarAviso(`${respuesta.destino.numero} quedó en la lista.`);
     } catch {
       // El servidor valida el formato y explica qué pasó.
@@ -321,17 +325,20 @@ export function PanelSms({
           placeholder="Nombre (ej. Samuel R.)"
           aria-label="Nombre de quien recibe el SMS"
         />
-        <input
-          type="tel"
-          className="campo-texto"
-          value={numero}
-          onChange={(e) => setNumero(e.target.value)}
-          placeholder="+57 310 555 0142"
-          aria-label="Número de celular"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') void agregar();
-          }}
-        />
+        <div className="campo-telefono">
+          <SelectorPaisTelefono pais={pais} alCambiar={setPais} />
+          <input
+            type="tel"
+            className="campo-texto"
+            value={numero}
+            onChange={(e) => setNumero(e.target.value)}
+            placeholder="310 555 0142"
+            aria-label="Número de celular, sin el indicativo"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void agregar();
+            }}
+          />
+        </div>
         <Boton icono={<Plus size={18} />} onClick={() => void agregar()} disabled={ocupado}>
           Añadir número
         </Boton>

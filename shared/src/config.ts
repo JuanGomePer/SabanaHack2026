@@ -10,6 +10,7 @@ import type {
   ConfiguracionEstructura,
   ConfiguracionSms,
   ConfiguracionUmbrales,
+  PaisTelefono,
   TipoHallazgo,
 } from './tipos';
 
@@ -297,13 +298,38 @@ export const USUARIO = {
 /** Nombre del dispositivo al que se "envían" los hallazgos (simulado). */
 export const DISPOSITIVO_GAFAS = 'Meta Quest 3';
 
+// ── Indicativos telefónicos ─────────────────────────────────────────────────
+/**
+ * Países del selector de indicativo (al agregar un número en Avisos por SMS).
+ * Colombia va primero porque es el país por defecto — ver PAIS_TELEFONO_DEFECTO.
+ * Las banderas son emoji: no hay imágenes de por medio, así que no hay nada
+ * que falle al abrir el dropdown ni que dependa de internet.
+ */
+export const PAISES_TELEFONO: PaisTelefono[] = [
+  { nombre: 'Colombia', bandera: '🇨🇴', codigo: '+57' },
+  { nombre: 'México', bandera: '🇲🇽', codigo: '+52' },
+  { nombre: 'Perú', bandera: '🇵🇪', codigo: '+51' },
+  { nombre: 'Ecuador', bandera: '🇪🇨', codigo: '+593' },
+  { nombre: 'Venezuela', bandera: '🇻🇪', codigo: '+58' },
+  { nombre: 'Chile', bandera: '🇨🇱', codigo: '+56' },
+  { nombre: 'Argentina', bandera: '🇦🇷', codigo: '+54' },
+  { nombre: 'Brasil', bandera: '🇧🇷', codigo: '+55' },
+  { nombre: 'Panamá', bandera: '🇵🇦', codigo: '+507' },
+  { nombre: 'Costa Rica', bandera: '🇨🇷', codigo: '+506' },
+  { nombre: 'España', bandera: '🇪🇸', codigo: '+34' },
+  { nombre: 'Estados Unidos', bandera: '🇺🇸', codigo: '+1' },
+];
+
+/** Colombia: es donde está el cultivo, así que es el indicativo por defecto. */
+export const PAIS_TELEFONO_DEFECTO: PaisTelefono = PAISES_TELEFONO[0];
+
 // ── Avisos por SMS ──────────────────────────────────────────────────────────
 /**
  * Canal de respaldo para cuando la finca se queda sin internet: el aviso
  * también sale como mensaje de texto al celular del encargado.
  *
- * SIMULACIÓN: el prototipo no manda mensajes de verdad. No hay pasarela de SMS
- * ni operador conectado; los envíos solo se registran y se muestran en pantalla.
+ * El envío real lo hace server/src/pasarela.ts (Twilio, WhatsApp o Telegram);
+ * sin credenciales en el .env del servidor, queda en modo simulado.
  */
 export const SMS: ConfiguracionSms = {
   activo: true,
