@@ -22,9 +22,11 @@ interface Props {
   estado: EstadoCelda;
   /** Tamaño en píxeles del arándano. */
   tamano?: number;
+  /** Color explícito: lo usan las capas de humedad y temperatura. */
+  color?: string;
 }
 
-export function Arandano({ estado, tamano = 13 }: Props) {
+export function Arandano({ estado, tamano = 13, color }: Props) {
   // La que está en revisión lleva un anillo: se ve que alguien ya la tomó.
   const enRevision = estado === 'en_revision';
 
@@ -48,7 +50,7 @@ export function Arandano({ estado, tamano = 13 }: Props) {
           strokeDasharray="3 2.4"
         />
       )}
-      <circle cx="10" cy="10" r={enRevision ? 7.4 : 9.2} fill={COLOR_POR_ESTADO[estado]} />
+      <circle cx="10" cy="10" r={enRevision ? 7.4 : 9.2} fill={color ?? COLOR_POR_ESTADO[estado]} />
       {/* Brillo */}
       <circle cx="7.6" cy="12.4" r={enRevision ? 4.8 : 6} fill="#ffffff" opacity="0.18" />
       {/* Cáliz (la estrellita del arándano) */}

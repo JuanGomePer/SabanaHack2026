@@ -2203,51 +2203,74 @@
   }
 }
 
-/* ── Capas de clima del mapa (humedad y temperatura) ─────────────────────── */
+/* ── Sonda de clima del mapa ─────────────────────────────────────────────── */
 /*
- * El campo de color se dibuja celda a celda y se difumina: así se lee como un
- * mapa de clima, con manchas y gradientes, en vez de como una cuadrícula. Los
- * botones de cada celda quedan encima, transparentes, para poder abrir la
- * planta igual que en la capa de estado.
+ * Una nube muy tenue sigue al cursor y una tarjeta muestra la lectura de la
+ * celda que tiene debajo, como el mapa del clima del teléfono. Es translúcida
+ * a propósito: tiene que dejar ver la fruta que hay debajo.
  */
-.mapa-panel {
+.mapa {
   position: relative;
 }
 
-.mapa--calor .mapa-panel {
-  background: var(--color-bg-subtle);
-  overflow: hidden;
+.mapa-nube {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  margin: -130px 0 0 -130px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  transition: background 0.25s ease;
 }
 
-.mapa-calor {
+.sonda-clima {
   position: absolute;
-  inset: 0;
+  transform: translate(18px, -50%);
+  pointer-events: none;
+  z-index: 3;
   display: flex;
   flex-direction: column;
-  pointer-events: none;
-  filter: blur(7px) saturate(1.15);
-  /* Se sale un poco del panel para que el difuminado no deje bordes pálidos. */
-  transform: scale(1.06);
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px) saturate(1.3);
+  -webkit-backdrop-filter: blur(10px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--sombra-flotante);
+  white-space: nowrap;
 }
 
-.mapa-calor-fila {
+.sonda-clima-sitio {
+  color: var(--color-text-secondary);
+}
+
+.sonda-clima-vacio {
+  color: var(--color-text-muted);
+}
+
+.sonda-clima-datos {
   display: flex;
-  flex: 1 0 0;
+  gap: 16px;
 }
 
-.mapa-calor-celda {
-  flex: 1 0 0;
+.sonda-clima-dato {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
 }
 
-/* En las capas de clima el arándano estorba: manda el color del campo. */
-.mapa--calor .mapa-celda::before,
-.mapa--calor .mapa-celda::after {
-  display: none;
+.sonda-clima-dato b {
+  font-family: var(--font-titulo);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-text-primary);
 }
 
-.mapa--calor .mapa-celda:hover {
-  outline: 2px solid var(--color-bg-surface);
-  outline-offset: -2px;
+.sonda-clima-dato small {
+  font-size: 11px;
+  color: var(--color-text-muted);
 }
 
 /* Barra de color de la capa. */
