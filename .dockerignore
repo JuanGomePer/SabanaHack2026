@@ -1,0 +1,18 @@
+# Contexto de build para los Dockerfile (ej. web/Dockerfile). El contexto es
+# la raíz del repo, así que hay que excluir a mano lo que no hace falta para
+# construir — si no, cada build sube y procesa el módulo de visión completo
+# (notebooks, reportes, manifiestos CSV de miles de filas).
+.git/
+node_modules/
+**/node_modules/
+server/src/generated/
+server/fotos/*.jpg
+server/fotos/*.jpeg
+server/fotos/*.png
+server/fotos/*.webp
+web/dist/
+vision/
+*.md
+.env
+.env.*
+.claude/
