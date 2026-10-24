@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Wind } from 'lucide-react';
 import type { Alerta, Celda, MapaRespuesta, EstadoCelda } from '@vigia/shared/tipos';
+import { ETIQUETA_CIENTIFICA_TIPO } from '@vigia/shared/config';
 import { Boton } from '../components/Boton';
 import { Chip } from '../components/Chip';
 import { TarjetaKpi } from '../components/TarjetaKpi';
@@ -69,7 +70,7 @@ export function Mapa({ mapa, alertas, plantaResaltada, alAbrirPlanta, alVerAlert
 
       <section className="mapa-y-panel">
         <div className="tarjeta tarjeta-mapa">
-          <div className="fila-entre" style={{ alignItems: 'flex-start' }}>
+          <div className="fila-entre mapa-cabecera" style={{ alignItems: 'flex-start' }}>
             <div className="columna">
               <h2 className="tarjeta-titulo">
                 Bloque {mapa.bloque} · {mapa.camas.length} camas
@@ -152,7 +153,7 @@ export function Mapa({ mapa, alertas, plantaResaltada, alAbrirPlanta, alVerAlert
                   <img className="miniatura" src={urlDeApi(alerta.fotoUrl)} alt="" />
                   <span className="columna" style={{ minWidth: 0 }}>
                     <span className="txt-cuerpo-fuerte">
-                      {alerta.tipo} · {etiquetaDesdeId(alerta.plantaId)}
+                      {ETIQUETA_CIENTIFICA_TIPO[alerta.tipo]} · {etiquetaDesdeId(alerta.plantaId)}
                     </span>
                     <span className="secundario txt-pequeno">
                       Nave {alerta.nave} · {alerta.humedad.toFixed(0)} % ·{' '}

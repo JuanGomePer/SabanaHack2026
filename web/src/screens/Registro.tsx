@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Calendar, Download, Search } from 'lucide-react';
 import type { RegistroRespuesta, RevisionHallazgo, TipoHallazgo } from '@vigia/shared/tipos';
+import { ETIQUETA_CIENTIFICA_TIPO } from '@vigia/shared/config';
 import { api } from '../api/cliente';
 import { Boton } from '../components/Boton';
 import { Chip, type TonoChip } from '../components/Chip';
@@ -28,7 +29,7 @@ const TIPOS: Array<TipoHallazgo | 'Todos los tipos'> = [
   'Todos los tipos',
   'Botrytis',
   'Alternaria',
-  'Oídio',
+  'Trips',
 ];
 
 const DECISIONES = ['Todas las decisiones', 'Confirmada', 'Falsa alarma', 'Por revisar'];
@@ -92,7 +93,9 @@ export function Registro({ datos }: { datos: RegistroRespuesta }) {
 
         <select className="selector" value={tipo} onChange={(e) => setTipo(e.target.value)} aria-label="Tipo de hallazgo">
           {TIPOS.map((opcion) => (
-            <option key={opcion}>{opcion}</option>
+            <option key={opcion} value={opcion}>
+              {opcion === 'Todos los tipos' ? opcion : ETIQUETA_CIENTIFICA_TIPO[opcion]}
+            </option>
           ))}
         </select>
 
@@ -146,7 +149,7 @@ export function Registro({ datos }: { datos: RegistroRespuesta }) {
                 <td className="secundario txt-pequeno">{fechaHora(fila.fecha)}</td>
                 <td className="txt-cuerpo-fuerte">{fila.etiqueta}</td>
                 <td className="secundario txt-pequeno">Nave {fila.nave}</td>
-                <td className="txt-pequeno">{fila.tipo}</td>
+                <td className="txt-pequeno">{ETIQUETA_CIENTIFICA_TIPO[fila.tipo]}</td>
                 <td>
                   <BarraConfianza valor={fila.confianza} />
                 </td>

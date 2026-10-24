@@ -5,6 +5,7 @@
 
 import { AlertTriangle, X } from 'lucide-react';
 import type { Alerta } from '@vigia/shared/tipos';
+import { ETIQUETA_CIENTIFICA_TIPO } from '@vigia/shared/config';
 import { Boton } from './Boton';
 import { haceCuanto } from '../utilidades/formato';
 import { urlDeApi } from '../api/cliente';
@@ -35,7 +36,7 @@ export function AvisoAlerta({ alerta, atras = 0, alVerPlanta, alCerrar }: Props)
         </span>
 
         <div className="columna" style={{ flex: 1, minWidth: 0, gap: 4 }}>
-          <span className="tarjeta-titulo">Nueva alerta · posible {alerta.tipo}</span>
+          <span className="tarjeta-titulo">Nueva alerta · posible {ETIQUETA_CIENTIFICA_TIPO[alerta.tipo]}</span>
           <span className="secundario txt-pequeno">
             Cama {alerta.cama} · planta {alerta.planta} · Nave {alerta.nave}. Confianza{' '}
             {Math.round(alerta.confianza * 100)} %. Detectada por el Robot X2 {haceCuanto(alerta.detectadoEn)}.

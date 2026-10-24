@@ -1,6 +1,6 @@
 /** 10 · Bienvenida (18:952). */
 
-import { ArrowRight, Check, Leaf } from 'lucide-react';
+import { ArrowRight, Check } from 'lucide-react';
 import type { Resumen } from '@vigia/shared/tipos';
 import { Boton } from '../components/Boton';
 import { FondoVerde } from '../components/FondoVerde';
@@ -42,7 +42,7 @@ export function Bienvenida({ resumen, alEntrar }: Props) {
   return (
     <FondoVerde className="bienvenida">
       <div className="marca-grande">
-        <Leaf size={34} strokeWidth={2} />
+        <img src="/logo-mono.svg" alt="" width={36} height={33} />
       </div>
 
       <h1 className="txt-pagina" style={{ margin: 0, fontSize: 32 }}>

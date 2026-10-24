@@ -6,11 +6,13 @@
 
 import {
   Bell,
+  BatteryCharging,
   Bot,
   ChartLine,
   ClipboardList,
-  Leaf,
+  GraduationCap,
   Map,
+  ShieldCheck,
   SlidersVertical,
   Wind,
 } from 'lucide-react';
@@ -23,14 +25,20 @@ export type Pantalla =
   | 'equipos'
   | 'registro'
   | 'configuracion'
-  | 'como-llega';
+  | 'como-llega'
+  | 'como-estoy'
+  | 'aprendizaje'
+  | 'protocolos';
 
 const ITEMS: Array<{ id: Pantalla; texto: string; Icono: typeof Map }> = [
-  { id: 'mapa', texto: 'Mapa', Icono: Map },
+  { id: 'mapa', texto: 'Tablero', Icono: Map },
   { id: 'alertas', texto: 'Alertas', Icono: Bell },
   { id: 'analisis', texto: 'Análisis', Icono: ChartLine },
   { id: 'equipos', texto: 'Equipos', Icono: Wind },
+  { id: 'como-estoy', texto: 'Cómo estoy', Icono: BatteryCharging },
   { id: 'registro', texto: 'Registro', Icono: ClipboardList },
+  { id: 'aprendizaje', texto: 'Aprendizaje', Icono: GraduationCap },
+  { id: 'protocolos', texto: 'Protocolos', Icono: ShieldCheck },
   { id: 'configuracion', texto: 'Configuración', Icono: SlidersVertical },
 ];
 
@@ -46,7 +54,7 @@ export function BarraLateral({ actual, alNavegar, pendientes, robot }: Props) {
     <aside className="barra-lateral">
       <div className="logo">
         <div className="logo-marca">
-          <Leaf size={22} strokeWidth={2} />
+          <img src="/logo-mono.svg" alt="" width={24} height={22} />
         </div>
         <div className="columna">
           <span className="logo-nombre">Vigía</span>

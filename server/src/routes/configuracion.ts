@@ -8,6 +8,6 @@ configuracionRouter.get('/configuracion', (_req, res) => {
 });
 
 configuracionRouter.put('/configuracion', async (req, res) => {
-  const { estructura, umbrales } = req.body ?? {};
-  res.json(await actualizarConfiguracion({ estructura, umbrales }));
+  const { estructura, umbrales, perfil } = req.body ?? {};
+  res.json(await actualizarConfiguracion({ estructura, umbrales, perfil }));
 });

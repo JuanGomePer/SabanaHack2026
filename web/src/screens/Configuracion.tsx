@@ -99,9 +99,11 @@ function VistaPrevia({ estructura }: { estructura: ConfiguracionEstructura }) {
 
 interface Props {
   alVerComoLlega: () => void;
+  /** Para que la barra superior refleje el nombre/rol apenas se guardan. */
+  alGuardarPerfil?: (perfil: Config['perfil']) => void;
 }
 
-export function Configuracion({ alVerComoLlega }: Props) {
+export function Configuracion({ alVerComoLlega, alGuardarPerfil }: Props) {
   const [pestana, setPestana] = useState<Pestana>('Estructura del cultivo');
   const [config, setConfig] = useState<Config>();
   const [original, setOriginal] = useState<Config>();
@@ -121,11 +123,13 @@ export function Configuracion({ alVerComoLlega }: Props) {
     const actualizada = await api.guardarConfiguracion({
       estructura: config.estructura,
       umbrales: config.umbrales,
+      perfil: config.perfil,
     });
     setConfig(actualizada);
     setGuardado(true);
+    alGuardarPerfil?.(actualizada.perfil);
     window.setTimeout(() => setGuardado(false), 2500);
-  }, [config]);
+  }, [config, alGuardarPerfil]);
 
   if (!config) return <p className="cargando">Cargando la configuración…</p>;
 
@@ -138,6 +142,9 @@ export function Configuracion({ alVerComoLlega }: Props) {
 
   const cambiarUmbral = <K extends keyof typeof umbrales>(clave: K, valor: (typeof umbrales)[K]) =>
     setConfig({ ...config, umbrales: { ...umbrales, [clave]: valor } });
+
+  const cambiarPerfil = <K extends keyof Config['perfil']>(clave: K, valor: Config['perfil'][K]) =>
+    setConfig({ ...config, perfil: { ...config.perfil, [clave]: valor } });
 
   const camas = estructura.naves * estructura.camasPorNave;
   const plantas = camas * estructura.plantasPorCama;
@@ -445,7 +452,56 @@ export function Configuracion({ alVerComoLlega }: Props) {
         )}
 
         {pestana === 'Equipo y accesos' && (
-          <div className="tarjeta">
+          <>
+            <div className="tarjeta" style={{ marginBottom: 20 }}>
+              <h2 className="tarjeta-titulo">Mi perfil</h2>
+              <p className="secundario txt-pequeno" style={{ margin: '4px 0 14px' }}>
+                El nombre y el rol que ves arriba, en la barra superior y en el registro.
+              </p>
+
+              <div className="campo">
+                <div className="columna" style={{ flex: 1 }}>
+                  <span className="txt-cuerpo-fuerte">Nombre</span>
+                  <input
+                    type="text"
+                    className="campo-texto"
+                    value={config.perfil.nombre}
+                    onChange={(e) => cambiarPerfil('nombre', e.target.value)}
+                    aria-label="Tu nombre"
+                  />
+                </div>
+              </div>
+              <div className="campo">
+                <div className="columna" style={{ flex: 1 }}>
+                  <span className="txt-cuerpo-fuerte">Cómo te firmas en el registro</span>
+                  <input
+                    type="text"
+                    className="campo-texto"
+                    value={config.perfil.firma}
+                    onChange={(e) => cambiarPerfil('firma', e.target.value)}
+                    aria-label="Tu firma"
+                  />
+                </div>
+              </div>
+              <div className="campo">
+                <div className="columna" style={{ flex: 1 }}>
+                  <span className="txt-cuerpo-fuerte">Rol</span>
+                  <input
+                    type="text"
+                    className="campo-texto"
+                    value={config.perfil.rol}
+                    onChange={(e) => cambiarPerfil('rol', e.target.value)}
+                    aria-label="Tu rol"
+                  />
+                </div>
+              </div>
+
+              <Boton icono={<Check size={18} />} onClick={() => void guardar()} className="boton-separado">
+                Guardar cambios
+              </Boton>
+            </div>
+
+            <div className="tarjeta">
             <h2 className="tarjeta-titulo">Equipo y accesos</h2>
             <p className="secundario txt-pequeno" style={{ margin: '4px 0 14px' }}>
               Quién entra a la plataforma y qué puede hacer.
@@ -479,7 +535,8 @@ export function Configuracion({ alVerComoLlega }: Props) {
             >
               Invitar a alguien
             </Boton>
-          </div>
+            </div>
+          </>
         )}
       </div>
     </section>

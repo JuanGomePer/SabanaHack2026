@@ -32,6 +32,7 @@ import type {
   RevisionHallazgo,
   SimulacionRespuesta,
   SeriesRespuesta,
+  ProtocolosRespuesta,
   SmsRespuesta,
   VerificacionPasarela,
   VigiaInsightsRespuesta,
@@ -108,6 +109,9 @@ export const api = {
 
   /** Series del bloque para la pantalla de análisis. */
   series: (rango: RangoSerie = '24h') => pedir<SeriesRespuesta>(`/series?rango=${rango}`),
+
+  /** Dónde se concentra cada tipo de hallazgo, para la pantalla de Protocolos. */
+  protocolos: () => pedir<ProtocolosRespuesta>('/protocolos'),
 
   reiniciarDemo: () => pedir<{ ok: boolean }>('/demo/reiniciar', { method: 'POST' }),
 

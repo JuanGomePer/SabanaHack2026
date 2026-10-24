@@ -43,6 +43,14 @@ export function etiquetaDesdeId(plantaId: string): string {
   return `C${Number(coincidencia[1])}-P${Number(coincidencia[2])}`;
 }
 
+/** "Samuel Rodríguez" → "SR". Se recalcula siempre del nombre, nunca se guarda aparte. */
+export function inicialesDe(nombre: string): string {
+  const palabras = nombre.trim().split(/\s+/).filter(Boolean);
+  if (palabras.length === 0) return '';
+  if (palabras.length === 1) return palabras[0].slice(0, 2).toUpperCase();
+  return (palabras[0][0] + palabras[palabras.length - 1][0]).toUpperCase();
+}
+
 /** "C14-P62" o "c14 p62" → "B5-C14-P062", para el buscador. */
 export function idDesdeTexto(texto: string, bloque: string): string | undefined {
   const coincidencia = /c\s*(\d{1,2})\D+p\s*(\d{1,3})/i.exec(texto);

@@ -35,10 +35,11 @@ const CLASES_RECONOCIDAS: Record<string, TipoHallazgo> = {
   Alternaria: 'Alternaria',
   alternaria: 'Alternaria',
   'Alternaria sp': 'Alternaria',
-  Oídio: 'Oídio',
-  Oidio: 'Oídio',
-  oidio: 'Oídio',
-  'powdery mildew': 'Oídio',
+  Trips: 'Trips',
+  trips: 'Trips',
+  Thrips: 'Trips',
+  thrips: 'Trips',
+  'thrips damage': 'Trips',
 };
 
 export interface HallazgoVisualEntrada {
@@ -137,7 +138,7 @@ export async function procesarObservacion(
     if (!tipo) {
       rechazados.push({
         class_name: hallazgoVisual.class_name,
-        razon: 'Clase no reconocida en el contrato de arándano (Botrytis, Alternaria, Oídio).',
+        razon: 'Clase no reconocida en el contrato de arándano (Botrytis, Alternaria, Trips).',
       });
       continue;
     }

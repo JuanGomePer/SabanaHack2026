@@ -107,7 +107,7 @@ export const TIPOS_SEMILLA: TipoHallazgo[] = [
   'Botrytis',
   'Botrytis',
   'Alternaria',
-  'Oídio',
+  'Trips',
   'Alternaria',
   'Botrytis',
 ];
@@ -130,7 +130,7 @@ export const GUION_ALERTAS_DEMO: Array<{
 }> = [
   { segundos: 3, cama: 14, planta: 65, tipo: 'Botrytis', confianza: 0.93 },
   { segundos: 13, cama: 15, planta: 72, tipo: 'Botrytis', confianza: 0.86 },
-  { segundos: 24, cama: 9, planta: 23, tipo: 'Oídio', confianza: 0.81 },
+  { segundos: 24, cama: 9, planta: 23, tipo: 'Trips', confianza: 0.81 },
   { segundos: 38, cama: 21, planta: 58, tipo: 'Alternaria', confianza: 0.76 },
 ];
 
@@ -153,14 +153,55 @@ export const ZONAS_SIN_DATO: Array<{ cama: number; desde: number; hasta: number 
   { cama: 24, desde: 74, hasta: 100 },
 ];
 
+/**
+ * Nombre científico/común que ve el usuario, por cada tipo interno. El
+ * identificador interno (corto, sin tildes ni espacios) es el que vive en
+ * la base de datos y en el código; este es solo para mostrar.
+ */
+export const ETIQUETA_CIENTIFICA_TIPO: Record<TipoHallazgo, string> = {
+  Botrytis: 'Botrytis cinerea',
+  Alternaria: 'Alternaria sp',
+  Trips: 'Trips',
+};
+
 // ── Qué hacer, por tipo de hallazgo ─────────────────────────────────────────
 export const RECOMENDACIONES: Record<TipoHallazgo, string> = {
   Botrytis:
     'Retira el fruto afectado y los pétalos secos. Baja la humedad de la nave por debajo de 85 % antes de la noche y revisa las plantas vecinas.',
   Alternaria:
     'Quita las hojas con manchas y sácalas del invernadero. Evita el riego por aspersión en esta cama y mejora la circulación de aire.',
-  Oídio:
-    'Revisa el envés de las hojas de las plantas vecinas. Ventila para bajar la humedad y evalúa tratamiento con el agrónomo.',
+  Trips:
+    'Instala trampas azules/amarillas pegajosas para confirmar la presión de la plaga. Elimina malezas en floración cerca del invernadero (hospedero habitual) y evita insecticidas de amplio espectro que maten a los ácaros depredadores naturales.',
+};
+
+/**
+ * Protocolos de acción paso a paso por tipo, para la pantalla de Protocolos.
+ * Son prácticas de manejo integrado de plagas/enfermedades conocidas para
+ * arándano — igual que RECOMENDACIONES, la decisión final siempre es del
+ * agrónomo, esto no reemplaza su criterio.
+ */
+export const PROTOCOLOS: Record<TipoHallazgo, string[]> = {
+  Botrytis: [
+    'Retira y saca del invernadero el fruto, flor o pétalo afectado — no lo dejes caer entre las camas, ahí esporula de nuevo.',
+    'Baja la humedad relativa por debajo de 85 % antes de que caiga la noche: ventila, abre cortinas o enciende extractores.',
+    'Mejora la circulación de aire podando follaje denso entre plantas vecinas a la mata afectada.',
+    'Si hay flor abierta o fruto a punto de cosecha, coordina con el agrónomo la rotación de fungicida (nunca el mismo modo de acción dos veces seguidas, por resistencia).',
+    'Marca la cama en el registro y revisa de nuevo en 48–72 h: Botrytis avanza rápido con humedad alta.',
+  ],
+  Alternaria: [
+    'Quita las hojas con manchas concéntricas y sácalas del invernadero — no las dejes en el suelo, ahí sobrevive el hongo.',
+    'Evita el riego por aspersión en esta cama, sobre todo en la tarde/noche: la hoja mojada muchas horas es lo que dispara la infección.',
+    'Mejora el drenaje y la circulación de aire alrededor de la planta.',
+    'Si la presión sube (varias plantas vecinas con síntomas), coordina con el agrónomo un fungicida específico para Alternaria.',
+    'Revisa semanalmente las camas vecinas: Alternaria se propaga por salpique de agua y viento.',
+  ],
+  Trips: [
+    'Confirma la plaga con trampas azules o amarillas pegajosas cerca de la zona — los trips son pequeños y fáciles de confundir con otra cosa a simple vista.',
+    'Revisa y elimina malezas en floración alrededor del invernadero: son el hospedero habitual desde donde migran los trips.',
+    'Evita insecticidas de amplio espectro: matan también a los ácaros depredadores (Amblyseius, Orius) que ya controlan la plaga de forma natural.',
+    'Si el conteo en trampas supera el umbral, aplica un tratamiento dirigido (ej. base spinosad) solo en la zona afectada, no en todo el bloque.',
+    'Vuelve a revisar en una semana: los trips tienen ciclos de vida cortos y la presión puede subir rápido en clima cálido y seco.',
+  ],
 };
 
 // ── Estado del robot (simulado) ─────────────────────────────────────────────

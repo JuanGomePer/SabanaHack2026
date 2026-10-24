@@ -3,11 +3,15 @@
 import { Bell, ChevronDown, LogOut, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { USUARIO } from '@vigia/shared/config';
+import type { PerfilUsuario } from '@vigia/shared/tipos';
+import { inicialesDe } from '../utilidades/formato';
 
 interface Props {
   titulo: string;
   subtitulo: string;
   pendientes: number;
+  /** Nombre/rol editables en Configuración · Equipo y accesos. */
+  perfil?: PerfilUsuario;
   /** Se llama al escribir una planta y pulsar Enter, ej. "C14-P62". */
   alBuscar?: (texto: string) => void;
   alAbrirAlertas?: () => void;
@@ -18,10 +22,13 @@ export function BarraSuperior({
   titulo,
   subtitulo,
   pendientes,
+  perfil,
   alBuscar,
   alAbrirAlertas,
   alCerrarSesion,
 }: Props) {
+  const nombre = perfil?.nombre ?? USUARIO.nombre;
+  const rol = perfil?.rol ?? USUARIO.rol;
   const [texto, setTexto] = useState('');
   const [menuAbierto, setMenuAbierto] = useState(false);
   const raizMenu = useRef<HTMLDivElement>(null);
@@ -87,20 +94,20 @@ export function BarraSuperior({
             onClick={() => setMenuAbierto((v) => !v)}
             aria-haspopup="menu"
             aria-expanded={menuAbierto}
-            aria-label={`Cuenta de ${USUARIO.nombre}`}
+            aria-label={`Cuenta de ${nombre}`}
           >
             <span className="avatar" aria-hidden="true">
-              {USUARIO.iniciales}
+              {inicialesDe(nombre)}
             </span>
-            <span className="menu-usuario-nombre txt-pequeno-fuerte">{USUARIO.nombre}</span>
+            <span className="menu-usuario-nombre txt-pequeno-fuerte">{nombre}</span>
             <ChevronDown size={14} />
           </button>
 
           {menuAbierto && (
             <div className="menu-usuario-lista" role="menu">
               <div className="menu-usuario-cabecera">
-                <span className="txt-pequeno-fuerte">{USUARIO.nombre}</span>
-                <span className="apagado txt-etiqueta">{USUARIO.rol}</span>
+                <span className="txt-pequeno-fuerte">{nombre}</span>
+                <span className="apagado txt-etiqueta">{rol}</span>
               </div>
               <button
                 type="button"

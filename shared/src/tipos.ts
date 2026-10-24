@@ -19,7 +19,13 @@ export type EstadoCelda =
   | 'sin_dato';
 
 // ── Hallazgos del robot ─────────────────────────────────────────────────────
-export type TipoHallazgo = 'Botrytis' | 'Alternaria' | 'Oídio';
+/**
+ * Las 3 enfermedades/plagas que vigila la app (las que le importan a AGRAR
+ * para arándano). El nombre corto es el identificador interno; el nombre
+ * científico que ve el usuario está en `ETIQUETA_CIENTIFICA_TIPO`
+ * (@vigia/shared/config).
+ */
+export type TipoHallazgo = 'Botrytis' | 'Alternaria' | 'Trips';
 export type RevisionHallazgo = 'pendiente' | 'en_revision' | 'confirmada' | 'falsa_alarma';
 
 /** Caja del hallazgo sobre la foto, en coordenadas normalizadas 0–1. */
@@ -440,7 +446,7 @@ export interface HallazgosDelDia {
   total: number;
   Botrytis: number;
   Alternaria: number;
-  Oidio: number;
+  Trips: number;
 }
 
 export interface SeriesRespuesta {
@@ -458,6 +464,29 @@ export interface SeriesRespuesta {
     umbralHumedad: number;
     totalHallazgos: number;
   };
+}
+
+// ── Protocolos: dónde se concentra cada tipo, para los pasos de acción ──────
+export interface ConcentracionPorNave {
+  nave: number;
+  cantidad: number;
+}
+
+export interface ConcentracionTipo {
+  tipo: TipoHallazgo;
+  total: number;
+  /** % del total de hallazgos del bloque que es de este tipo. */
+  porcentaje: number;
+  /** Naves con al menos un hallazgo de este tipo, de más a menos cantidad. */
+  porNave: ConcentracionPorNave[];
+  /** Confianza promedio de los hallazgos de este tipo (0–1). */
+  confianzaMedia: number;
+}
+
+export interface ProtocolosRespuesta {
+  total: number;
+  dias: number;
+  tipos: ConcentracionTipo[];
 }
 
 // ── Configuración ───────────────────────────────────────────────────────────
@@ -489,9 +518,17 @@ export interface ConfiguracionUmbrales {
   segundosAlertaDemo: number;
 }
 
+export interface PerfilUsuario {
+  nombre: string;
+  /** Como se firma en el registro, ej. "Samuel R.". */
+  firma: string;
+  rol: string;
+}
+
 export interface Configuracion {
   estructura: ConfiguracionEstructura;
   umbrales: ConfiguracionUmbrales;
+  perfil: PerfilUsuario;
 }
 // La configuración de los avisos por SMS va aparte (GET/PUT /api/sms): vive en
 // memoria del servidor y no en la tabla Configuracion, para no mezclar los

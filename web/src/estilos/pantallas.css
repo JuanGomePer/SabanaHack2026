@@ -2206,6 +2206,14 @@
   .lista-numeros li {
     flex-wrap: wrap;
   }
+
+  .como-estoy-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .como-estoy-svg {
+    width: 84px;
+  }
 }
 
 /* ── Sonda de clima del mapa ─────────────────────────────────────────────── */
@@ -2469,4 +2477,204 @@
   .analisis-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+/* ── Equipos · "Qué está pasando" como desplegable ───────────────────────── */
+.eventos-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.eventos-chevron {
+  transition: transform 0.15s ease;
+  color: var(--color-text-secondary);
+}
+
+.eventos-chevron.abierto {
+  transform: rotate(180deg);
+}
+
+.eventos-resumen {
+  margin-top: 4px;
+}
+
+.eventos-ver-todo {
+  border: 0;
+  background: transparent;
+  color: var(--color-brand-primary);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px 0 0;
+  text-align: left;
+}
+
+/* ── Cómo estoy (estado del robot) ───────────────────────────────────────── */
+.como-estoy-grid {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.como-estoy-robot {
+  display: flex;
+  flex-direction: column;
+}
+
+.como-estoy-ilustracion {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.como-estoy-svg {
+  width: 100px;
+  height: auto;
+}
+
+.como-estoy-cuentas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.como-estoy-cuenta {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--color-text-secondary);
+}
+
+.como-estoy-cuenta svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-brand-primary);
+}
+
+.como-estoy-cuenta strong {
+  color: var(--color-text-primary);
+}
+
+/* ── Aprendizaje ──────────────────────────────────────────────────────────── */
+.aprendizaje-lista {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.aprendizaje-etapa {
+  display: flex;
+  gap: 14px;
+  padding-bottom: 20px;
+}
+
+.aprendizaje-etapa:last-child {
+  padding-bottom: 0;
+}
+
+.aprendizaje-punto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.aprendizaje-punto svg {
+  width: 34px;
+  height: 34px;
+  padding: 7px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  box-sizing: border-box;
+}
+
+.aprendizaje-etapa.hecho .aprendizaje-punto svg {
+  background: var(--color-status-ok-bg);
+  color: var(--color-status-ok-fg);
+}
+
+.aprendizaje-etapa.en_curso .aprendizaje-punto svg {
+  background: var(--color-aviso-bg);
+  color: var(--color-aviso-fg);
+}
+
+.aprendizaje-linea {
+  flex: 1;
+  width: 2px;
+  min-height: 14px;
+  background: var(--color-border-default);
+  margin-top: 4px;
+}
+
+.aprendizaje-checklist {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Protocolos ───────────────────────────────────────────────────────────── */
+.protocolos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.protocolo-donde {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-top: 10px;
+  color: var(--color-text-secondary);
+}
+
+.protocolo-donde svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-brand-primary);
+}
+
+.protocolo-pasos {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.protocolo-pasos li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.protocolo-numero {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-tint);
+  color: var(--color-brand-primary);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

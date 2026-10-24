@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Camera, MessageSquare, Search } from 'lucide-react';
 import type { Alerta, RevisionHallazgo, TipoHallazgo } from '@vigia/shared/tipos';
+import { ETIQUETA_CIENTIFICA_TIPO } from '@vigia/shared/config';
 import { Boton } from '../components/Boton';
 import { Chip, type TonoChip } from '../components/Chip';
 import { BarraConfianza } from '../components/BarraConfianza';
@@ -37,7 +38,7 @@ const TIPOS: Array<TipoHallazgo | 'Todos los tipos'> = [
   'Todos los tipos',
   'Botrytis',
   'Alternaria',
-  'Oídio',
+  'Trips',
 ];
 
 /** Cada cuántos segundos se refresca la lista (lo dice el pie de la tabla). */
@@ -128,7 +129,9 @@ export function Alertas({ alertas, alAbrirPlanta, alConfigurarAvisos, alRecargar
 
         <select className="selector" value={tipo} onChange={(e) => setTipo(e.target.value)} aria-label="Tipo de hallazgo">
           {TIPOS.map((opcion) => (
-            <option key={opcion}>{opcion}</option>
+            <option key={opcion} value={opcion}>
+              {opcion === 'Todos los tipos' ? opcion : ETIQUETA_CIENTIFICA_TIPO[opcion]}
+            </option>
           ))}
         </select>
       </div>
@@ -160,7 +163,7 @@ export function Alertas({ alertas, alAbrirPlanta, alConfigurarAvisos, alRecargar
                 </td>
                 <td>
                   <div className="columna">
-                    <span className="txt-cuerpo-fuerte">{alerta.tipo}</span>
+                    <span className="txt-cuerpo-fuerte">{ETIQUETA_CIENTIFICA_TIPO[alerta.tipo]}</span>
                     <span className="apagado txt-pequeno fila" style={{ gap: 6 }}>
                       <Camera size={13} /> Cámara · robot X2
                     </span>

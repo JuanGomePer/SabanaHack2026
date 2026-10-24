@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Droplets, Thermometer, TriangleAlert } from 'lucide-react';
 import type { RangoSerie, SeriesRespuesta } from '@vigia/shared/tipos';
+import { ETIQUETA_CIENTIFICA_TIPO } from '@vigia/shared/config';
 import { api } from '../api/cliente';
 import { Chip } from '../components/Chip';
 import { Segmentado } from '../components/Segmentado';
@@ -124,7 +125,7 @@ function GraficoHallazgos({ datos }: { datos: SeriesRespuesta['hallazgos'] }) {
   const tipos = [
     { clave: 'Botrytis' as const, color: 'var(--color-status-alert)' },
     { clave: 'Alternaria' as const, color: 'var(--color-status-review)' },
-    { clave: 'Oidio' as const, color: 'var(--color-status-risk-cell)' },
+    { clave: 'Trips' as const, color: 'var(--color-status-risk-cell)' },
   ];
 
   return (
@@ -253,13 +254,13 @@ export function Analisis() {
             </h2>
             <div className="fila" style={{ gap: 12 }}>
               <span className="gr-clave txt-etiqueta">
-                <i style={{ background: 'var(--color-status-alert)' }} /> Botrytis
+                <i style={{ background: 'var(--color-status-alert)' }} /> {ETIQUETA_CIENTIFICA_TIPO.Botrytis}
               </span>
               <span className="gr-clave txt-etiqueta">
-                <i style={{ background: 'var(--color-status-review)' }} /> Alternaria
+                <i style={{ background: 'var(--color-status-review)' }} /> {ETIQUETA_CIENTIFICA_TIPO.Alternaria}
               </span>
               <span className="gr-clave txt-etiqueta">
-                <i style={{ background: 'var(--color-status-risk-cell)' }} /> Oídio
+                <i style={{ background: 'var(--color-status-risk-cell)' }} /> {ETIQUETA_CIENTIFICA_TIPO.Trips}
               </span>
             </div>
           </div>

@@ -6,10 +6,11 @@
  * server/fotos/<idHallazgo>.jpg (o .png): la ruta lo sirve y el generador deja
  * de usarse. El frontend no cambia, sigue pidiendo /api/fotos/<id>.svg.
  *
- * La imagen se arma según el tipo de hallazgo, porque las tres enfermedades no
- * se parecen en nada: la Botrytis es un moho gris y velloso sobre el fruto, la
- * Alternaria son manchas marrones con anillos concéntricos en la hoja, y el
- * Oídio es un polvo blanco que se extiende por la superficie.
+ * La imagen se arma según el tipo de hallazgo, porque las tres plagas/
+ * enfermedades que vigila la app no se parecen en nada: la Botrytis cinerea
+ * es un moho gris y velloso sobre el fruto, la Alternaria sp son manchas
+ * marrones con anillos concéntricos en la hoja, y el Trips deja rayas
+ * plateadas/bronceadas y puntitos oscuros de excremento en hoja y fruto.
  */
 
 import fs from 'node:fs';
@@ -26,7 +27,7 @@ const EXTENSIONES = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
 const CARPETA_POR_TIPO: Record<TipoHallazgo, string> = {
   Botrytis: 'botrytis',
   Alternaria: 'alternaria',
-  Oídio: 'oidio',
+  Trips: 'trips',
 };
 
 /** Carpeta de las fotos de plantas sin hallazgos. */
@@ -180,12 +181,24 @@ function lesion(
       );
     }
   } else {
-    // Oídio: polvo blanco que se extiende por la superficie.
-    for (let i = 0; i < 34; i++) {
+    // Trips: rayas plateadas/bronceadas (raspado de la superficie) y
+    // puntitos oscuros de excremento (frass) dispersos sobre la zona.
+    for (let i = 0; i < 14; i++) {
+      const x1 = bx + rnd() * bw;
+      const y1 = by + rnd() * bh;
+      const largo = Math.min(bw, bh) * (0.18 + rnd() * 0.22);
+      const angulo = rnd() * 0.5 - 0.25;
+      const x2 = x1 + largo * Math.cos(angulo);
+      const y2 = y1 + largo * Math.sin(angulo) + largo * 0.15;
+      partes.push(
+        `<line x1="${x1.toFixed(0)}" y1="${y1.toFixed(0)}" x2="${x2.toFixed(0)}" y2="${y2.toFixed(0)}" stroke="hsl(${38 + Math.round(rnd() * 12)} ${28 + Math.round(rnd() * 14)}% ${62 + Math.round(rnd() * 14)}%)" stroke-width="${(3 + rnd() * 4).toFixed(1)}" stroke-linecap="round" opacity="${(0.35 + rnd() * 0.3).toFixed(2)}" filter="url(#difuso)"/>`,
+      );
+    }
+    for (let i = 0; i < 20; i++) {
       const x = bx + rnd() * bw;
       const y = by + rnd() * bh;
       partes.push(
-        `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(6 + rnd() * 16).toFixed(1)}" fill="#f2f0ea" opacity="${(0.16 + rnd() * 0.3).toFixed(2)}" filter="url(#difuso)"/>`,
+        `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(1 + rnd() * 1.4).toFixed(1)}" fill="#2b2420" opacity="${(0.45 + rnd() * 0.35).toFixed(2)}"/>`,
       );
     }
   }

@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ChevronDown,
   Cpu,
   Download,
   Droplets,
@@ -39,6 +40,9 @@ const ICONOS: Record<IconoEquipo, typeof Fan> = {
   droplet: Droplets,
   cpu: Cpu,
 };
+
+/** Cuántos eventos se ven sin tener que abrir el desplegable. */
+const EVENTOS_VISIBLES = 4;
 
 const TONO_ESTADO: Record<EstadoEquipo, 'ok' | 'riesgo' | 'alerta' | 'neutro'> = {
   'En marcha': 'ok',
@@ -108,6 +112,7 @@ function TarjetaEquipo({ equipo, naveHumeda }: { equipo: Equipo; naveHumeda: boo
 export function Equipos() {
   const [datos, setDatos] = useState<EquiposRespuesta & { nota: string }>();
   const [eventos, setEventos] = useState<EventoEquipo[]>([]);
+  const [eventosAbiertos, setEventosAbiertos] = useState(false);
   const [aviso, setAviso] = useState<string>();
   const idsPrevios = useRef<Set<string>>(new Set());
 
@@ -199,27 +204,59 @@ export function Equipos() {
 
         <div className="panel-derecho">
           <div className="tarjeta">
-            <div className="fila-entre">
+            <button
+              type="button"
+              className="eventos-cabecera"
+              onClick={() => setEventosAbiertos((v) => !v)}
+              aria-expanded={eventosAbiertos}
+            >
               <h2 className="txt-pagina" style={{ margin: 0, fontSize: 22, lineHeight: '28px' }}>
                 Qué está pasando
               </h2>
-              <Chip tono="ok">En vivo</Chip>
-            </div>
+              <div className="fila" style={{ gap: 8 }}>
+                <Chip tono="ok">En vivo</Chip>
+                {eventos.length > EVENTOS_VISIBLES && (
+                  <span className="apagado txt-pequeno">{eventos.length}</span>
+                )}
+                <ChevronDown size={18} className={`eventos-chevron ${eventosAbiertos ? 'abierto' : ''}`} />
+              </div>
+            </button>
 
-            <div className="eventos">
-              {eventos.map((evento) => (
-                <div
-                  className={`evento ${idsPrevios.current.has(evento.id) ? '' : 'evento-nuevo'}`}
-                  key={evento.id}
-                >
-                  <span className={`punto ${tonoEvento(evento)}`} style={{ marginTop: 7 }} />
-                  <div className="columna">
-                    <span className="txt-pequeno">{evento.texto}</span>
-                    <span className="apagado txt-etiqueta">{haceCuanto(evento.fecha)}</span>
+            {eventosAbiertos && (
+              <div className="eventos">
+                {eventos.map((evento) => (
+                  <div
+                    className={`evento ${idsPrevios.current.has(evento.id) ? '' : 'evento-nuevo'}`}
+                    key={evento.id}
+                  >
+                    <span className={`punto ${tonoEvento(evento)}`} style={{ marginTop: 7 }} />
+                    <div className="columna">
+                      <span className="txt-pequeno">{evento.texto}</span>
+                      <span className="apagado txt-etiqueta">{haceCuanto(evento.fecha)}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {!eventosAbiertos && (
+              <div className="eventos eventos-resumen">
+                {eventos.slice(0, EVENTOS_VISIBLES).map((evento) => (
+                  <div className="evento" key={evento.id}>
+                    <span className={`punto ${tonoEvento(evento)}`} style={{ marginTop: 7 }} />
+                    <div className="columna">
+                      <span className="txt-pequeno">{evento.texto}</span>
+                      <span className="apagado txt-etiqueta">{haceCuanto(evento.fecha)}</span>
+                    </div>
+                  </div>
+                ))}
+                {eventos.length > EVENTOS_VISIBLES && (
+                  <button type="button" className="eventos-ver-todo txt-pequeno" onClick={() => setEventosAbiertos(true)}>
+                    Ver los {eventos.length} eventos
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="tarjeta servicio-tarjeta">

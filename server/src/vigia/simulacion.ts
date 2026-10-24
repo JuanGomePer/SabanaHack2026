@@ -17,7 +17,7 @@ import { listarPlantasDeCama } from '../repositories/plantas.js';
 const PROB_CONTAGIO_DIARIA: Record<TipoHallazgo, number> = {
   Botrytis: 0.22,
   Alternaria: 0.14,
-  Oídio: 0.1,
+  Trips: 0.18,
 };
 
 /** Cuántas plantas a cada lado se consideran "vecinas" para el contagio. */

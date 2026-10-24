@@ -129,7 +129,7 @@ function construirHallazgosSemilla(): HallazgoSemilla[] {
     cama: 9,
     planta: 80,
     nave: naveDeCama(9),
-    tipo: 'Oídio',
+    tipo: 'Trips',
     confianza: 0.62,
     detectadoEn: new Date(Date.now() - 5 * 60 * 60_000),
     revision: 'falsa_alarma',
@@ -143,7 +143,7 @@ function construirHallazgosSemilla(): HallazgoSemilla[] {
     ...Array<RevisionHallazgo>(HISTORICO.falsasAlarmas).fill('falsa_alarma'),
     ...Array<RevisionHallazgo>(HISTORICO.porRevisar).fill('pendiente'),
   ];
-  const tipos: TipoHallazgo[] = ['Botrytis', 'Alternaria', 'Oídio'];
+  const tipos: TipoHallazgo[] = ['Botrytis', 'Alternaria', 'Trips'];
 
   decisiones.forEach((decision, i) => {
     const cama = 1 + Math.floor(aleatorio() * TOTAL_CAMAS);
@@ -186,7 +186,7 @@ async function sembrarHallazgos(porPlanta: Map<string, FilaPlanta>): Promise<voi
         cama: s.cama,
         planta: s.planta,
         nave: s.nave,
-        tipo: s.tipo === 'Oídio' ? 'Oidio' : s.tipo,
+        tipo: s.tipo,
         confianza: s.confianza,
         bboxX: Math.round((0.22 + aleatorio() * 0.3) * 100) / 100,
         bboxY: Math.round((0.2 + aleatorio() * 0.28) * 100) / 100,

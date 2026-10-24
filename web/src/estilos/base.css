@@ -692,11 +692,13 @@ button {
     height: auto;
     flex-direction: row;
     align-items: stretch;
-    justify-content: space-around;
+    justify-content: flex-start;
     gap: 0;
     padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
     z-index: 40;
     box-shadow: 0 -2px 14px rgba(11, 58, 40, 0.18);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .barra-lateral .logo,
@@ -708,8 +710,8 @@ button {
 
   .nav-item {
     position: relative;
-    flex: 1;
-    width: auto;
+    flex: 0 0 auto;
+    width: 64px;
     height: auto;
     min-width: 0;
     flex-direction: column;
@@ -767,6 +769,14 @@ button {
   .menu-usuario-nombre,
   .menu-usuario-boton svg {
     display: none;
+  }
+
+  /* Cabeceras "título a la izquierda, controles a la derecha": si no caben en
+     una fila, los controles bajan en vez de aplastar el título a un texto de
+     una letra por línea. */
+  .fila-entre {
+    flex-wrap: wrap;
+    row-gap: 10px;
   }
 
   .menu-usuario-boton {

@@ -17,8 +17,8 @@ const PASOS = [
   {
     Icono: Camera,
     titulo: 'Detecta y clasifica',
-    texto: 'Revisa cada foto: Botrytis, Alternaria, Oídio u otro.',
-    pie: 'Botrytis · confianza 84 %',
+    texto: 'Revisa cada foto: Trips, Botrytis cinerea o Alternaria sp.',
+    pie: 'Botrytis cinerea · confianza 84 %',
     tono: 'neutro' as const,
   },
   {
@@ -96,7 +96,7 @@ export function ComoLlegaUnaAlerta() {
                 <AlertTriangle size={20} strokeWidth={2} />
               </span>
               <div className="columna" style={{ gap: 4 }}>
-                <span className="tarjeta-titulo">Nueva alerta · posible Botrytis</span>
+                <span className="tarjeta-titulo">Nueva alerta · posible Botrytis cinerea</span>
                 <span className="secundario txt-pequeno">
                   Cama 14 · planta 65 · Nave 5. Confianza 84 %. Detectada por el Robot X2 hace 2 s.
                 </span>
@@ -119,7 +119,7 @@ export function ComoLlegaUnaAlerta() {
               <img src={urlDeApi('/fotos/H-0001.svg')} alt="Foto del robot del hallazgo" />
             </div>
             <p className="txt-pequeno" style={{ margin: 0 }}>
-              Posible Botrytis (84 %) en cama 14, planta 65. Nave 5 · humedad 91 %.
+              Posible Botrytis cinerea (84 %) en cama 14, planta 65. Nave 5 · humedad 91 %.
             </p>
             <span className="apagado txt-etiqueta">vigia.app/p/B5-C14-P065 · 14:32</span>
             <div className="canal-botones">
@@ -132,7 +132,7 @@ export function ComoLlegaUnaAlerta() {
         <div>
           <p className="txt-sobretitulo apagado">Correo electrónico</p>
           <div className="canal-correo">
-            <span className="txt-cuerpo-fuerte">Alerta en C14-P65 · Botrytis 84 %</span>
+            <span className="txt-cuerpo-fuerte">Alerta en C14-P65 · Botrytis cinerea 84 %</span>
             <p className="secundario txt-pequeno" style={{ margin: '6px 0 0' }}>
               Resumen de las últimas 15 min: 2 alertas nuevas y 1 zona con humedad alta. Abre la
               plataforma para ver las fotos.

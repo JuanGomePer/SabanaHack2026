@@ -1,7 +1,7 @@
 /** 09 · Inicio de sesión (18:704). */
 
 import { useState } from 'react';
-import { AlertTriangle, ArrowRight, Bot, Check, Eye, EyeOff, Leaf, Lock, Mail } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Bot, Check, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { Boton } from '../components/Boton';
 import { FondoVerde } from '../components/FondoVerde';
 
@@ -18,7 +18,7 @@ export function Login({ alEntrar }: Props) {
       <FondoVerde className="acceso-arte">
         <div className="logo" style={{ padding: 0 }}>
           <div className="logo-marca" style={{ background: 'rgba(255,255,255,0.16)' }}>
-            <Leaf size={22} strokeWidth={2} />
+            <img src="/logo-mono.svg" alt="" width={22} height={20} />
           </div>
           <div className="columna">
             <span className="logo-nombre">Vigía</span>
@@ -56,7 +56,7 @@ export function Login({ alEntrar }: Props) {
               <AlertTriangle size={20} strokeWidth={2} />
             </span>
             <div className="columna">
-              <span className="txt-cuerpo-fuerte">Alerta nueva · posible Botrytis</span>
+              <span className="txt-cuerpo-fuerte">Alerta nueva · posible Botrytis cinerea</span>
               <span className="txt-pequeno" style={{ color: 'rgba(255,255,255,0.72)' }}>
                 Cama 14 · planta 65 · hace 2 s
               </span>

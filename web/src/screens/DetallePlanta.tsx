@@ -20,7 +20,7 @@ import {
   Wind,
   X,
 } from 'lucide-react';
-import { DISPOSITIVO_GAFAS, UMBRALES } from '@vigia/shared/config';
+import { DISPOSITIVO_GAFAS, ETIQUETA_CIENTIFICA_TIPO, UMBRALES } from '@vigia/shared/config';
 import type { DetallePlanta as Detalle, EstadoCelda } from '@vigia/shared/tipos';
 import { api, urlDeApi } from '../api/cliente';
 import { Boton } from '../components/Boton';
@@ -186,9 +186,12 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
                 <div className="foto-hallazgo">
                   {hallazgo ? (
                     <>
-                      <img src={urlDeApi(hallazgo.fotoUrl)} alt={`Hallazgo de ${hallazgo.tipo} en ${detalle.etiqueta}`} />
+                      <img
+                        src={urlDeApi(hallazgo.fotoUrl)}
+                        alt={`Hallazgo de ${ETIQUETA_CIENTIFICA_TIPO[hallazgo.tipo]} en ${detalle.etiqueta}`}
+                      />
                       <span className="foto-chip txt-etiqueta">
-                        {hallazgo.tipo} · {Math.round(hallazgo.confianza * 100)} %
+                        {ETIQUETA_CIENTIFICA_TIPO[hallazgo.tipo]} · {Math.round(hallazgo.confianza * 100)} %
                       </span>
                       <span className="foto-pie txt-etiqueta">
                         <Camera size={14} /> Robot X2 · {haceCuanto(hallazgo.detectadoEn)}

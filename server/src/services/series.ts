@@ -133,7 +133,7 @@ export async function construirSeries(rango: RangoSerie): Promise<SeriesRespuest
       total: 0,
       Botrytis: 0,
       Alternaria: 0,
-      Oidio: 0,
+      Trips: 0,
     });
   }
 
@@ -145,7 +145,7 @@ export async function construirSeries(rango: RangoSerie): Promise<SeriesRespuest
     fila.total += 1;
     if (hallazgo.tipo === 'Botrytis') fila.Botrytis += 1;
     else if (hallazgo.tipo === 'Alternaria') fila.Alternaria += 1;
-    else fila.Oidio += 1;
+    else fila.Trips += 1;
   }
 
   const hallazgos = [...porDia.values()];

@@ -4,12 +4,13 @@
  * nueva; tocar el aviso o la mora marcada abre el detalle de la planta.
  */
 
-import { useCallback, useMemo, useState } from 'react';
-import { ESTRUCTURA, USUARIO } from '@vigia/shared/config';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ESTRUCTURA } from '@vigia/shared/config';
 import { BarraLateral, type Pantalla } from './components/BarraLateral';
 import { BarraSuperior } from './components/BarraSuperior';
 import { AvisoAlerta } from './components/AvisoAlerta';
 import { useCultivo } from './estado/useCultivo';
+import { usePerfil } from './estado/usePerfil';
 import { Login } from './screens/Login';
 import { Bienvenida } from './screens/Bienvenida';
 import { Mapa } from './screens/Mapa';
@@ -19,6 +20,9 @@ import { Equipos } from './screens/Equipos';
 import { Registro } from './screens/Registro';
 import { Configuracion } from './screens/Configuracion';
 import { ComoLlegaUnaAlerta } from './screens/ComoLlegaUnaAlerta';
+import { ComoEstoy } from './screens/ComoEstoy';
+import { Aprendizaje } from './screens/Aprendizaje';
+import { Protocolos } from './screens/Protocolos';
 import { DetallePlanta } from './screens/DetallePlanta';
 import { VigIA } from './components/VigIA';
 import { haceCuanto, idDesdeTexto } from './utilidades/formato';
@@ -48,6 +52,18 @@ const TITULOS: Record<Pantalla, { titulo: string; subtitulo: string }> = {
     titulo: 'Cómo llega una alerta',
     subtitulo: 'Del recorrido del robot a la decisión del encargado.',
   },
+  'como-estoy': {
+    titulo: 'Cómo estoy',
+    subtitulo: 'Batería, autonomía y cuánto alcanza a recorrer el robot.',
+  },
+  aprendizaje: {
+    titulo: 'Aprendizaje',
+    subtitulo: 'Qué se hizo para enseñarle a reconocer enfermedades al robot.',
+  },
+  protocolos: {
+    titulo: 'Protocolos',
+    subtitulo: 'Qué hacer, paso a paso, según lo que están mostrando las alertas.',
+  },
 };
 
 function saludo(): string {
@@ -57,10 +73,25 @@ function saludo(): string {
   return 'Buenas noches';
 }
 
+/** Nombre de cada sección, tal como aparece en el sidebar — para la pestaña del navegador. */
+const NOMBRE_PANTALLA: Record<Pantalla, string> = {
+  mapa: 'Tablero',
+  alertas: 'Alertas',
+  analisis: 'Análisis',
+  equipos: 'Equipos',
+  'como-estoy': 'Cómo estoy',
+  registro: 'Registro',
+  aprendizaje: 'Aprendizaje',
+  protocolos: 'Protocolos',
+  configuracion: 'Configuración',
+  'como-llega': 'Cómo llega una alerta',
+};
+
 export function App() {
   const [flujo, setFlujo] = useState<Flujo>('login');
   const [pantalla, setPantalla] = useState<Pantalla>('mapa');
   const [plantaAbierta, setPlantaAbierta] = useState<string>();
+  const { perfil, setPerfil } = usePerfil();
 
   // Los datos se cargan desde la bienvenida; el canal de eventos (y con él la
   // cuenta atrás de la alerta del demo) solo se abre al llegar al mapa.
@@ -84,6 +115,10 @@ export function App() {
     [descartarAlertaNueva],
   );
 
+  useEffect(() => {
+    document.title = flujo === 'app' ? `${NOMBRE_PANTALLA[pantalla]} · Vigía` : 'Vigía';
+  }, [flujo, pantalla]);
+
   if (flujo === 'login') {
     return <Login alEntrar={() => setFlujo('bienvenida')} />;
   }
@@ -99,7 +134,7 @@ export function App() {
 
   const encabezado =
     pantalla === 'mapa'
-      ? { titulo: `${saludo()}, ${USUARIO.nombre}`, subtitulo: subtituloMapa }
+      ? { titulo: `${saludo()}, ${perfil.nombre}`, subtitulo: subtituloMapa }
       : pantalla === 'alertas'
         ? {
             titulo: 'Alertas',
@@ -132,6 +167,7 @@ export function App() {
           titulo={encabezado.titulo}
           subtitulo={encabezado.subtitulo}
           pendientes={pendientes}
+          perfil={perfil}
           alAbrirAlertas={() => setPantalla('alertas')}
           alBuscar={(texto) => {
             const id = idDesdeTexto(texto, ESTRUCTURA.bloque);
@@ -176,10 +212,19 @@ export function App() {
 
           {pantalla === 'equipos' && <Equipos />}
 
+          {mapa && pantalla === 'como-estoy' && <ComoEstoy mapa={mapa} />}
+
           {pantalla === 'registro' && registro && <Registro datos={registro} />}
 
+          {pantalla === 'aprendizaje' && <Aprendizaje />}
+
+          {pantalla === 'protocolos' && <Protocolos />}
+
           {pantalla === 'configuracion' && (
-            <Configuracion alVerComoLlega={() => setPantalla('como-llega')} />
+            <Configuracion
+              alVerComoLlega={() => setPantalla('como-llega')}
+              alGuardarPerfil={setPerfil}
+            />
           )}
 
           {pantalla === 'como-llega' && <ComoLlegaUnaAlerta />}

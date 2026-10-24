@@ -11,13 +11,13 @@ import type { TipoHallazgo, EstadoEquipo } from '@vigia/shared/tipos';
 const TIPO_DB_A_API: Record<TipoHallazgoDb, TipoHallazgo> = {
   Botrytis: 'Botrytis',
   Alternaria: 'Alternaria',
-  Oidio: 'Oídio',
+  Trips: 'Trips',
 };
 
 const TIPO_API_A_DB: Record<TipoHallazgo, TipoHallazgoDb> = {
   Botrytis: 'Botrytis',
   Alternaria: 'Alternaria',
-  Oídio: 'Oidio',
+  Trips: 'Trips',
 };
 
 export const tipoDbAApi = (t: TipoHallazgoDb): TipoHallazgo => TIPO_DB_A_API[t];

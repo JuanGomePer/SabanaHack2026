@@ -23,7 +23,7 @@ enum EstadoCelda {
 enum TipoHallazgo {
   Botrytis
   Alternaria
-  Oidio // "Oídio" en el contrato — Prisma no acepta tildes en nombres de enum.
+  Trips
 }
 
 enum RevisionHallazgo {
@@ -257,4 +257,6 @@ model Configuracion {
   id         Int   @id @default(1)
   estructura Json
   umbrales   Json
+  /** Nombre/rol del usuario de la demo, editable desde Configuración. Null = usa el valor por defecto de @vigia/shared/config. */
+  perfil     Json?
 }
