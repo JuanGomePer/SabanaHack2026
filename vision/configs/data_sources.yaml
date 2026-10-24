@@ -1,0 +1,64 @@
+# Fuentes de datos AUTORIZADAS para el modelo de visión (D-044). Solo dos:
+#   1. DrBerry `pry20220204-drberry` — fuente PRINCIPAL (enfermedades de hoja de arándano).
+#   2. Blueberry YOLO (Zhang) — fuente COMPLEMENTARIA (variabilidad de campo; frutos, no enfermedad).
+# El resto del catálogo (knowledge/datasets/blueberry_image_sources.yaml) es investigación, no entrenamiento.
+#
+# `location` es relativa a BERRYVISION_DATA_DIR (por defecto vision/data). Los archivos van en
+# <location>/extracted y se verifican contra `lock` (ruta, bytes, SHA-256 por archivo; versionado).
+# Preparar / verificar:  python scripts/prepare_data.py {verify|prepare|lock} [--source ID]
+version: 1
+sources:
+  drberry_pry20220204:
+    role: primary_training
+    status: blocked_credentials        # sin ROBOFLOW_API_KEY no hay copia local (verificado 2026-10-24)
+    kind: roboflow
+    roboflow:
+      workspace: pry20220204-drberry
+      project: enfermedades-en-hojas-de-arandanos
+      version: null                    # null = la más reciente; la elegida queda en ACQUISITION.json
+      format: coco                     # COCO conserva polígonos de hoja y cajas de lesión por separado
+    location: external/drberry_pry20220204
+    lock: manifests/data_lock/drberry_pry20220204.csv     # se crea tras la primera auditoría
+    license: "CC BY 4.0 (declarada en Roboflow Universe; confirmar en la ficha de la versión descargada)"
+    attribution: "pry20220204-drberry, «Enfermedades en hojas de arándanos», Roboflow Universe; relacionado con Morales, Cavero y Ugarte (2023), DrBerry, KDIR 2023, doi:10.5220/0012207100003598"
+    annotation:
+      format: coco
+      classes: null                    # 11 nombres inconsistentes según la ficha; se unifican tras auditar
+    expected: {images: 633}            # según la ficha pública; NO verificado
+    allowed_use: [train, val, test]
+    limitations:
+      - "Solo se vio una muestra pública: polígonos de hoja + cajas pequeñas de lesión. Hipótesis por confirmar en la auditoría."
+      - "Una caja de hoja completa NO es una caja de lesión; si solo hay hojas, la tarea es clasificación de recortes."
+      - "No contiene Botrytis ni trips; Alternaria solo si la auditoría lo confirma."
+      - "codelabs/drberry-leaf-detection es probablemente una copia: no se descarga como fuente independiente."
+  blueberry_yolo_zhang:
+    role: complementary_evaluation
+    status: verified
+    kind: archive
+    archive:
+      url: https://zenodo.org/api/records/14014858/files/Blueberry.v3i.yolov11.zip/content
+      filename: Blueberry.v3i.yolov11.zip
+      size: 110236845
+      md5: 726586549d450128f969a3a423498095      # publicado por Zenodo
+      sha256: 8c387c774812f2d0a420a004c6b0405581876ff42325f2b845ded3a16c93b617   # calculado en la descarga verificada
+    location: external/blueberry_yolo_zhang
+    lock: manifests/data_lock/blueberry_yolo_zhang.csv
+    license: CC BY 4.0
+    attribution: "Zhang, J. (2024). Blueberry images and labels for YOLO model training. Zenodo. doi:10.5281/zenodo.14014858"
+    annotation:
+      format: yolo
+      classes: [blueberry_green, blueberry_ripe]  # data.yaml del export (Roboflow blueberry-twno8 v3)
+    expected: {images: 466, files: 935, origin_photos: 92}
+    # Las 466 imágenes son RECORTES de 92 fotos originales (IMG_0807-JPG_9_png… = recorte 9 de IMG_0807).
+    # 37 fotos están repartidas entre las particiones del autor → su train/valid/test tiene fuga.
+    # Se usa la partición por foto de origen: manifests/splits/blueberry_yolo_zhang_groups.csv
+    origin_pattern: '^(.+?)-(?:JPG|jpg|JPEG|jpeg|PNG|png)_\d+_'
+    splits: manifests/splits/blueberry_yolo_zhang_groups.csv
+    allowed_use: [field_domain_evaluation, unlabeled_representation]
+    forbidden_use:
+      - "Etiquetar Botrytis, Alternaria o trips a partir de sus cajas de fruto"
+      - "Tratar sus imágenes como sanas confirmadas o como negativos de enfermedad"
+      - "Afirmar una tasa de falsos positivos de enfermedad (no hay verificación fitosanitaria)"
+    limitations:
+      - "Anota madurez de fruto (verde/maduro), no estado fitosanitario."
+      - "Plantación de campo de otro país y otra cámara; útil para medir cambio de dominio, no para calibrar umbrales de AGRAR."

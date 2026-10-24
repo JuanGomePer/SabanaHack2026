@@ -44,6 +44,21 @@ Lee esto y `docs/00_resumen_ejecutivo.md` antes de proponer cambios relevantes.
 - Protocolo: seleccionar solo con val (`select_experiment.py`), congelar `selection.json` y abrir test **una vez** (`evaluate_final.py`). Nunca recalcular la selección tras abrir test.
 - GPU: torch CUDA solo en `vision/.venv` (extra `train`).
 
+## Banco de imágenes de arándano (2026-10-24)
+
+- Catálogo de 33 fuentes: `knowledge/datasets/blueberry_image_sources.yaml` → `scripts/build_source_tables.py`. Auditoría: `reports/blueberry_image_repository_audit.md`; notebook 03.
+- **No hay datos públicos utilizables de Botrytis ni de trips en arándano.** La prioridad es `pry20220204-drberry` (posibles cajas de lesión; requiere API key) y los datos de AGRAR.
+- Descargados como contexto (no "sanos"): BlueberryDCM (CC BY-NC) y Blueberry YOLO (CC BY).
+- Datos propios: taxonomía con niveles de evidencia (`blueberry_taxonomy.yaml`), esquema `contracts/agrar_capture_metadata.schema.json`, `scripts/validate_capture_session.py`, protocolo (`reports/blueberry_collection_protocol.md`), guía (`reports/annotation_guide.md`) y solicitudes (`reports/agrar_blueberry_data_request.md`, `reports/data_requests/`).
+- Riesgo ambiental aparte: `src/berryvision/env_risk.py` (nunca diagnostica) y `docs/13`.
+
+## Datos, artefactos y despliegue (D-044 a D-048, `docs/14`)
+
+- Fuentes autorizadas: `configs/data_sources.yaml` (DrBerry principal, bloqueada sin key; Zhang solo evaluación). Verificar con `scripts/prepare_data.py verify`.
+- Zhang: usar `manifests/splits/blueberry_yolo_zhang_groups.csv` (la partición del autor tiene fuga).
+- Inferencia: `scripts/export_model_artifact.py` → `artifacts/models/<id>/` (no versionado) → `scripts/predict.py`. Docker: `vision/Dockerfile`, solo inferencia; el modelo se monta.
+- Los datos nunca van a Git ni a la imagen. No modificar la configuración de despliegue de `main`.
+
 ## Comandos
 
 ```bash

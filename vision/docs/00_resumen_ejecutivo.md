@@ -17,6 +17,8 @@
 
 **Fase de entrenamiento (2026-10-24):** manifiesto unificado con particiones sin fugas; **experimento auxiliar en FRESA** (9 variantes; seleccionado ResNet-18). En test, recall condicionado entre enfermedades de 0,953, con el peor caso en el oídio en fruto (0,75), confundido con moho gris. Hallazgos: el split publicado de fresa tiene fuga, la clase sin síntomas está confundida con la fuente, y el modelo dispara alerta en el 77 % de hojas de arándano ajenas. **No hay modelo de arándano.** Ver `../reports/experiment_report.md`.
 
+**Banco de imágenes (2026-10-24):** 33 fuentes catalogadas y BlueberryDCM y Blueberry YOLO descargados como contexto de campo. **No existen datos públicos utilizables de Botrytis ni de trips en arándano.** `pry20220204-drberry` parece tener cajas de lesión (requiere API key). Están listos el protocolo de captura, la guía de etiquetado, el esquema de metadatos con su validador, las solicitudes a AGRAR y a autores, y el riesgo ambiental como componente separado. Ver `../reports/blueberry_image_repository_audit.md`.
+
 **Hallazgos que cambian decisiones:**
 
 1. La HAL documenta el RGB a **1280×720 rgb8, 30 Hz**, y el comprimido en **MJPEG**. La profundidad está a 1280×720 16UC1 (mm), **sin sincronizar ni alinear** con el RGB desde el SDK v1.1.0.

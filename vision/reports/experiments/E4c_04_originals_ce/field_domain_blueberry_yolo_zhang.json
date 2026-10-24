@@ -1,0 +1,35 @@
+{
+  "artifact": "E4c_04_originals_ce",
+  "taxonomy": "strawberry_aux/afzaal+perez_borrero",
+  "intended_use": "AUXILIAR: valida el pipeline con enfermedades de FRESA. No detecta enfermedades de arándano; su alerta sobre arándano no es interpretable.",
+  "source": "blueberry_yolo_zhang",
+  "license": "CC BY 4.0",
+  "evaluated_at": "2026-10-24T05:29:35+00:00",
+  "n_images": 466,
+  "images_per_split": {
+    "test": 30,
+    "train": 370,
+    "valid": 66
+  },
+  "alert_threshold": 0.89,
+  "alerts": 397,
+  "alert_rate": 0.851931330472103,
+  "alert_rate_wilson95": [
+    0.8168096891648337,
+    0.8812979283811647
+  ],
+  "mean_confidence": 0.7807029058493258,
+  "frac_confidence_ge_0.9": 0.4227467811158798,
+  "predicted_class_counts": {
+    "strawberry_fruit_powdery_mildew": 174,
+    "strawberry_leaf_angular_leafspot": 233,
+    "strawberry_asymptomatic": 27,
+    "strawberry_fruit_anthracnose_rot": 29,
+    "strawberry_gray_mold": 1,
+    "strawberry_leaf_spot": 2
+  },
+  "device": "cuda",
+  "seconds_total": 36.35231650000787,
+  "ms_per_image_incl_io": 78.00926287555338,
+  "caveat": "Imágenes de campo sin estado fitosanitario verificado (solo cajas de fruto verde/maduro). La tasa de alerta NO es una tasa de falsos positivos de enfermedad."
+}

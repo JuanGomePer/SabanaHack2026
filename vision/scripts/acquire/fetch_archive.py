@@ -41,6 +41,22 @@ SOURCES = {
         "license": "CC BY-NC 4.0 (no comercial). Bases de Afzaal 2021 y Pérez-Borrero 2020",
         "citation": "Galarza-Falfan, J. et al. (2025). Strawberry Disease Detection Dataset with Hybrid Data Augmentation. Mendeley Data, v1. doi:10.17632/k2ptxmfjhj.1",
     },
+    "blueberry_dcm": {
+        "url": "https://zenodo.org/api/records/14002517/files/BlueberryDCM.7z/content",
+        "filename": "BlueberryDCM.7z",
+        "expected_size": 107267412, "expected_md5": "77fc808520dbe7751cb367dbd06ea32f",  # publicados por Zenodo
+        "url_source": "Zenodo record 14002517 (Lu, Y., 2024-10-28)",
+        "license": "CC BY-NC 4.0 (no comercial)",
+        "citation": "Lu, Y. (2024). BlueberryDCM: A Canopy Image Dataset for Detection, Counting, and Maturity Assessment of Blueberries. Zenodo. doi:10.5281/zenodo.14002517",
+    },
+    "blueberry_yolo_zhang": {
+        "url": "https://zenodo.org/api/records/14014858/files/Blueberry.v3i.yolov11.zip/content",
+        "filename": "Blueberry.v3i.yolov11.zip",
+        "expected_size": 110236845, "expected_md5": "726586549d450128f969a3a423498095",  # publicados por Zenodo
+        "url_source": "Zenodo record 14014858 (Zhang, J., 2024-10-30); código: github.com/jeromemaleski/blueberry",
+        "license": "CC BY 4.0",
+        "citation": "Zhang, J. (2024). Blueberry images and labels for YOLO model training. Zenodo. doi:10.5281/zenodo.14014858",
+    },
 }
 
 
@@ -68,7 +84,8 @@ def main() -> int:
     else:
         print(f"Descargando {sid} → {archive}")
         try:
-            download(cfg["url"], archive, timeout=1200)
+            download(cfg["url"], archive, timeout=1200, expected_size=cfg.get("expected_size"),
+                     expected_md5=cfg.get("expected_md5"))
         except DownloadError as exc:
             print(f"NO DISPONIBLE: {exc}.")
             return 4

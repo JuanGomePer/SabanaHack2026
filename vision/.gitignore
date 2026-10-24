@@ -55,3 +55,10 @@ inspections/
 reports/figures_local/
 # Logs de ejecución pesados de notebooks
 notebooks/.ipynb_checkpoints/
+
+# Datos propios de AGRAR (confidenciales) y referencias visuales sin licencia de reutilización
+data/reference_only/*
+!data/reference_only/.gitkeep
+
+# Artefactos de inferencia exportados (pesos + ficha): se montan, no se versionan
+artifacts/

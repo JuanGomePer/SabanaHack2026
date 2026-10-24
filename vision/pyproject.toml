@@ -22,6 +22,8 @@ dev = ["pytest>=8"]
 #   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 train = ["torch>=2.4", "torchvision>=0.19", "numpy", "pandas", "scikit-learn", "matplotlib"]
 notebooks = ["ipykernel", "nbconvert", "nbformat"]
+acquire = ["py7zr>=0.20"]
+infer = ["torch>=2.4", "torchvision>=0.19", "numpy"]   # inferencia (ver requirements-infer.txt para la imagen)   # extracción segura de .7z (BlueberryDCM)
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -121,3 +121,35 @@ Con el desempate anterior (más alto) E4c_04 quedó con umbral 0,89 y en test un
 Empata con E4c_02 en los criterios principales; ganó por latencia (ruido). Test abierto una vez: recall condicionado 0,953, peor clase 0,75 (oídio en fruto).
 
 **D-036 · Entorno.** torch 2.14.1+cu126 en `vision/.venv` (extra `train`); el Python global no se modifica.
+
+## 2026-10-24 (banco de imágenes de arándano y datos propios)
+
+**D-037 · Catálogo ampliado a 33 fuentes en `knowledge/datasets/blueberry_image_sources.yaml`**, que es la fuente única; la matriz y el manifiesto se generan con `build_source_tables.py`.
+Las colecciones duplicadas o forks (PlantDoc estandarizado, Plant_Village_Blueberry, codelabs) no se cuentan como datos independientes.
+
+**D-038 · `pry20220204-drberry` pasa a ser la prioridad 1 de DrBerry.**
+633 imágenes, CC BY 4.0, y la muestra pública muestra cajas de LESIÓN y polígonos de hoja sobre hojas unidas a la planta. Si se confirma, la tarea pasa de clasificar hojas (D-018) a detectar lesiones. Sigue bloqueado por `ROBOFLOW_API_KEY`.
+
+**D-039 · BlueberryDCM y Blueberry YOLO, descargados con MD5 verificado, como `DOMAIN_GENERALIZATION` (contexto de cultivo).**
+Nunca son "sanas" ni sirven para entrenar enfermedades. En BlueberryDCM se usan las etiquetas VOC/VIA, porque las YOLO pierden la distinción visible/ocluido.
+
+**D-040 · AgriVision (CC BY-NC-ND) no se descarga hasta consultar a los autores**; las galerías institucionales sin licencia (UBA, Rutgers, INIA) quedan solo como referencia visual.
+
+**D-041 · Descargas verificadas.**
+`acquisition.download` valida `Content-Length`, tamaño y MD5 publicados, y reintenta. La primera descarga de BlueberryDCM se truncó en silencio (789 KB de 107 MB).
+
+**D-042 · Taxonomía de arándano con niveles de evidencia separados de la condición y de la tarea** (`blueberry_taxonomy.yaml`), esquema de captura de AGRAR (`contracts/agrar_capture_metadata.schema.json`) y validador con reglas del proyecto: `*_confirmed` exige experto o laboratorio, el daño de trips es siempre `suspected` y no se aceptan etiquetas derivadas del ambiente.
+
+**D-043 · Riesgo ambiental implementado aparte** (`env_risk.py`, Rivera et al. 2013) con sustituto por HR declarado. Nunca es un diagnóstico ni actúa sobre la ventilación.
+
+## 2026-10-24 (persistencia, simplificación de datos y Docker)
+
+**D-044 · Solo dos fuentes autorizadas para el modelo** (`configs/data_sources.yaml`): DrBerry `pry20220204` como principal y Blueberry YOLO (Zhang) como complementaria, solo para evaluación de dominio. El resto del catálogo es investigación.
+
+**D-045 · Diagnóstico de la "pérdida" de datos en Railway** (`docs/14`): los datos de visión nunca estuvieron en Git ni en la imagen (`.gitignore` de `vision/` y `.dockerignore` raíz de `main`). Ningún dato local se perdió; la copia de seguridad está en `hakatoon/_backups/`.
+
+**D-046 · Bloqueo por hashes por archivo** (`manifests/data_lock/`) y preparación idempotente (`prepare_data.py`); rutas por `BERRYVISION_DATA_DIR` / `BERRYVISION_MODEL_DIR`; inferencia desde un artefacto con SHA-256 (`inference.py`), sin dataset; imagen Docker de solo inferencia con contexto en lista blanca.
+
+**D-047 · Corrección: Blueberry YOLO tiene fuga en la partición del autor.** Sus 466 imágenes son recortes de 92 fotos y 37 cruzan particiones (D-039 decía 0 fugas: solo se habían mirado hashes). Se usa `manifests/splits/blueberry_yolo_zhang_groups.csv` (62/16/14 fotos).
+
+**D-048 · El modelo auxiliar de fresa (E4c_04) alerta en el 85,2 % (IC 95 % 81,7–88,1) de las imágenes de campo de Zhang.** Confirma el cambio de dominio; no es una tasa de falsos positivos. La adaptación de dominio con Zhang no se integra hasta poder compararla con un modelo base de DrBerry en validación.
