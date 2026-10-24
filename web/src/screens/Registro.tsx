@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { Calendar, Download, Search } from 'lucide-react';
 import type { RegistroRespuesta, RevisionHallazgo, TipoHallazgo } from '@vigia/shared/tipos';
+import { api } from '../api/cliente';
 import { Boton } from '../components/Boton';
 import { Chip } from '../components/Chip';
 import { BarraConfianza } from '../components/BarraConfianza';
@@ -118,7 +119,7 @@ export function Registro({ datos }: { datos: RegistroRespuesta }) {
 
         <Boton
           icono={<Download size={17} />}
-          onClick={() => window.open('/api/registro.csv', '_blank')}
+          onClick={() => window.open(api.registroCsvUrl(), '_blank')}
         >
           Exportar CSV
         </Boton>

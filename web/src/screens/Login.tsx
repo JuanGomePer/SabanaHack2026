@@ -122,7 +122,10 @@ export function Login({ alEntrar }: Props) {
             </span>
             <span className="txt-pequeno secundario">Mantener la sesión</span>
           </button>
-          <a className="txt-pequeno-fuerte enlace" href="#recuperar">
+          <a
+            className="txt-pequeno-fuerte enlace"
+            href="mailto:soporte@vigia.app?subject=Olvid%C3%A9%20mi%20contrase%C3%B1a"
+          >
             ¿Olvidaste tu contraseña?
           </a>
         </div>
@@ -143,7 +146,10 @@ export function Login({ alEntrar }: Props) {
 
         <p className="secundario txt-pequeno" style={{ margin: 0, textAlign: 'center' }}>
           ¿Tu finca aún no está en Vigía?{' '}
-          <a className="enlace txt-pequeno-fuerte" href="#acceso">
+          <a
+            className="enlace txt-pequeno-fuerte"
+            href="mailto:soporte@vigia.app?subject=Quiero%20acceso%20a%20Vig%C3%ADa"
+          >
             Pide acceso
           </a>
         </p>

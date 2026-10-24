@@ -2125,3 +2125,65 @@
   margin: 0;
   color: var(--color-text-secondary);
 }
+
+/* ── Móvil (~ancho de iPhone) ─────────────────────────────────────────── */
+@media (max-width: 600px) {
+  /* Filas de 3 y 5 columnas: ilegibles por debajo de ~600px, pasan a una sola. */
+  .lecturas,
+  .canales,
+  .previa-cifras {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pasos-fila {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .paso-con-flecha {
+    padding-right: 0;
+    padding-bottom: 18px;
+  }
+
+  .flecha-paso {
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: -2px;
+    transform: translateX(-50%) rotate(90deg);
+  }
+
+  /* El widget de vigIA y el mapa 3D tienen que dejar libre la barra inferior. */
+  .vigia-boton-flotante {
+    right: 16px;
+    bottom: calc(16px + 64px + env(safe-area-inset-bottom));
+  }
+
+  .vigia-panel {
+    right: 10px;
+    left: 10px;
+    bottom: calc(16px + 64px + env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+    height: auto;
+    max-height: calc(100vh - 64px - env(safe-area-inset-bottom) - 96px);
+  }
+
+  .mapa-3d {
+    height: 360px;
+  }
+
+  .mapa-3d-hud {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+
+  .kpis {
+    gap: 10px;
+  }
+
+  .equipo .cabecera,
+  .alerta-fila,
+  .lista-numeros li {
+    flex-wrap: wrap;
+  }
+}

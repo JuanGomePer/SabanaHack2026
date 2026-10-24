@@ -54,12 +54,24 @@ export function useSms() {
 /** Resumen de una línea, para la cabecera de la pantalla de Alertas. */
 export function ResumenSms({
   datos,
+  error,
   alConfigurar,
 }: {
   datos?: SmsRespuesta;
+  error?: string;
   alConfigurar: () => void;
 }) {
-  if (!datos) return null;
+  if (!datos) {
+    if (!error) return null;
+    return (
+      <div className="tira-sms">
+        <span className="tira-sms-icono">
+          <WifiOff size={18} />
+        </span>
+        <span className="txt-pequeno">No se pudo leer el estado de los avisos por SMS ({error}).</span>
+      </div>
+    );
+  }
 
   const activos = datos.config.destinos.filter((d) => d.activo);
   const numeros = activos.length === 1 ? '1 número' : `${activos.length} números`;
@@ -102,10 +114,13 @@ export function ResumenSms({
 /** Tarjeta completa de configuración (pestaña "Alertas y umbrales"). */
 export function PanelSms({
   datos,
+  errorCarga,
   setDatos,
   recargar,
 }: {
   datos?: SmsRespuesta;
+  /** Error al leer /api/sms (distinto del error de validar un número, que es estado local). */
+  errorCarga?: string;
   setDatos: (datos: SmsRespuesta) => void;
   /** Para volver a leer el estado cuando llega el acuse de entrega. */
   recargar: () => Promise<void>;
@@ -123,7 +138,18 @@ export function PanelSms({
     window.setTimeout(() => setAviso(undefined), 4000);
   }, []);
 
-  if (!datos) return null;
+  if (!datos) {
+    if (!errorCarga) return null;
+    return (
+      <div className="tarjeta">
+        <h2 className="tarjeta-titulo">Avisos por SMS</h2>
+        <p className="secundario txt-pequeno" style={{ margin: '8px 0 0' }}>
+          No se pudo cargar la configuración de SMS ({errorCarga}). Revisa tu conexión y vuelve a entrar a esta
+          pestaña.
+        </p>
+      </div>
+    );
+  }
 
   const { config, envios, limite, ejemplo, motivoBloqueo, nota, pasarela } = datos;
 

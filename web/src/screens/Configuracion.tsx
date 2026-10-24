@@ -440,7 +440,7 @@ export function Configuracion({ alVerComoLlega }: Props) {
               </div>
             </div>
 
-            <PanelSms datos={sms.datos} setDatos={sms.setDatos} recargar={sms.recargar} />
+            <PanelSms datos={sms.datos} errorCarga={sms.error} setDatos={sms.setDatos} recargar={sms.recargar} />
           </>
         )}
 
@@ -466,7 +466,18 @@ export function Configuracion({ alVerComoLlega }: Props) {
               </div>
             ))}
 
-            <Boton variante="secundario" icono={<UserPlus size={17} />} className="boton-separado">
+            <Boton
+              variante="secundario"
+              icono={<UserPlus size={17} />}
+              className="boton-separado"
+              onClick={() => {
+                window.location.href =
+                  'mailto:?subject=' +
+                  encodeURIComponent('Te invito a Vigía') +
+                  '&body=' +
+                  encodeURIComponent('Entra a Vigía para ver el cultivo y las alertas: ' + window.location.origin);
+              }}
+            >
               Invitar a alguien
             </Boton>
           </div>

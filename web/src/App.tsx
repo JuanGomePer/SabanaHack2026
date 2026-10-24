@@ -162,6 +162,7 @@ export function App() {
               alertas={alertas}
               alAbrirPlanta={abrirPlanta}
               alConfigurarAvisos={() => setPantalla('configuracion')}
+              alRecargar={recargar}
             />
           )}
 

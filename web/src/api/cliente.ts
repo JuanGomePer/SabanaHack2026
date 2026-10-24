@@ -56,6 +56,8 @@ export const api = {
   alertas: () => pedir<Alerta[]>('/alertas'),
   registro: () => pedir<RegistroRespuesta>('/registro'),
   movimientos: () => pedir<EntradaRegistro[]>('/registro/movimientos'),
+  /** URL completa del CSV, resuelta contra la misma base que el resto de la API (dev y producción). */
+  registroCsvUrl: () => `${BASE_URL}/registro.csv`,
   configuracion: () => pedir<Configuracion>('/configuracion'),
 
   guardarConfiguracion: (cambios: Partial<Configuracion>) =>

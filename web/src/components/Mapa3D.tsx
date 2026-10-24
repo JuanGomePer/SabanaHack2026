@@ -31,11 +31,24 @@ const ESPACIO_CELDA = 0.9;
 const ESPACIO_CAMA = 2.4;
 const CELDAS_POR_CAMA = 40;
 const MARGEN_INVERNADERO = 2.6;
-const ALTURA_ALERO = 2.5;
-const ALTURA_CUMBRERA = 4.2;
+// El alero es la altura MÍNIMA del techo (el faldón solo sube desde ahí hacia
+// la cumbrera), y la cámara que sigue al robot mantiene una altura fija
+// relativa a él en todo el ancho del invernadero — así que el alero tiene
+// que quedar cómodamente por encima de esa altura de cámara en cualquier
+// punto, o la cámara termina "dentro" del vidrio del techo cerca de los
+// muros (eso se veía como un techo blanco llenando toda la pantalla).
+const ALTURA_ALERO = 4.6;
+const ALTURA_CUMBRERA = 6.8;
+/** Qué tan lejos camina el robot del centro de la cama, hacia el pasillo (no encima de las matas). */
+const DESPLAZAMIENTO_PASILLO = 0.62;
 
 function anchoTotal(): number {
   return (CELDAS_POR_CAMA - 1) * ESPACIO_CELDA;
+}
+
+/** Posición en Z de una cama (o de su pasillo), misma fórmula para la fila de matas y para el robot. */
+function zDeFila(indice: number, total: number): number {
+  return (indice - (total - 1) / 2) * ESPACIO_CAMA;
 }
 
 /** Variación determinista (sin azar real) para que los arbustos no se vean clonados. */
@@ -155,15 +168,23 @@ interface RobotProps {
   camas: Cama[];
   reproduciendo: boolean;
   alCambiarPosicion: (texto: string) => void;
+  /** Se actualiza cada cuadro con la posición mundial del robot, para que la cámara lo siga. */
+  posicionRef: { current: THREE.Vector3 };
+}
+
+/** Ángulo más corto entre dos rumbos (para que el giro nunca dé la vuelta larga). */
+function diferenciaAngular(desde: number, hasta: number): number {
+  return Math.atan2(Math.sin(hasta - desde), Math.cos(hasta - desde));
 }
 
 /**
  * AgiBot X2 Ultra: proporciones reales (1.31 m alto, hombros 0.46 m) y
  * jerarquía de articulaciones real (cuello, cintura, hombro+codo por brazo,
- * cadera+rodilla por pierna), recorriendo cama por cama cuando está en
- * reproducción.
+ * cadera+rodilla por pierna). Camina en patrón de "ida y vuelta" por el
+ * pasillo junto a cada cama (nunca sobre las matas) y gira suavemente hacia
+ * donde avanza, en vez de teletransportarse entre camas.
  */
-function Robot({ camas, reproduciendo, alCambiarPosicion }: RobotProps) {
+function Robot({ camas, reproduciendo, alCambiarPosicion, posicionRef }: RobotProps) {
   const grupo = useRef<THREE.Group>(null);
   const caderaIzq = useRef<THREE.Group>(null);
   const caderaDer = useRef<THREE.Group>(null);
@@ -171,36 +192,83 @@ function Robot({ camas, reproduciendo, alCambiarPosicion }: RobotProps) {
   const hombroDer = useRef<THREE.Group>(null);
   const cabeza = useRef<THREE.Group>(null);
   const lidar = useRef<THREE.Mesh>(null);
-  const indiceCama = useRef(0);
+
+  const fila = useRef(0);
+  const fase = useRef<'fila' | 'cambio'>('fila');
   const progreso = useRef(0);
-  const SEGUNDOS_POR_CAMA = 4.5;
+  const rumbo = useRef(0);
+  const distanciaCaminada = useRef(0);
+  const SEGUNDOS_POR_FILA = 7;
+  const SEGUNDOS_CAMBIO_FILA = 1.8;
+
+  const posicionAnterior = useMemo(() => new THREE.Vector3(), []);
+  const posicionActual = useMemo(() => new THREE.Vector3(), []);
+
+  const pasillo = (indice: number) => zDeFila(indice, camas.length) + DESPLAZAMIENTO_PASILLO;
+  const inicioX = (indice: number) => (indice % 2 === 0 ? -anchoTotal() / 2 : anchoTotal() / 2);
+  const finX = (indice: number) => (indice % 2 === 0 ? anchoTotal() / 2 : -anchoTotal() / 2);
 
   useFrame((estado, delta) => {
     const t = estado.clock.elapsedTime;
     if (lidar.current) lidar.current.rotation.y = t * 1.4;
-    if (cabeza.current) cabeza.current.rotation.y = Math.sin(t * 0.6) * 0.35;
 
     if (camas.length === 0 || !grupo.current) return;
 
     if (reproduciendo) {
-      progreso.current += delta / SEGUNDOS_POR_CAMA;
-      if (progreso.current >= 1) {
-        progreso.current = 0;
-        indiceCama.current = (indiceCama.current + 1) % camas.length;
-        const cama = camas[indiceCama.current];
-        alCambiarPosicion(`Nave ${cama.nave} · Cama ${cama.numero}`);
+      if (fase.current === 'fila') {
+        progreso.current += delta / SEGUNDOS_POR_FILA;
+        if (progreso.current >= 1) {
+          progreso.current = 0;
+          fase.current = 'cambio';
+        }
+      } else {
+        progreso.current += delta / SEGUNDOS_CAMBIO_FILA;
+        if (progreso.current >= 1) {
+          progreso.current = 0;
+          fase.current = 'fila';
+          fila.current = (fila.current + 1) % camas.length;
+          const cama = camas[fila.current];
+          alCambiarPosicion(`Nave ${cama.nave} · Cama ${cama.numero}`);
+        }
       }
     }
 
-    const x = progreso.current * anchoTotal() - anchoTotal() / 2;
-    const z = (indiceCama.current - (camas.length - 1) / 2) * ESPACIO_CAMA;
-    grupo.current.position.set(x, 0, z);
+    const siguienteFila = (fila.current + 1) % camas.length;
+    let x: number;
+    let z: number;
+    if (fase.current === 'fila') {
+      x = THREE.MathUtils.lerp(inicioX(fila.current), finX(fila.current), progreso.current);
+      z = pasillo(fila.current);
+    } else {
+      x = THREE.MathUtils.lerp(finX(fila.current), inicioX(siguienteFila), progreso.current);
+      z = THREE.MathUtils.lerp(pasillo(fila.current), pasillo(siguienteFila), progreso.current);
+    }
 
-    const zancada = reproduciendo ? Math.sin(t * 7) * 0.5 : 0;
+    posicionAnterior.copy(grupo.current.position);
+    grupo.current.position.set(x, 0, z);
+    posicionActual.set(x, 0, z);
+    const avance = posicionAnterior.distanceTo(posicionActual);
+    distanciaCaminada.current += avance;
+
+    if (avance > 0.0001) {
+      const rumboObjetivo = Math.atan2(x - posicionAnterior.x, z - posicionAnterior.z);
+      rumbo.current += diferenciaAngular(rumbo.current, rumboObjetivo) * Math.min(1, delta * 6);
+      grupo.current.rotation.y = rumbo.current;
+    }
+    if (cabeza.current) cabeza.current.rotation.y = Math.sin(t * 0.6) * 0.35;
+
+    // Ciclo de zancada atado a la distancia recorrida (no al reloj), para que las
+    // piernas se muevan a la velocidad real del robot y no "patinen".
+    const enMovimiento = reproduciendo && avance > 0.0001;
+    const faseZancada = distanciaCaminada.current * 5.5;
+    const zancada = enMovimiento ? Math.sin(faseZancada) * 0.5 : 0;
     if (caderaIzq.current) caderaIzq.current.rotation.x = zancada;
     if (caderaDer.current) caderaDer.current.rotation.x = -zancada;
     if (hombroIzq.current) hombroIzq.current.rotation.x = -zancada * 0.8;
     if (hombroDer.current) hombroDer.current.rotation.x = zancada * 0.8;
+    grupo.current.position.y = enMovimiento ? Math.abs(Math.sin(faseZancada)) * 0.025 : 0;
+
+    posicionRef.current.copy(grupo.current.position);
   });
 
   const BLANCO = '#eef1f3';
@@ -304,7 +372,7 @@ function Invernadero({ ancho, profundo }: { ancho: number; profundo: number }) {
     <meshPhysicalMaterial
       color="#dff1fb"
       transparent
-      opacity={0.3}
+      opacity={0.22}
       roughness={0.12}
       metalness={0}
       side={THREE.DoubleSide}
@@ -489,6 +557,48 @@ function CicloDia({
   );
 }
 
+/**
+ * La cámara sigue suavemente al robot: el objetivo de los controles y la
+ * posición de la cámara se trasladan juntos hacia donde está el robot, sin
+ * tocar el ángulo ni el zoom que el usuario haya elegido — así nunca es un
+ * salto brusco, solo un desplazamiento continuo.
+ */
+function CamaraSeguimiento({ posicionRobotRef }: { posicionRobotRef: { current: THREE.Vector3 } }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const controles = useRef<any>(null);
+  const { camera } = useThree();
+  const objetivoAnterior = useMemo(() => new THREE.Vector3(0, 0.6, 0), []);
+  const objetivoNuevo = useMemo(() => new THREE.Vector3(), []);
+  const desplazamiento = useMemo(() => new THREE.Vector3(), []);
+
+  useFrame((_, delta) => {
+    const controlador = controles.current;
+    if (!controlador) return;
+    const destino = posicionRobotRef.current;
+    objetivoNuevo.set(destino.x, 0.6, destino.z);
+
+    const suavizado = 1 - Math.pow(0.0015, delta);
+    desplazamiento.copy(objetivoNuevo).sub(objetivoAnterior).multiplyScalar(suavizado);
+    if (desplazamiento.lengthSq() < 1e-8) return;
+
+    objetivoAnterior.add(desplazamiento);
+    controlador.target.add(desplazamiento);
+    camera.position.add(desplazamiento);
+    controlador.update();
+  });
+
+  return (
+    <OrbitControls
+      ref={controles}
+      enablePan
+      minDistance={6}
+      maxDistance={46}
+      maxPolarAngle={Math.PI / 2.15}
+      target={[0, 0.6, 0]}
+    />
+  );
+}
+
 function Escena({
   mapa,
   reproduciendo,
@@ -505,6 +615,7 @@ function Escena({
   const profundidadTotal = (mapa.camas.length - 1) * ESPACIO_CAMA;
   const anchoInvernadero = anchoTotal() + MARGEN_INVERNADERO * 2;
   const profundoInvernadero = profundidadTotal + MARGEN_INVERNADERO * 2;
+  const posicionRobotRef = useRef(new THREE.Vector3(0, 0.6, 0));
 
   return (
     <>
@@ -525,20 +636,19 @@ function Escena({
       <Invernadero ancho={anchoInvernadero} profundo={profundoInvernadero} />
 
       {mapa.camas.map((cama, i) => (
-        <FilaCama key={cama.numero} cama={cama} z={(i - (mapa.camas.length - 1) / 2) * ESPACIO_CAMA} alElegirPlanta={alElegirPlanta} />
+        <FilaCama key={cama.numero} cama={cama} z={zDeFila(i, mapa.camas.length)} alElegirPlanta={alElegirPlanta} />
       ))}
 
-      <Robot camas={mapa.camas} reproduciendo={reproduciendo} alCambiarPosicion={alCambiarPosicion} />
+      <Robot
+        camas={mapa.camas}
+        reproduciendo={reproduciendo}
+        alCambiarPosicion={alCambiarPosicion}
+        posicionRef={posicionRobotRef}
+      />
 
       <ContactShadows position={[0, 0, 0]} opacity={0.45} scale={Math.max(anchoInvernadero, profundoInvernadero)} blur={2} far={3} />
 
-      <OrbitControls
-        enablePan
-        minDistance={6}
-        maxDistance={46}
-        maxPolarAngle={Math.PI / 2.15}
-        target={[0, 0.5, 0]}
-      />
+      <CamaraSeguimiento posicionRobotRef={posicionRobotRef} />
     </>
   );
 }
@@ -571,7 +681,7 @@ export function Mapa3D({ mapa, alAbrirPlanta }: Props) {
           <span className="txt-pequeno-fuerte">{posicionRobot}</span>
         </div>
       </div>
-      <Canvas shadows="soft" camera={{ position: [11, 9, 17], fov: 45 }} gl={{ toneMappingExposure: 1.15 }}>
+      <Canvas shadows="soft" camera={{ position: [9, 3, 13], fov: 50 }} gl={{ toneMappingExposure: 1.15 }}>
         <Escena
           mapa={mapa}
           reproduciendo={reproduciendo}

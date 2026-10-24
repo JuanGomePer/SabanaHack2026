@@ -158,10 +158,7 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
                 <Segmentado
                   opciones={VISTAS}
                   valor={vista}
-                  alCambiar={(nueva) => {
-                    setVista(nueva);
-                    if (nueva === 'Gafas Meta' && gafas === 'no_enviado') setGafas('no_enviado');
-                  }}
+                  alCambiar={setVista}
                   etiquetaAccesible="Cómo revisar la planta"
                 />
                 <div style={{ flex: 1 }} />

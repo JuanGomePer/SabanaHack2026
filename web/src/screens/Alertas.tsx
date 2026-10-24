@@ -1,6 +1,6 @@
 /** 04 · Alertas (8:3326). */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Camera, MessageSquare, Search } from 'lucide-react';
 import type { Alerta, RevisionHallazgo, TipoHallazgo } from '@vigia/shared/tipos';
 import { Boton } from '../components/Boton';
@@ -44,14 +44,22 @@ interface Props {
   alertas: Alerta[];
   alAbrirPlanta: (plantaId: string) => void;
   alConfigurarAvisos: () => void;
+  /** Para que "se actualiza sola" sea real: se llama cada SEGUNDOS_REFRESCO mientras esta pantalla está abierta. */
+  alRecargar?: () => void | Promise<void>;
 }
 
-export function Alertas({ alertas, alAbrirPlanta, alConfigurarAvisos }: Props) {
+export function Alertas({ alertas, alAbrirPlanta, alConfigurarAvisos, alRecargar }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('pendiente');
   const [busqueda, setBusqueda] = useState('');
   const [nave, setNave] = useState('Todas las naves');
   const [tipo, setTipo] = useState<string>('Todos los tipos');
   const sms = useSms();
+
+  useEffect(() => {
+    if (!alRecargar) return;
+    const intervalo = window.setInterval(() => void alRecargar(), SEGUNDOS_REFRESCO * 1000);
+    return () => window.clearInterval(intervalo);
+  }, [alRecargar]);
 
   /** Alertas que ya salieron por mensaje de texto. */
   const avisadasPorSms = useMemo(
@@ -82,7 +90,7 @@ export function Alertas({ alertas, alAbrirPlanta, alConfigurarAvisos }: Props) {
 
   return (
     <section>
-      <ResumenSms datos={sms.datos} alConfigurar={alConfigurarAvisos} />
+      <ResumenSms datos={sms.datos} error={sms.error} alConfigurar={alConfigurarAvisos} />
 
       <div className="barra-filtros">
         <div className="grupo-filtros">
