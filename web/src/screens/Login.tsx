@@ -1,10 +1,23 @@
 /** 09 · Inicio de sesión (18:704). */
 
 import { useState } from 'react';
-import { ArrowRight, Camera, Check, Eye, EyeOff, KeySquare, Lock, Mail, ScanSearch, SquareCheckBig } from 'lucide-react';
+import {
+  ArrowRight,
+  Camera,
+  Check,
+  Eye,
+  EyeOff,
+  KeySquare,
+  Lock,
+  Mail,
+  ScanSearch,
+  SquareCheckBig,
+  Trophy,
+} from 'lucide-react';
 import { Boton } from '../components/Boton';
 import { IlustracionArandanos } from '../components/IlustracionArandanos';
 import { ModalCodigoFinca } from '../components/ModalCodigoFinca';
+import { ModalConoceTuFinca } from '../components/ModalConoceTuFinca';
 import { ModalPedirAcceso } from '../components/ModalPedirAcceso';
 
 interface Props {
@@ -20,7 +33,7 @@ const HISTORIA = [
 export function Login({ alEntrar }: Props) {
   const [verClave, setVerClave] = useState(false);
   const [mantener, setMantener] = useState(true);
-  const [modal, setModal] = useState<'codigo' | 'acceso'>();
+  const [modal, setModal] = useState<'codigo' | 'acceso' | 'conoce'>();
 
   return (
     <div className="acceso">
@@ -56,6 +69,15 @@ export function Login({ alEntrar }: Props) {
               </li>
             ))}
           </ul>
+
+          <button type="button" className="wizard-cta" onClick={() => setModal('conoce')}>
+            <Trophy size={18} />
+            <span className="columna" style={{ gap: 1 }}>
+              <span className="txt-pequeno-fuerte">¿Primera vez aquí? Conoce tu finca</span>
+              <span className="apagado txt-etiqueta">4 preguntas rápidas y te mostramos cómo quedaría</span>
+            </span>
+            <ArrowRight size={16} />
+          </button>
         </div>
       </div>
 
@@ -153,6 +175,7 @@ export function Login({ alEntrar }: Props) {
 
       {modal === 'codigo' && <ModalCodigoFinca onCerrar={() => setModal(undefined)} alEntrar={alEntrar} />}
       {modal === 'acceso' && <ModalPedirAcceso onCerrar={() => setModal(undefined)} />}
+      {modal === 'conoce' && <ModalConoceTuFinca onCerrar={() => setModal(undefined)} alEntrar={alEntrar} />}
     </div>
   );
 }

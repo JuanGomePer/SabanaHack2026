@@ -8,9 +8,9 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { ArrowRight, Droplets, Thermometer, TrendingUp, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Droplets, ShieldAlert, Thermometer, TrendingUp, TriangleAlert } from 'lucide-react';
 import type { RangoSerie, SeriesRespuesta } from '@vigia/shared/tipos';
-import { ESTRUCTURA, ETIQUETA_CIENTIFICA_TIPO } from '@vigia/shared/config';
+import { ESTRUCTURA, ETIQUETA_CIENTIFICA_TIPO, TOTAL_PLANTAS } from '@vigia/shared/config';
 import { api } from '../api/cliente';
 import { Chip } from '../components/Chip';
 import { Segmentado } from '../components/Segmentado';
@@ -184,6 +184,12 @@ export function Analisis() {
   const { resumen, clima, porNave, hallazgos, propagacion } = datos;
   const humedadAlta = resumen.humedadMaxima >= resumen.umbralHumedad;
 
+  // % de hallazgos reales sobre el total de plantas del bloque, día a día —
+  // no es una proyección: es el conteo real de esos días dividido entre lo
+  // que hay sembrado.
+  const contaminacionDiaria = hallazgos.map((d) => (d.total / TOTAL_PLANTAS) * 100);
+  const contaminacionHoy = contaminacionDiaria.length > 0 ? contaminacionDiaria[contaminacionDiaria.length - 1] : 0;
+
   return (
     <section>
       <div className="fila-entre" style={{ marginBottom: 18 }}>
@@ -218,6 +224,12 @@ export function Analisis() {
           etiqueta="Hallazgos del periodo"
           valor={String(resumen.totalHallazgos)}
           detalle={`En ${hallazgos.length} día${hallazgos.length === 1 ? '' : 's'}`}
+        />
+        <TarjetaKpi
+          tono={contaminacionHoy > 1 ? 'alerta' : contaminacionHoy > 0 ? 'riesgo' : 'ok'}
+          etiqueta="Contaminación ahora"
+          valor={`${contaminacionHoy.toFixed(1).replace('.', ',')} %`}
+          detalle={`${numeroMil(hallazgos.at(-1)?.total ?? 0)} de ${numeroMil(TOTAL_PLANTAS)} plantas, el último día del periodo`}
         />
         <TarjetaKpi
           tono="riesgo"
@@ -367,6 +379,26 @@ export function Analisis() {
             </div>
           </div>
           <GraficoHallazgos datos={hallazgos} />
+        </div>
+
+        <div className="tarjeta">
+          <div className="fila-entre">
+            <h2 className="tarjeta-titulo">
+              <ShieldAlert size={17} /> Contaminación en el tiempo
+            </h2>
+            <span className="apagado txt-pequeno">{etiqueta}</span>
+          </div>
+          <p className="secundario txt-pequeno" style={{ margin: '2px 0 12px' }}>
+            % de las {numeroMil(TOTAL_PLANTAS)} plantas del bloque con un hallazgo activo ese día —
+            {' '}
+            <strong>{contaminacionHoy.toFixed(1).replace('.', ',')} %</strong> ahora mismo.
+          </p>
+          <GraficoLinea
+            valores={contaminacionDiaria}
+            etiquetas={hallazgos.map((d) => d.etiqueta)}
+            color="var(--color-status-alert)"
+            unidad=" %"
+          />
         </div>
 
         <div className="tarjeta">

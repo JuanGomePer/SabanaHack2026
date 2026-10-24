@@ -25,11 +25,17 @@ import { api } from '../api/cliente';
 import { Boton } from '../components/Boton';
 import { Chip } from '../components/Chip';
 import { Interruptor } from '../components/Interruptor';
+import { OptimizadorTerreno } from '../components/OptimizadorTerreno';
 import { PanelSms, useSms } from '../components/AvisosSms';
 import { Segmentado } from '../components/Segmentado';
 import { numero } from '../utilidades/formato';
 
-const PESTANAS = ['Estructura del cultivo', 'Alertas y umbrales', 'Equipo y accesos'] as const;
+const PESTANAS = [
+  'Estructura del cultivo',
+  'Alertas y umbrales',
+  'Optimizar terreno',
+  'Equipo y accesos',
+] as const;
 type Pestana = (typeof PESTANAS)[number];
 
 const ETAPAS: EtapaCultivo[] = ['Vegetativa', 'Floración', 'Cuajado', 'Cosecha'];
@@ -629,6 +635,8 @@ export function Configuracion({ alVerComoLlega, alGuardarPerfil, alGuardarEstruc
             <PanelSms datos={sms.datos} errorCarga={sms.error} setDatos={sms.setDatos} recargar={sms.recargar} />
           </>
         )}
+
+        {pestana === 'Optimizar terreno' && <OptimizadorTerreno />}
 
         {pestana === 'Equipo y accesos' && (
           <>

@@ -3125,3 +3125,240 @@
     max-width: 220px;
   }
 }
+
+/* ── Configuración · Optimizar terreno ───────────────────────────────────── */
+.optimizador-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.optimizador-resultado {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+}
+
+.optimizador-total {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-brand-primary);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.optimizador-cifras {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.optimizador-cifras > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.optimizador-orientacion {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--color-text-secondary);
+}
+
+.optimizador-orientacion svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-brand-primary);
+}
+
+.optimizador-nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--color-text-muted);
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-border-default);
+}
+
+.optimizador-nota svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+@media (max-width: 900px) {
+  .optimizador-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .optimizador-cifras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── Registro · exportar con filtro de fechas ────────────────────────────── */
+.exportar-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.exportar-preset {
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.exportar-preset.activo {
+  background: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+}
+
+/* ── Login · "Conoce tu finca" (onboarding gamificado) ───────────────────── */
+.wizard-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  border: 1px dashed var(--color-brand-primary);
+  background: var(--color-brand-tint);
+  color: var(--color-brand-primary);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.wizard-cta:hover {
+  background: var(--color-brand-tint-strong);
+}
+
+.wizard-cta .txt-pequeno-fuerte {
+  color: var(--color-text-primary);
+}
+
+.wizard-cta svg:first-child {
+  flex-shrink: 0;
+}
+
+.wizard-cta svg:last-child {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.wizard-progreso {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.wizard-punto {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-border-default);
+}
+
+.wizard-punto.activo {
+  background: var(--color-brand-primary);
+}
+
+.wizard-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wizard-opcion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+
+.wizard-opcion svg:first-child {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.wizard-opcion .txt-pequeno-fuerte {
+  flex: 1;
+  color: var(--color-text-primary);
+}
+
+.wizard-opcion.activa {
+  border-color: var(--color-brand-primary);
+  background: var(--color-brand-tint);
+}
+
+.wizard-opcion.activa svg:first-child {
+  color: var(--color-brand-primary);
+}
+
+.wizard-opcion-check {
+  flex-shrink: 0;
+  color: var(--color-brand-primary);
+}
+
+.wizard-nivel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-brand-tint);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+
+.wizard-trofeo {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-tint);
+  color: var(--color-brand-primary);
+  display: grid;
+  place-items: center;
+}
+
+.wizard-resumen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--color-bg-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.wizard-resumen-fila {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--color-text-secondary);
+}
+
+.wizard-resumen-fila svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-brand-primary);
+}
+
+.wizard-acciones {
+  margin-top: 20px;
+}

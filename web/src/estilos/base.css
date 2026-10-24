@@ -27,6 +27,19 @@ button {
   color: inherit;
 }
 
+/* Quita las flechitas nativas del navegador en <input type="number">: con
+   nuestros propios campos (el contador con +/-, o un número simple) se ven
+   duplicadas/desalineadas encima del estilo del sistema de diseño. */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* ── Estructura de la app ─────────────────────────────────────────────── */
 .app {
   display: grid;

@@ -13,7 +13,7 @@ import { Mapa3D } from '../components/Mapa3D';
 import { etiquetaDesdeId, hora, haceCuanto, numero, porcentaje } from '../utilidades/formato';
 import { urlDeApi } from '../api/cliente';
 
-const CAPAS = ['Estado', 'Humedad', 'Temperatura'] as const;
+const CAPAS = ['Estado', 'Humedad', 'Temperatura', 'Contaminación'] as const;
 const VISTAS_MAPA = ['2D', '3D'] as const;
 
 const LEYENDA: Array<{ estado: EstadoCelda; texto: string }> = [

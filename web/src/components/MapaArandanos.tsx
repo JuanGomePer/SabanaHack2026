@@ -16,11 +16,11 @@
  * del teléfono. No tapa el cultivo: deja ver la fruta a través.
  */
 
-import { Fragment, useRef, useState, type CSSProperties } from 'react';
+import { Fragment, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Cama, Celda, EstadoCelda, Nave } from '@vigia/shared/tipos';
 import { Arandano } from './Arandano';
 
-export type CapaMapa = 'Estado' | 'Humedad' | 'Temperatura';
+export type CapaMapa = 'Estado' | 'Humedad' | 'Temperatura' | 'Contaminación';
 
 interface Props {
   camas: Cama[];
@@ -60,6 +60,37 @@ const ESCALA_TEMPERATURA: Parada[] = [
   { valor: 28, color: [178, 46, 32] },
 ];
 
+/**
+ * Contaminación: % de las plantas de la cama con un hallazgo activo (en
+ * alerta, en revisión o ya confirmado) — no cuenta las que solo están "en
+ * riesgo" por humedad, eso ya lo muestra la capa de Humedad. Termina en el
+ * mismo morado con el que el sistema marca "en alerta".
+ */
+const ESCALA_CONTAMINACION: Parada[] = [
+  { valor: 0, color: [227, 245, 234] },
+  { valor: 5, color: [143, 211, 171] },
+  { valor: 15, color: [242, 184, 75] },
+  { valor: 30, color: [204, 59, 51] },
+  { valor: 50, color: [107, 63, 160] },
+];
+
+const ESTADOS_CONTAMINADOS: ReadonlySet<EstadoCelda> = new Set(['alerta', 'en_revision', 'confirmada']);
+
+/** % de plantas con hallazgo activo, por cama. */
+export function contaminacionPorCama(camas: Cama[]): Map<number, number> {
+  const mapa = new Map<number, number>();
+  for (const cama of camas) {
+    let total = 0;
+    let afectadas = 0;
+    for (const celda of cama.celdas) {
+      total += celda.plantas.length;
+      if (ESTADOS_CONTAMINADOS.has(celda.estado)) afectadas += celda.plantas.length;
+    }
+    mapa.set(cama.numero, total > 0 ? (afectadas / total) * 100 : 0);
+  }
+  return mapa;
+}
+
 function interpolar(valor: number, escala: Parada[]): [number, number, number] {
   const primera = escala[0];
   const ultima = escala[escala.length - 1];
@@ -80,12 +111,14 @@ function interpolar(valor: number, escala: Parada[]): [number, number, number] {
   return ultima.color;
 }
 
-function colorDeCelda(celda: Celda, capa: CapaMapa): string | undefined {
+function colorDeCelda(celda: Celda, capa: CapaMapa, contaminacion: Map<number, number>): string | undefined {
   if (capa === 'Estado' || celda.estado === 'sin_dato') return undefined;
   const rgb =
     capa === 'Humedad'
       ? interpolar(celda.humedad, ESCALA_HUMEDAD)
-      : interpolar(celda.temperatura, ESCALA_TEMPERATURA);
+      : capa === 'Temperatura'
+        ? interpolar(celda.temperatura, ESCALA_TEMPERATURA)
+        : interpolar(contaminacion.get(celda.cama) ?? 0, ESCALA_CONTAMINACION);
   return `rgb(${rgb.join(',')})`;
 }
 
@@ -98,14 +131,16 @@ const NOMBRE_ESTADO: Record<EstadoCelda, string> = {
   sin_dato: 'sin dato',
 };
 
-function titulo(celda: Celda, capa: CapaMapa): string {
+function titulo(celda: Celda, capa: CapaMapa, contaminacion: Map<number, number>): string {
   const rango = `plantas ${celda.plantas[0]}–${celda.plantas[celda.plantas.length - 1]}`;
   const medida =
     capa === 'Temperatura'
       ? `${celda.temperatura.toFixed(1)} °C`
       : capa === 'Humedad'
         ? `${celda.humedad.toFixed(0)} % de humedad`
-        : NOMBRE_ESTADO[celda.estado];
+        : capa === 'Contaminación'
+          ? `${(contaminacion.get(celda.cama) ?? 0).toFixed(0)} % de la cama con hallazgo activo`
+          : NOMBRE_ESTADO[celda.estado];
   return `Cama ${celda.cama} · ${rango} · ${medida}`;
 }
 
@@ -113,7 +148,7 @@ function titulo(celda: Celda, capa: CapaMapa): string {
 export function LeyendaCalor({ capa }: { capa: CapaMapa }) {
   if (capa === 'Estado') return null;
 
-  const escala = capa === 'Humedad' ? ESCALA_HUMEDAD : ESCALA_TEMPERATURA;
+  const escala = capa === 'Humedad' ? ESCALA_HUMEDAD : capa === 'Temperatura' ? ESCALA_TEMPERATURA : ESCALA_CONTAMINACION;
   const degradado = escala
     .map((parada) => {
       const porcentaje =
@@ -123,7 +158,7 @@ export function LeyendaCalor({ capa }: { capa: CapaMapa }) {
     })
     .join(', ');
 
-  const unidad = capa === 'Humedad' ? '%' : '°C';
+  const unidad = capa === 'Humedad' ? '%' : capa === 'Temperatura' ? '°C' : '% contaminación';
 
   return (
     <div className="leyenda-calor">
@@ -150,6 +185,7 @@ interface Sonda {
 export function MapaArandanos({ camas, naves, capa, plantaResaltada, alElegirCelda }: Props) {
   const contenedor = useRef<HTMLDivElement>(null);
   const [sonda, setSonda] = useState<Sonda | null>(null);
+  const contaminacion = useMemo(() => contaminacionPorCama(camas), [camas]);
 
   function seguirCursor(evento: React.MouseEvent, celda: Celda) {
     const caja = contenedor.current?.getBoundingClientRect();
@@ -241,13 +277,13 @@ export function MapaArandanos({ camas, naves, capa, plantaResaltada, alElegirCel
                         type="button"
                         key={celda.indice}
                         className={`mapa-celda ${celda.estado} ${resaltada ? 'resaltada' : ''}`}
-                        title={titulo(celda, capa)}
-                        aria-label={titulo(celda, capa)}
+                        title={titulo(celda, capa, contaminacion)}
+                        aria-label={titulo(celda, capa, contaminacion)}
                         onClick={() => alElegirCelda(celda)}
                         onMouseMove={(e) => seguirCursor(e, celda)}
                         onFocus={() => setSonda(null)}
                       >
-                        <Arandano estado={celda.estado} color={colorDeCelda(celda, capa)} />
+                        <Arandano estado={celda.estado} color={colorDeCelda(celda, capa, contaminacion)} />
                       </button>
                     );
                   })}

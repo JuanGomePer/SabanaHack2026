@@ -4,10 +4,10 @@ import { useMemo, useState } from 'react';
 import { Calendar, Download, Search } from 'lucide-react';
 import type { RegistroRespuesta, RevisionHallazgo, TipoHallazgo } from '@vigia/shared/tipos';
 import { ETIQUETA_CIENTIFICA_TIPO } from '@vigia/shared/config';
-import { api } from '../api/cliente';
 import { Boton } from '../components/Boton';
 import { Chip, type TonoChip } from '../components/Chip';
 import { BarraConfianza } from '../components/BarraConfianza';
+import { ModalExportarRegistro } from '../components/ModalExportarRegistro';
 import { TarjetaKpi } from '../components/TarjetaKpi';
 import { fechaHora, numero } from '../utilidades/formato';
 
@@ -41,6 +41,7 @@ export function Registro({ datos }: { datos: RegistroRespuesta }) {
   const [tipo, setTipo] = useState<string>('Todos los tipos');
   const [decision, setDecision] = useState<string>('Todas las decisiones');
   const [busqueda, setBusqueda] = useState('');
+  const [exportando, setExportando] = useState(false);
 
   const filtradas = useMemo(
     () =>
@@ -122,13 +123,12 @@ export function Registro({ datos }: { datos: RegistroRespuesta }) {
 
         <div style={{ flex: 1 }} />
 
-        <Boton
-          icono={<Download size={17} />}
-          onClick={() => window.open(api.registroCsvUrl(), '_blank')}
-        >
+        <Boton icono={<Download size={17} />} onClick={() => setExportando(true)}>
           Exportar CSV
         </Boton>
       </div>
+
+      {exportando && <ModalExportarRegistro filas={filtradas} onCerrar={() => setExportando(false)} />}
 
       <div className="tarjeta" style={{ padding: '20px 10px 10px' }}>
         <table className="tabla">
