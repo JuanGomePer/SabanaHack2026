@@ -1,0 +1,22 @@
+{
+  "name": "vigia-monitor-cultivo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Vigía · Monitor de cultivo de arándanos — Sabana Hack 2026, reto Berry Good Idea",
+  "workspaces": [
+    "shared",
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,web -c green,cyan \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm --workspace server run dev",
+    "dev:web": "npm --workspace web run dev",
+    "build": "npm --workspace web run build",
+    "typecheck": "tsc -b shared server web"
+  },
+  "devDependencies": {
+    "concurrently": "9.1.2",
+    "typescript": "5.7.3"
+  }
+}

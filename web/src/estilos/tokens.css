@@ -1,0 +1,152 @@
+/**
+ * Tokens del sistema de diseño.
+ * Salen de las variables de Figma (get_variable_defs del archivo
+ * gXK6Jx10f9MaokdPTfssOc). No se escriben colores sueltos en los componentes:
+ * todo sale de aquí.
+ */
+
+:root {
+  /* ── Marca ──────────────────────────────────────────────────────────── */
+  --color-brand-primary: #1b7550;
+  --color-brand-primary-hover: #145c3e;
+  --color-brand-tint: #e8f5ec;
+  --color-brand-tint-strong: #cfebd9;
+
+  /* ── Fondos ─────────────────────────────────────────────────────────── */
+  --color-bg-app: #eff5eb;
+  --color-bg-surface: #ffffff;
+  --color-bg-subtle: #e4eddf;
+  --color-bg-sidebar: #0b3a28;
+  --color-bg-sidebar-active: #0f4a33;
+
+  /* ── Texto ──────────────────────────────────────────────────────────── */
+  --color-text-primary: #17261e;
+  --color-text-secondary: #4b5b52;
+  --color-text-muted: #5f6e65;
+  --color-text-on-brand: #ffffff;
+  --color-text-on-sidebar: #a6dbbc;
+
+  /* ── Bordes ─────────────────────────────────────────────────────────── */
+  --color-border-default: #d5e1cf;
+
+  /* ── Estados ────────────────────────────────────────────────────────── */
+  --color-status-ok: #2f9e6a;
+  --color-status-ok-fg: #1e7048;
+  --color-status-ok-bg: #e3f5ea;
+  --color-status-ok-cell: #8fd3ab;
+
+  --color-status-risk: #e39a1b;
+  --color-status-risk-fg: #8a5a00;
+  --color-status-risk-bg: #fdf3dd;
+  --color-status-risk-cell: #f2b84b;
+
+  --color-status-alert: #cc3b33;
+  --color-status-alert-fg: #8f241e;
+  --color-status-alert-bg: #fde8e6;
+
+  /**
+   * "Sin dato" no tiene variable propia en Figma. El valor sale de muestrear
+   * las celdas grises del componente "Mapa de arándanos" (20:702).
+   */
+  --color-status-nodata-cell: #d1dfce;
+
+  /* ── Datos (humedad) ────────────────────────────────────────────────── */
+  --color-data-humidity: #3a87c6;
+  --color-data-humidity-fg: #1f5e99;
+  --color-data-humidity-soft: #d9eaf7;
+
+  /* ── Radios ─────────────────────────────────────────────────────────── */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+
+  /* ── Tipografías ────────────────────────────────────────────────────── */
+  --font-titulo: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-texto: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+
+  /* ── Sombra de tarjeta (efecto "Sombra/Tarjeta") ────────────────────── */
+  --sombra-tarjeta:
+    0 1px 2px 0 rgba(27, 38, 33, 0.06),
+    0 6px 20px 0 rgba(27, 38, 33, 0.05);
+  --sombra-flotante:
+    0 2px 6px 0 rgba(27, 38, 33, 0.08),
+    0 18px 44px 0 rgba(27, 38, 33, 0.16);
+}
+
+/* ── Estilos de texto ─────────────────────────────────────────────────── */
+.txt-pagina {
+  font-family: var(--font-titulo);
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 34px;
+  letter-spacing: -0.4px;
+}
+
+.txt-tarjeta {
+  font-family: var(--font-titulo);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+}
+
+.txt-numero-xl {
+  font-family: var(--font-titulo);
+  font-weight: 800;
+  font-size: 36px;
+  line-height: 40px;
+  letter-spacing: -0.6px;
+}
+
+.txt-boton {
+  font-family: var(--font-titulo);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.txt-cuerpo {
+  font-family: var(--font-texto);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.txt-cuerpo-fuerte {
+  font-family: var(--font-texto);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.txt-pequeno {
+  font-family: var(--font-texto);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.txt-pequeno-fuerte {
+  font-family: var(--font-texto);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.txt-etiqueta {
+  font-family: var(--font-texto);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+}
+
+.txt-sobretitulo {
+  font-family: var(--font-texto);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+}

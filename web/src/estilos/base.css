@@ -1,0 +1,582 @@
+/* Primitivas y componentes del sistema de diseño. Todo con tokens. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg-app);
+  color: var(--color-text-primary);
+  font-family: var(--font-texto);
+  font-size: 15px;
+  line-height: 22px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* ── Estructura de la app ─────────────────────────────────────────────── */
+.app {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.principal {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.contenido {
+  padding: 4px 32px 32px;
+  flex: 1;
+}
+
+/* ── Barra lateral ────────────────────────────────────────────────────── */
+.barra-lateral {
+  background: var(--color-bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 24px 16px 20px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0 28px 14px;
+}
+
+.logo-marca {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-brand-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-on-brand);
+  flex-shrink: 0;
+}
+
+.logo-nombre {
+  font-family: var(--font-titulo);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  color: var(--color-text-on-brand);
+}
+
+.logo-sub {
+  color: var(--color-text-on-sidebar);
+}
+
+.barra-lateral .seccion {
+  color: var(--color-text-on-sidebar);
+  padding: 0 0 8px 14px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 12px 0 14px;
+  border-radius: var(--radius-md);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-on-sidebar);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-family: var(--font-texto);
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.nav-item:hover {
+  background: var(--color-bg-sidebar-active);
+}
+
+.nav-item.activo {
+  background: var(--color-bg-sidebar-active);
+  color: var(--color-text-on-brand);
+}
+
+.nav-item .texto {
+  flex: 1;
+}
+
+.contador {
+  background: var(--color-status-alert);
+  color: var(--color-text-on-brand);
+  border-radius: var(--radius-full);
+  padding: 1px 7px;
+  font-family: var(--font-texto);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+}
+
+.espacio {
+  flex: 1;
+}
+
+.robot {
+  background: var(--color-bg-sidebar-active);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.robot-fila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-on-brand);
+}
+
+.robot-sub,
+.robot-pie {
+  color: var(--color-text-on-sidebar);
+}
+
+.pista {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-primary-hover);
+  overflow: hidden;
+}
+
+.pista > .barra {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-status-ok);
+}
+
+/* ── Barra superior ───────────────────────────────────────────────────── */
+.barra-superior {
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 32px;
+}
+
+.barra-superior .subtitulo {
+  color: var(--color-text-secondary);
+}
+
+.acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.buscar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  width: 260px;
+  padding: 0 15px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-muted);
+}
+
+.buscar input {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  width: 100%;
+  font-family: var(--font-texto);
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.buscar input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.icono-boton {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  position: relative;
+}
+
+.icono-boton .contador {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-tint-strong);
+  color: var(--color-brand-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-texto);
+  font-weight: 600;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+/* ── Tarjetas ─────────────────────────────────────────────────────────── */
+.tarjeta {
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sombra-tarjeta);
+  padding: 20px;
+}
+
+.tarjeta-titulo {
+  font-family: var(--font-titulo);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: -0.1px;
+  margin: 0;
+}
+
+/* ── Tarjeta KPI (componente 3:145) ───────────────────────────────────── */
+.kpi {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sombra-tarjeta);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--color-bg-surface);
+}
+
+.kpi.ok {
+  background: var(--color-status-ok-bg);
+}
+.kpi.riesgo {
+  background: var(--color-status-risk-bg);
+}
+.kpi.alerta {
+  background: var(--color-status-alert-bg);
+}
+
+.kpi .etiqueta-kpi {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+}
+
+.kpi .valor {
+  color: var(--color-text-primary);
+}
+.kpi.ok .valor {
+  color: var(--color-status-ok-fg);
+}
+.kpi.riesgo .valor {
+  color: var(--color-status-risk-fg);
+}
+.kpi.alerta .valor {
+  color: var(--color-status-alert-fg);
+}
+
+.kpi .detalle {
+  color: var(--color-text-secondary);
+}
+
+/* Punto de color de los chips y KPIs */
+.punto {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.punto.ok {
+  background: var(--color-status-ok);
+}
+.punto.riesgo {
+  background: var(--color-status-risk);
+}
+.punto.alerta {
+  background: var(--color-status-alert);
+}
+.punto.neutro {
+  background: var(--color-text-muted);
+}
+.punto.marca {
+  background: var(--color-brand-primary);
+}
+.punto.humedad {
+  background: var(--color-data-humidity);
+}
+
+/* ── Chip de estado (componente 3:17) ─────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-texto);
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.chip.ok {
+  background: var(--color-status-ok-bg);
+  color: var(--color-status-ok-fg);
+}
+.chip.riesgo {
+  background: var(--color-status-risk-bg);
+  color: var(--color-status-risk-fg);
+}
+.chip.alerta {
+  background: var(--color-status-alert-bg);
+  color: var(--color-status-alert-fg);
+}
+.chip.neutro {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+}
+.chip.marca {
+  background: var(--color-brand-tint);
+  color: var(--color-brand-primary);
+}
+.chip.humedad {
+  background: var(--color-data-humidity-soft);
+  color: var(--color-data-humidity-fg);
+}
+
+/* ── Botón (componente 3:63) ──────────────────────────────────────────── */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-titulo);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.boton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.boton.primario {
+  background: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+}
+.boton.primario:hover:not(:disabled) {
+  background: var(--color-brand-primary-hover);
+}
+
+.boton.secundario {
+  background: var(--color-bg-surface);
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary);
+}
+.boton.secundario:hover:not(:disabled) {
+  background: var(--color-brand-tint);
+}
+
+.boton.peligro {
+  background: var(--color-status-alert-bg);
+  color: var(--color-status-alert-fg);
+  border-color: var(--color-status-alert-bg);
+}
+.boton.peligro:hover:not(:disabled) {
+  border-color: var(--color-status-alert);
+}
+
+.boton.fantasma {
+  background: transparent;
+  color: var(--color-brand-primary);
+  padding: 0 10px;
+}
+.boton.fantasma:hover:not(:disabled) {
+  background: var(--color-brand-tint);
+}
+
+.boton.bloque {
+  width: 100%;
+}
+
+/* ── Interruptor (componente 3:150) ───────────────────────────────────── */
+.interruptor {
+  width: 46px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  border: 0;
+  background: var(--color-bg-subtle);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.18s ease;
+}
+
+.interruptor::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-surface);
+  box-shadow: 0 1px 3px rgba(27, 38, 33, 0.25);
+  transition: transform 0.18s ease;
+}
+
+.interruptor[aria-checked='true'] {
+  background: var(--color-brand-primary);
+}
+
+.interruptor[aria-checked='true']::after {
+  transform: translateX(18px);
+}
+
+/* ── Segmentado (Estado / Humedad / Temperatura, Foto / Gafas) ────────── */
+.segmentado {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.segmentado button {
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  height: 33px;
+  padding: 0 14px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  font-family: var(--font-texto);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.segmentado button.activo {
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  box-shadow: 0 1px 2px rgba(27, 38, 33, 0.1);
+}
+
+/* ── Barra de progreso genérica ──────────────────────────────────────── */
+.medidor {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-subtle);
+  overflow: hidden;
+}
+
+.medidor > span {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-data-humidity);
+}
+
+.medidor.verde > span {
+  background: var(--color-status-ok);
+}
+.medidor.ambar > span {
+  background: var(--color-status-risk);
+}
+.medidor.rojo > span {
+  background: var(--color-status-alert);
+}
+
+/* ── Utilidades ───────────────────────────────────────────────────────── */
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fila-entre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.columna {
+  display: flex;
+  flex-direction: column;
+}
+
+.secundario {
+  color: var(--color-text-secondary);
+}
+
+.apagado {
+  color: var(--color-text-muted);
+}
+
+.nota-ejemplo {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+
+.cargando {
+  padding: 48px 0;
+  color: var(--color-text-muted);
+  text-align: center;
+}

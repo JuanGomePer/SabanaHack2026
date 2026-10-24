@@ -1,0 +1,48 @@
+/**
+ * 02 · Llega una alerta nueva (6:1104).
+ * Aviso emergente que aparece solo cuando el simulador detecta un hallazgo.
+ */
+
+import { AlertTriangle, X } from 'lucide-react';
+import type { Alerta } from '@vigia/shared/tipos';
+import { Boton } from './Boton';
+import { haceCuanto } from '../utilidades/formato';
+
+interface Props {
+  alerta: Alerta;
+  alVerPlanta: () => void;
+  alCerrar: () => void;
+}
+
+export function AvisoAlerta({ alerta, alVerPlanta, alCerrar }: Props) {
+  return (
+    <div className="aviso" role="alert" aria-live="assertive">
+      <button type="button" className="cerrar aviso-cerrar" onClick={alCerrar} aria-label="Cerrar aviso">
+        <X size={16} />
+      </button>
+
+      <div className="aviso-cuerpo">
+        <span className="aviso-icono">
+          <AlertTriangle size={20} strokeWidth={2} />
+        </span>
+
+        <div className="columna" style={{ flex: 1, minWidth: 0, gap: 4 }}>
+          <span className="tarjeta-titulo">Nueva alerta · posible {alerta.tipo}</span>
+          <span className="secundario txt-pequeno">
+            Cama {alerta.cama} · planta {alerta.planta} · Nave {alerta.nave}. Confianza{' '}
+            {Math.round(alerta.confianza * 100)} %. Detectada por el Robot X2 {haceCuanto(alerta.detectadoEn)}.
+          </span>
+        </div>
+
+        <img className="miniatura" src={alerta.fotoUrl} alt="" />
+      </div>
+
+      <div className="aviso-acciones">
+        <Boton onClick={alVerPlanta}>Ver planta</Boton>
+        <Boton variante="fantasma" onClick={alCerrar}>
+          Después
+        </Boton>
+      </div>
+    </div>
+  );
+}
