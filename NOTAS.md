@@ -61,14 +61,19 @@ Sin base de datos: todo el estado vive en memoria en el proceso del servidor.
 Tipografías **Plus Jakarta Sans** y **Figtree** se cargan desde Google Fonts en
 `web/index.html`.
 
-## Pendiente: el contrato de datos original
+## Sobre el contrato de datos
 
-`CONTRATO_DATOS.md` y `monitor-cultivo.html` no estaban ni en el contenedor ni
-en el repositorio, así que **los tipos de `shared/src/tipos.ts` se escribieron a
-partir del enunciado del reto** (estructura, estados, hallazgos y el endpoint de
-las gafas), no del archivo original. Si aparece el `CONTRATO_DATOS.md` del
-equipo hay que contrastarlo con esos tipos: los nombres de campos pueden no
-coincidir exactamente.
+El `CONTRATO_DATOS.md` original del equipo no apareció: no estaba ni en el
+contenedor de trabajo ni en el repositorio. **Los tipos de
+`shared/src/tipos.ts` se escribieron a partir del enunciado del reto**, y
+[`CONTRATO_DATOS.md`](CONTRATO_DATOS.md) los documenta.
+
+En la carpeta local de trabajo apareció después otra implementación del
+proyecto con su propio `CONTRATO_DATOS.md`, pero **ese también está
+reconstruido del brief** ("el CONTRATO_DATOS.md original no estaba disponible en
+esta máquina"), así que no hay una versión original que mande sobre la otra. Si
+el contrato original aparece, hay que contrastarlo con los tipos: los nombres de
+campos pueden no coincidir.
 
 ## Decisiones que conviene saber
 
