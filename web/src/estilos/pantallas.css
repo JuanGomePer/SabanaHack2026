@@ -1847,17 +1847,36 @@
   height: 52px;
   border-radius: var(--radius-full);
   border: 0;
-  background: var(--color-brand-primary);
+  background: radial-gradient(circle at 32% 28%, var(--color-brand-primary-hover), var(--color-brand-primary) 70%);
   color: var(--color-text-on-brand);
   display: grid;
   place-items: center;
-  box-shadow: var(--sombra-flotante);
+  box-shadow:
+    var(--sombra-flotante),
+    0 0 0 5px rgba(27, 117, 80, 0.12),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
   cursor: pointer;
   z-index: 60;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .vigia-boton-flotante:hover {
-  background: var(--color-brand-primary-hover);
+  background: radial-gradient(circle at 32% 28%, var(--color-brand-primary-hover), var(--color-brand-primary-hover) 70%);
+  transform: translateY(-1px);
+  box-shadow:
+    var(--sombra-flotante),
+    0 0 0 7px rgba(27, 117, 80, 0.16),
+    inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+.vigia-insignia-cabecera {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-tint);
+  color: var(--color-brand-primary);
 }
 
 .vigia-insignia {
@@ -2677,4 +2696,166 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ── Login: panel claro con ilustración de arándanos ─────────────────────── */
+.acceso-arte-clara {
+  position: relative;
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 56px;
+  border-right: 1px solid var(--color-border-default);
+}
+
+.acceso-ilustracion {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+  align-self: center;
+  margin: 4px 0;
+}
+
+.acceso-historia {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.acceso-historia li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.acceso-historia-icono {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-tint);
+  color: var(--color-brand-primary);
+  display: grid;
+  place-items: center;
+}
+
+.boton-enlace {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ── Modal genérico ───────────────────────────────────────────────────────── */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 58, 40, 0.45);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: velo-entra 0.15s ease;
+}
+
+.modal-tarjeta {
+  width: 100%;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sombra-flotante);
+  animation: modal-entra 0.2s cubic-bezier(0.2, 0.9, 0.3, 1);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+@keyframes modal-entra {
+  from {
+    transform: scale(0.96) translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+.modal-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 0;
+}
+
+.modal-cuerpo {
+  padding: 16px 20px 20px;
+}
+
+.modal-cuerpo textarea.campo-texto {
+  height: auto;
+  min-width: 0;
+  width: 100%;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.modal-cuerpo input.campo-texto {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ── Vista previa de finca (código / pedir acceso) ───────────────────────── */
+.previa-finca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border-default);
+}
+
+.previa-finca.valido {
+  background: var(--color-status-ok-bg);
+  border-color: transparent;
+}
+
+.previa-finca.invalido {
+  background: var(--color-status-alert-bg);
+  border-color: transparent;
+}
+
+.previa-finca-icono {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: grid;
+  place-items: center;
+  background: var(--color-bg-surface);
+  color: var(--color-text-muted);
+}
+
+.previa-finca-icono.ok {
+  background: var(--color-status-ok);
+  color: #fff;
+}
+
+.previa-finca-icono.mal {
+  background: var(--color-status-alert);
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .acceso-ilustracion {
+    max-width: 220px;
+  }
 }

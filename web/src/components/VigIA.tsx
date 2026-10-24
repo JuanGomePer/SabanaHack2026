@@ -10,7 +10,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AlertTriangle,
-  Bot,
   ExternalLink,
   Eye,
   EyeOff,
@@ -28,6 +27,7 @@ import type {
 } from '@vigia/shared/tipos';
 import { api, escucharEventos } from '../api/cliente';
 import { Chip } from './Chip';
+import { IconoVigia } from './IconoVigia';
 
 export interface ContextoVigia {
   pantalla: string;
@@ -223,7 +223,7 @@ export function VigIA({ contexto, alAbrirPlanta }: Props) {
         onClick={() => setAbierto((v) => !v)}
         aria-label={abierto ? 'Cerrar vigIA' : 'Abrir vigIA'}
       >
-        {abierto ? <X size={22} /> : <Bot size={22} />}
+        {abierto ? <X size={22} /> : <IconoVigia size={22} />}
         {!abierto && nuevos > 0 && <span className="vigia-insignia">{nuevos > 9 ? '9+' : nuevos}</span>}
       </button>
 
@@ -231,7 +231,9 @@ export function VigIA({ contexto, alAbrirPlanta }: Props) {
         <div className="vigia-panel" role="dialog" aria-label="vigIA">
           <header className="vigia-cabecera">
             <div className="fila" style={{ gap: 8 }}>
-              <Bot size={18} />
+              <span className="vigia-insignia-cabecera">
+                <IconoVigia size={16} />
+              </span>
               <span className="txt-cuerpo-fuerte">vigIA</span>
             </div>
             <div className="fila" style={{ gap: 4 }}>
