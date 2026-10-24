@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "berryvision/agrar_capture/0.1.0",
+  "title": "Metadatos de una imagen capturada en fincas de AGRAR (propuesta v0.1.0)",
+  "description": "Una fila por imagen original (sin reescalar). Las lecturas ambientales conservan sensor, hora y distancia; nunca se convierten en etiquetas de enfermedad. Validación en src/berryvision/capture_metadata.py.",
+  "type": "object",
+  "required": ["image_id", "session_id", "captured_at", "camera", "location", "organ", "annotations", "consent"],
+  "properties": {
+    "image_id": {"type": "string"},
+    "session_id": {"type": "string"},
+    "captured_at": {"type": "string", "format": "date-time"},
+    "file": {"type": "object", "properties": {"rel_path": {"type": "string"}, "sha256": {"type": "string"},
+             "width": {"type": "integer"}, "height": {"type": "integer"}, "encoding": {"type": "string"}}},
+    "camera": {"type": "object", "required": ["camera_id"], "properties": {
+      "camera_id": {"type": "string", "description": "p. ej. x2_rgbd_head_front_rgb o smartphone_<modelo>"},
+      "camera_info_ref": {"type": ["string", "null"], "description": "CameraInfo real guardado en la sesión"},
+      "sdk_version": {"type": ["string", "null"]}, "distance_m_approx": {"type": ["number", "null"]},
+      "view": {"enum": ["frontal", "lateral", "superior", "inferior", null]},
+      "lighting": {"enum": ["sol_directo", "nublado", "sombra", "contraluz", "artificial", "mixta", null]},
+      "motion": {"enum": ["quieto", "en_marcha", null]}}},
+    "location": {"type": "object", "required": ["farm_id"], "properties": {
+      "farm_id": {"type": "string"}, "block_id": {"type": ["string", "null"]}, "greenhouse_id": {"type": ["string", "null"]},
+      "bed_id": {"type": ["string", "null"]}, "plant_or_position": {"type": ["string", "null"]}, "bed_edge": {"type": ["boolean", "null"]}}},
+    "organ": {"enum": ["leaf", "young_leaf", "flower", "fruit_green", "fruit_ripe", "calyx", "shoot", "stem", "whole_plant", "sticky_trap"]},
+    "phenology": {"type": ["string", "null"]},
+    "annotations": {"type": "array", "items": {"type": "object", "required": ["label", "evidence_level", "task", "labeled_by", "labeled_at"],
+      "properties": {
+        "label": {"type": "string"},
+        "evidence_level": {"enum": ["lab_confirmed", "expert_confirmed", "suspected", "no_visible_symptoms", "confirmed_healthy", "unknown"]},
+        "task": {"enum": ["lesion_detection", "organ_classification", "image_level", "thrips_insect_on_plant", "thrips_damage_compatible", "thrips_on_sticky_trap"]},
+        "geometry": {"type": ["object", "null"], "description": "{type: box|polygon, coords en px de la imagen original}"},
+        "severity": {"type": ["string", "null"]},
+        "labeled_by": {"type": "string"}, "labeled_at": {"type": "string", "format": "date-time"},
+        "confirmation": {"type": ["object", "null"], "description": "método, laboratorio/experto, fecha, referencia de informe"},
+        "review_round": {"type": "integer", "minimum": 0}, "notes": {"type": ["string", "null"]}}}},
+    "environment": {"type": "array", "items": {"type": "object", "required": ["variable", "value", "source_sensor_id", "measured_at"],
+      "properties": {"variable": {"type": "string"}, "value": {"type": "number"}, "unit": {"type": "string"},
+        "source_sensor_id": {"type": "string"}, "measured_at": {"type": "string", "format": "date-time"},
+        "distance_to_plant_m": {"type": ["number", "null"]}, "quality": {"enum": ["ok", "desactualizada", "anomala", "faltante", null]}}}},
+    "robot_state": {"type": ["object", "null"]},
+    "consent": {"type": "object", "required": ["owner", "use_scope"], "properties": {
+      "owner": {"type": "string"}, "use_scope": {"enum": ["investigacion_hackathon", "investigacion_y_entrenamiento", "comercial"]},
+      "agreement_ref": {"type": ["string", "null"]}, "confidential": {"type": "boolean"}}}
+  }
+}

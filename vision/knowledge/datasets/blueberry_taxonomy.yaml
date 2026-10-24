@@ -1,0 +1,62 @@
+# Taxonomía de arándano para datos propios de AGRAR y fuentes públicas (v1, 2026-10-24).
+# Separa TRES ejes que nunca se fusionan:
+#   1) condición observada (qué se ve),
+#   2) nivel de evidencia (cómo se sabe),
+#   3) tarea (para qué sirve la etiqueta).
+# La taxonomía de fuentes ya auditadas (DrBerry, PlantDoc, fresa) sigue en taxonomy.yaml.
+
+evidence_levels:
+  lab_confirmed:      "Diagnóstico de laboratorio (aislamiento, cámara húmeda, PCR...). Se registra método, laboratorio y fecha."
+  expert_confirmed:   "Revisado en campo o sobre la imagen por fitopatólogo/entomólogo identificado. Se registra quién y cuándo."
+  suspected:          "Señales compatibles según un anotador entrenado, sin confirmación. NUNCA se cuenta como positivo confirmado."
+  no_visible_symptoms: "No se observan síntomas relevantes en la imagen. NO implica planta sana confirmada."
+  confirmed_healthy:  "Órgano evaluado por especialista (y laboratorio si aplica) sin infección. Muy raro; requiere protocolo."
+  unknown:            "No se puede determinar la condición o la causa (calidad, oclusión, ambigüedad)."
+
+organs: [leaf, young_leaf, flower, fruit_green, fruit_ripe, calyx, shoot, stem, whole_plant, sticky_trap]
+
+conditions:
+  botrytis:
+    pathogen: Botrytis cinerea
+    visual_signs: >
+      Flores con necrosis parda y tizón; frutos con pudrición blanda, pardeamiento y
+      esporulación gris (conidióforos visibles con lupa); brotes con necrosis.
+    allowed_labels: [botrytis_suspected, botrytis_confirmed]
+    confusions: [alternaria (micelio blanco ralo sobre herida que se vuelve tupido; INIA Uruguay 2014), mummy_berry (Monilinia), anthracnose (Colletotrichum, masas salmón), daño mecánico, senescencia de flor]
+    rule: "botrytis_confirmed solo con evidencia expert_confirmed o lab_confirmed."
+  alternaria:
+    pathogen: Alternaria spp.
+    visual_signs: >
+      Hoja: manchas pequeñas pardas/necróticas, a veces con halo; fruto: pudrición con
+      micelio verde-oliva a negro. DrBerry etiqueta 'Alternaria' / 'Daño por Alternaria'.
+    allowed_labels: [alternaria_suspected, alternaria_confirmed]
+    confusions: [septoria y otras manchas foliares, quemadura por fertilizante, daño de Heliothis (orificios), oídio temprano]
+  thrips:
+    taxa: [Frankliniella spp. (flor), Scirtothrips spp. (hoja joven), otras]
+    tasks_never_merged:
+      thrips_insect_on_plant: "caja sobre el insecto visible en la planta (requiere resolución suficiente)"
+      thrips_damage_compatible: "deformación/encrespamiento de hoja joven o daño floral compatible; SIEMPRE suspected salvo confirmación del insecto"
+      thrips_on_sticky_trap: "conteo sobre trampa adhesiva (tarea de monitoreo, no de inspección de planta)"
+    confusions: [deficiencias nutricionales, daño por herbicida, deformaciones fisiológicas, ácaros]
+    rule: "Si el insecto no es identificable a la resolución de la imagen, no se crea la etiqueta del insecto."
+  look_alikes:
+    allowed_labels: [mummy_berry_suspected, anthracnose_suspected, powdery_mildew_suspected, heliothis_damage,
+                     nutrient_deficiency_suspected, mechanical_damage, natural_senescence, sunburn, other_disease_suspected]
+    rule: "Se etiquetan explícitamente para que el modelo aprenda a NO confundirlos (negativos difíciles)."
+  no_visible_symptoms:
+    allowed_labels: [no_visible_symptoms]
+    rule: "Debe capturarse en la MISMA finca, cama, sesión y cámara que los positivos (lección D-033)."
+
+annotation_tasks:
+  lesion_detection: "Caja/polígono que delimita la LESIÓN o el insecto. Nunca reutilizar cajas de hoja completa."
+  organ_classification: "Etiqueta de la condición del órgano completo (hoja, fruto, flor) con su caja de órgano."
+  image_level: "Condición de la imagen completa; solo para triaje, no para localizar."
+
+never_equivalent:
+  - [strawberry_gray_mold, botrytis_confirmed]
+  - [thrips_spathiphyllum, thrips_insect_on_plant]
+  - [PlantDoc 'Blueberry leaf', no_visible_symptoms]
+  - [no_visible_symptoms, confirmed_healthy]
+  - [mummy_berry_suspected, botrytis_suspected]
+  - [condición ambiental favorable, botrytis_confirmed]
+  - [caja de hoja completa, lesion_detection]

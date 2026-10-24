@@ -1,0 +1,10 @@
+# Lista blanca: el contexto de build de vision/ solo incluye lo que la imagen de inferencia
+# necesita. Datos, pesos, runs, artefactos, .venv, notebooks, informes y credenciales quedan fuera.
+*
+!requirements-infer.txt
+!src/
+!scripts/predict.py
+**/__pycache__/
+**/*.pyc
+**/.env
+**/.env.*

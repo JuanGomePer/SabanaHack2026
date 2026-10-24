@@ -163,3 +163,40 @@ def test_group_key_joins_same_plant_and_leakage_is_reported():
     groups = build_groups(recs, near_threshold=0, group_key=lambda r: r["rel_path"].split("_")[0])
     assert len(set(groups.values())) == 1
     assert leakage({"p1_a.jpg": "train", "p1_b.jpg": "test"}, groups)
+
+
+def test_download_detects_truncation_size_and_md5(tmp_path, monkeypatch):
+    import io as _io
+    from berryvision import acquisition as acq
+
+    class FakeResp(_io.BytesIO):
+        def __init__(self, body, declared=None, ctype="application/octet-stream"):
+            super().__init__(body)
+            self.headers = {"Content-Type": ctype, **({"Content-Length": str(declared)} if declared is not None else {})}
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    calls = []
+    def fake(body, declared=None, ctype="application/octet-stream"):
+        def _open(req, timeout=0):
+            calls.append(1)
+            return FakeResp(body, declared, ctype)
+        return _open
+
+    monkeypatch.setattr(acq.urllib.request, "urlopen", fake(b"x" * 10, declared=100))
+    with pytest.raises(acq.DownloadError, match="truncada"):
+        acq.download("http://e/x.7z", tmp_path / "x.7z", retries=2)
+    assert len(calls) == 2 and not (tmp_path / "x.7z").exists() and not (tmp_path / "x.7z.part").exists()
+
+    monkeypatch.setattr(acq.urllib.request, "urlopen", fake(b"abc", declared=3))
+    with pytest.raises(acq.DownloadError, match="MD5"):
+        acq.download("http://e/y", tmp_path / "y", expected_md5="0" * 32, retries=1)
+    ok = acq.download("http://e/z", tmp_path / "z", expected_size=3,
+                      expected_md5="900150983cd24fb0d6963f7d28e17f72", retries=1)   # md5("abc")
+    assert ok.read_bytes() == b"abc"
+
+    calls.clear()
+    monkeypatch.setattr(acq.urllib.request, "urlopen", fake(b"<html>", ctype="text/html"))
+    with pytest.raises(acq.DownloadError, match="HTML"):
+        acq.download("http://e/h", tmp_path / "h", retries=3)
+    assert len(calls) == 1      # no reintenta un enlace caído

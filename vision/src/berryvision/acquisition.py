@@ -43,25 +43,59 @@ def sha256_path(path: Path, chunk: int = 1 << 20) -> str:
     return h.hexdigest()
 
 
-def download(url: str, dest: Path, timeout: int = 120, expect_binary: bool = True) -> Path:
+def md5_path(path: Path, chunk: int = 1 << 20) -> str:
+    h = hashlib.md5()
+    with open(path, "rb") as fh:
+        for block in iter(lambda: fh.read(chunk), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def _download_once(url: str, tmp: Path, timeout: int, expect_binary: bool) -> int:
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=timeout) as resp, open(tmp, "wb") as fh:
+        ctype = resp.headers.get("Content-Type", "")
+        if expect_binary and ctype.startswith("text/html"):
+            raise DownloadError(f"Se esperaba un archivo y el servidor devolvió HTML ({url})")
+        declared = resp.headers.get("Content-Length")
+        n = 0
+        while True:
+            block = resp.read(1 << 20)
+            if not block:
+                break
+            fh.write(block)
+            n += len(block)
+    if declared is not None and int(declared) != n:
+        raise DownloadError(f"Descarga truncada: {n} de {declared} bytes ({url})")
+    if n == 0:
+        raise DownloadError(f"Respuesta vacía ({url})")
+    return n
+
+
+def download(url: str, dest: Path, timeout: int = 120, expect_binary: bool = True,
+             expected_size: int | None = None, expected_md5: str | None = None, retries: int = 3) -> Path:
+    """Descarga con verificación: Content-Length, tamaño y MD5 esperados (si se conocen) y reintentos."""
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = dest.with_suffix(dest.suffix + ".part")
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp, open(tmp, "wb") as fh:
-            ctype = resp.headers.get("Content-Type", "")
-            if expect_binary and ctype.startswith("text/html"):
-                raise DownloadError(f"Se esperaba un archivo y el servidor devolvió HTML ({url})")
-            while True:
-                block = resp.read(1 << 20)
-                if not block:
-                    break
-                fh.write(block)
-    except BaseException:
-        tmp.unlink(missing_ok=True)
-        raise
-    tmp.replace(dest)
-    return dest
+    last: Exception | None = None
+    for _ in range(max(1, retries)):
+        try:
+            n = _download_once(url, tmp, timeout, expect_binary)
+            if expected_size is not None and n != expected_size:
+                raise DownloadError(f"Tamaño {n} distinto del esperado {expected_size} ({url})")
+            if expected_md5 is not None and md5_path(tmp) != expected_md5:
+                raise DownloadError(f"MD5 distinto del publicado ({url})")
+            tmp.replace(dest)
+            return dest
+        except DownloadError as exc:
+            last = exc
+            tmp.unlink(missing_ok=True)
+            if "HTML" in str(exc):
+                break               # un enlace caído no se arregla reintentando
+        except BaseException:
+            tmp.unlink(missing_ok=True)
+            raise
+    raise last
 
 
 def _is_within(base: Path, target: Path) -> bool:
@@ -90,6 +124,17 @@ def safe_extract(archive: Path, dest: Path) -> int:
                     raise ValueError(f"Ruta fuera del destino: {name}")
             zf.extractall(dest)
             n = sum(1 for i in zf.infolist() if not i.is_dir())
+    elif archive.suffix.lower() == ".7z":
+        import py7zr  # dependencia opcional (extra `acquire`)
+        with py7zr.SevenZipFile(archive, "r") as z:
+            infos = z.list()
+            for info in infos:
+                if getattr(info, "is_symlink", False):
+                    raise ValueError(f"Enlace no permitido en el archivo: {info.filename}")
+                if not _is_within(dest, dest / info.filename):
+                    raise ValueError(f"Ruta fuera del destino: {info.filename}")
+            z.extractall(path=dest)
+            n = sum(1 for i in infos if not i.is_directory)
     else:
         raise ValueError(f"Formato de archivo no reconocido: {archive}")
     return n

@@ -1,0 +1,773 @@
+# Catálogo de fuentes de imágenes para arándano (v1, consulta 2026-10-24).
+# FUENTE ÚNICA DE VERDAD: reports/blueberry_image_repository_matrix.csv y
+# manifests/public_image_sources.csv se generan con scripts/build_source_tables.py.
+# status: VERIFICADO | DESCARGADO_Y_AUDITADO | ACCESO_PENDIENTE | SOLICITAR_A_AUTORES | LICENCIA_PENDIENTE |
+#         SOLO_REFERENCIA_VISUAL | AUXILIAR | NO_APTO_PARA_ENTRENAMIENTO | DESCARTADO
+# role:   PRIMARY_TRAINING | AUXILIARY_TRAINING | DOMAIN_GENERALIZATION | VISUAL_REFERENCE_ONLY |
+#         ENVIRONMENTAL_RISK_REFERENCE | BLOCKED_BY_LICENSE_OR_ACCESS | NOT_RELEVANT_TO_CURRENT_TASK
+# Conteos: solo de la ficha verificada o de una auditoría local; "?" = no verificable hoy.
+sources:
+# ------------------------------------------------------------------ enfermedades de arándano (RGB)
+- id: drberry_original_v1
+  title: DrBerry-Original-Data (v1 'data_original')
+  url: https://universe.roboflow.com/drberry/drberry-original-data/dataset/1
+  authors: DrBerry (Morales, Cavero, Ugarte; UPC Perú)
+  published: 2023-05-26
+  crop: arándano
+  organ: hoja desprendida (1 muestra pública)
+  target: [alternaria, oidio, heliothis, sana]
+  n_images: 410
+  n_instances: "?"
+  classes: [Alternaria, Heliothis, Oidio, Sana]
+  annotation: cajas; la muestra cubre la hoja completa
+  resolution: exportado 'Stretch to 1024x1024' (aspecto alterado); original 2992x2992 (1 muestra)
+  capture: campo Huaral (Perú), Samsung SM-A307G, hoja sobre sustrato
+  data_kind: real
+  license: CC BY 4.0 (Roboflow)
+  access: API key de Roboflow
+  status: ACCESO_PENDIENTE
+  role: PRIMARY_TRAINING
+  duplicates: posible solapamiento con las demás versiones de DrBerry
+  relevance: alta (arándano, Alternaria)
+  limitations: pocas imágenes; caja ≈ hoja; imágenes estiradas
+  next: ROBOFLOW_API_KEY en sesión → fetch_roboflow.py drberry drberry-original-data 1 coco
+- id: drberry_pry20220204
+  title: "Enfermedades en hojas de arándanos (pry20220204-drberry)"
+  url: https://universe.roboflow.com/pry20220204-drberry/enfermedades-en-hojas-de-arandanos
+  authors: workspace pry20220204-drberry (proyecto de tesis UPC asociado a DrBerry, inferido por nombre)
+  published: "? ('Updated 4 years ago' en la ficha)"
+  crop: arándano
+  organ: "hoja UNIDA a la planta (1 muestra pública: hoja sostenida a mano en vivero)"
+  target: [alternaria, oidio, heliothis, hoja]
+  n_images: 633
+  n_instances: "?"
+  classes: [Alternaria, Dano por Alternaria, Daño por Alternaria, Daño por Heliothis, Daño por Heliothis grande,
+            Daño por Heliothis pequeño, Daño por Oídio, Heliothis, Hoja de arandano, Oídio, Oídio grande]
+  annotation: "polígonos de HOJA + cajas pequeñas de LESIÓN (1 muestra: dos cajas sobre perforaciones/manchas)"
+  resolution: 3120x3120 (1 muestra, Huawei DUB-LX3)
+  capture: vivero/campo, celular, hoja en planta
+  data_kind: real (20 versiones publicadas; aumentaciones por versión no verificadas)
+  license: CC BY 4.0 (Roboflow)
+  access: API key de Roboflow
+  status: ACCESO_PENDIENTE
+  role: PRIMARY_TRAINING
+  duplicates: "probable origen de codelabs/drberry-leaf-detection (también 633 imágenes base)"
+  relevance: MUY ALTA — única fuente de arándano con posibles cajas de lesión (detección temprana)
+  limitations: "11 clases con nombres duplicados/inconsistentes (con y sin ñ, 'grande/pequeño'); requiere mapeo y revisión"
+  next: "PRIORIDAD 1 al tener API key: descargar la versión más reciente en COCO, auditar box_stats y unificar nombres"
+- id: drberry_codelabs_leaf_detection
+  title: DrBerry Leaf Detection (codelabs)
+  url: https://universe.roboflow.com/codelabs/drberry-leaf-detection-3hptt
+  authors: workspace codelabs
+  published: "? ('Updated 2 years ago')"
+  crop: arándano
+  organ: hoja
+  target: [alternaria, oidio, heliothis, hoja]
+  n_images: "633 base; versión 1 = 1647 (aumentada)"
+  n_instances: "?"
+  classes: [Dano por Alternaria, Dano por Heliothis, Dano por Oidio, Hoja de arandano]
+  annotation: cajas (detección)
+  resolution: "?"
+  capture: "?"
+  data_kind: real + aumentadas en la versión
+  license: CC BY 4.0 (Roboflow)
+  access: API key; páginas de versión tras Cloudflare
+  status: ACCESO_PENDIENTE
+  role: AUXILIARY_TRAINING
+  duplicates: "ALTA probabilidad de ser fork de pry20220204 (mismas 633 imágenes); NO contar como datos independientes"
+  relevance: media (clases ya simplificadas a 4)
+  limitations: "modelo publicado (mAP50 67,5 %) no es nuestro ni validado; versión aumentada no apta para evaluación"
+  next: descargar solo para comparar hashes contra pry20220204
+- id: drberry_gen3_20
+  title: drberry-gen-3-20 (v1)
+  url: https://universe.roboflow.com/drberry/drberry-gen-3-20/dataset/1
+  authors: DrBerry
+  published: 2023-04-26
+  crop: arándano
+  organ: hoja
+  target: [alternaria, oidio, heliothis, sana]
+  n_images: 585
+  n_instances: "?"
+  classes: [Alternaria, Heliothis, Oidio, Sana]
+  annotation: cajas
+  resolution: sin preprocesamiento declarado
+  capture: "?"
+  data_kind: real
+  license: CC BY 4.0
+  access: API key
+  status: ACCESO_PENDIENTE
+  role: AUXILIARY_TRAINING
+  duplicates: relación con original desconocida
+  relevance: alta
+  limitations: procedencia no documentada
+  next: comparar con original tras descarga
+- id: drberry_gen3
+  title: drberry-gen-3 (v1)
+  url: https://universe.roboflow.com/drberry/drberry-gen-3/dataset/1
+  authors: DrBerry
+  published: 2023-04-09
+  crop: arándano
+  organ: hoja
+  target: [alternaria, oidio, heliothis, sana]
+  n_images: 2671
+  n_instances: "?"
+  classes: [Alternaria, Heliothis, Oidio, Sana]
+  annotation: cajas
+  resolution: "?"
+  capture: "?"
+  data_kind: probablemente aumentado (hipótesis)
+  license: CC BY 4.0
+  access: API key
+  status: ACCESO_PENDIENTE
+  role: AUXILIARY_TRAINING
+  duplicates: alto riesgo de duplicar original
+  relevance: media
+  limitations: solo train tras deduplicar
+  next: comparar hashes
+- id: mummy_berry_qu2024
+  title: "A deep multi-task learning approach to identifying mummy berry infection sites, the disease stage, and severity"
+  url: https://pmc.ncbi.nlm.nih.gov/articles/PMC11007028/
+  authors: Qu, Zheng, Ji, Huang, Wei, Annis, Drummond (Frontiers in Plant Science, 2024)
+  published: 2024-03-28
+  crop: arándano lowbush (silvestre)
+  organ: [flor, hoja, fruto]
+  target: [mummy_berry (Monilinia vaccinii-corymbosi)]
+  n_images: "927 originales (artículo); ~1.100-1.230 tras aumentación por tarea"
+  n_instances: "?"
+  classes: "sitio (6: sano/infectado × flor/hoja/fruto), estadio (3), severidad (5)"
+  annotation: etiquetas de imagen + segmentación para severidad (expertos)
+  resolution: "? (entrada 224x224)"
+  capture: campos experimentales Univ. de Maine + imágenes web (Bugwood.org)
+  data_kind: real (parte de internet)
+  license: artículo CC BY; DATOS no publicados ("available by the authors, without undue reservation")
+  access: solicitud al autor de correspondencia (Hongchun Qu)
+  status: SOLICITAR_A_AUTORES
+  role: DOMAIN_GENERALIZATION
+  duplicates: incluye imágenes de Bugwood (posible solapamiento con otras galerías)
+  relevance: "media: arándano real, órganos y severidad; NO es Botrytis (Monilinia)"
+  limitations: lowbush ≠ highbush; mezcla con imágenes web; no extraer figuras del artículo como dataset
+  next: enviar solicitud (reports/data_requests/request_mummy_berry_authors.md)
+- id: uba_herbario_botrytis_arandano
+  title: Herbario Virtual de Fitopatología (FAUBA) — Botrytis cinerea en arándano
+  url: https://herbariofitopatologia.agro.uba.ar/?page_id=1026
+  authors: Cátedra de Fitopatología, Facultad de Agronomía, Universidad de Buenos Aires
+  published: "? (archivos subidos 2017-08)"
+  crop: arándano
+  organ: fruto (sin órgano explícito en los pies de foto)
+  target: [botrytis]
+  n_images: "28 (27 de galería + 1 figura); la mayoría microscópicas (conidios/conidióforos)"
+  n_instances: 0
+  classes: pies de foto, no etiquetas
+  annotation: ninguna
+  resolution: "?"
+  capture: "? (sin autoría por foto)"
+  data_kind: real (referencia)
+  license: "sin licencia declarada; '© Facultad de Agronomía - UBA'; página con protección de copia"
+  access: visualización web
+  status: SOLO_REFERENCIA_VISUAL
+  role: VISUAL_REFERENCE_ONLY
+  duplicates: "-"
+  relevance: guía visual de síntomas macroscópicos para anotadores
+  limitations: no reutilizable sin permiso; microscopía ≠ RGB del robot
+  next: solicitar permiso a la Cátedra (reports/data_requests/request_institutions.md)
+- id: inia_uruguay_poscosecha_2014
+  title: Guía para la identificación de patógenos de poscosecha en frutos de arándanos (INIA Uruguay, 2014)
+  url: https://ainfo.inia.uy/digital/bitstream/item/3579/1/bd-107-2014.pdf
+  authors: INIA Uruguay
+  published: 2014
+  crop: arándano
+  organ: fruto (poscosecha)
+  target: [botrytis, alternaria, otros patógenos de poscosecha]
+  n_images: "? (guía en PDF)"
+  n_instances: 0
+  classes: "-"
+  annotation: ninguna
+  resolution: "-"
+  capture: "-"
+  data_kind: referencia técnica
+  license: "no verificada"
+  access: PDF público
+  status: SOLO_REFERENCIA_VISUAL
+  role: VISUAL_REFERENCE_ONLY
+  duplicates: "-"
+  relevance: "descripción de síntomas (p. ej. Alternaria: micelio blanco ralo sobre herida)"
+  limitations: no es dataset
+  next: usar en la guía de anotación (citando)
+- id: inia_chile_boletin_48_cap7
+  title: Boletín INIA-INDAP N.º 48, Cap. 7 — Enfermedades claves del arándano
+  url: https://biblioteca.inia.cl/server/api/core/bitstreams/42f5f2b9-fef7-4222-9d82-59ba65b11800/content
+  authors: INIA Chile
+  published: "?"
+  crop: arándano
+  organ: [flor, fruto, hoja]
+  target: [botrytis, otras]
+  n_images: "?"
+  n_instances: 0
+  classes: "-"
+  annotation: ninguna
+  resolution: "-"
+  capture: "-"
+  data_kind: referencia técnica
+  license: no verificada
+  access: PDF público
+  status: SOLO_REFERENCIA_VISUAL
+  role: VISUAL_REFERENCE_ONLY
+  duplicates: "-"
+  relevance: síntomas de Botrytis preferentemente en flores y frutos
+  limitations: no es dataset
+  next: guía de anotación
+- id: foods2023_hsi_anomaly
+  title: A Self-Supervised Anomaly Detector of Fruits Based on Hyperspectral Imaging (Foods 2023)
+  url: https://doi.org/10.3390/foods12142669
+  authors: Liu, Zhou, Wan, Qiu, Zhao, Pang, Li, Yin
+  published: 2023
+  crop: [fresa, arándano]
+  organ: fruto
+  target: "anomalías (golpeado, infectado, daño por frío, arrugado) — sin atribución explícita a Botrytis en el resumen"
+  n_images: "?"
+  n_instances: "?"
+  classes: [normal, anomalías]
+  annotation: etiquetas por muestra
+  resolution: hiperespectral
+  capture: laboratorio
+  data_kind: real (HSI)
+  license: artículo CC BY (PMC10378827); datos no verificados
+  access: "?"
+  status: NO_APTO_PARA_ENTRENAMIENTO
+  role: NOT_RELEVANT_TO_CURRENT_TASK
+  duplicates: "-"
+  relevance: baja (modalidad incompatible con RGB del X2)
+  limitations: hiperespectral
+  next: ninguna
+- id: hyperspectral_blueberries
+  title: HyperspectralBlueberries (Zenodo 11200576)
+  url: https://zenodo.org/records/11200576
+  authors: Deng, Lu, Stafne (Michigan State Univ.)
+  published: 2024-05-15
+  crop: arándano
+  organ: fruto cosechado
+  target: [defectos]
+  n_images: 420 frutos / 10 escaneos
+  n_instances: "-"
+  classes: [normal, defective]
+  annotation: por lote
+  resolution: 1600x1800x462 bandas
+  capture: laboratorio HSI
+  data_kind: real (HSI)
+  license: CC BY 4.0
+  access: público 27,8 GB
+  status: NO_APTO_PARA_ENTRENAMIENTO
+  role: NOT_RELEVANT_TO_CURRENT_TASK
+  duplicates: "-"
+  relevance: baja
+  limitations: modalidad
+  next: ninguna
+- id: rivera2013_botrytis_risk
+  title: Infection Risk and Critical Period for the Postharvest Control of Gray Mold on Blueberry in Chile
+  url: https://pubmed.ncbi.nlm.nih.gov/30722487/
+  authors: Rivera, Zoffoli, Latorre (Plant Disease 2013)
+  published: 2013
+  crop: arándano
+  organ: flor, fruto
+  target: [riesgo_botrytis]
+  n_images: 0
+  n_instances: 0
+  classes: "-"
+  annotation: "-"
+  resolution: "-"
+  capture: "-"
+  data_kind: modelo de riesgo (>6 h de humectación entre 14 y 25 °C)
+  license: artículo
+  access: resumen público
+  status: VERIFICADO
+  role: ENVIRONMENTAL_RISK_REFERENCE
+  duplicates: "-"
+  relevance: alta para el componente ambiental (src/berryvision/env_risk.py)
+  limitations: sin validación de campo según autores
+  next: validar con sensores de AGRAR
+- id: prjna984325
+  title: BioProject PRJNA984325 (Botrytis cinerea, genoma)
+  url: https://www.ncbi.nlm.nih.gov/bioproject/PRJNA984325
+  authors: Michigan State University
+  published: 2023-09-29
+  crop: ornamentales
+  organ: "-"
+  target: [genómica]
+  n_images: 0
+  n_instances: 0
+  classes: "-"
+  annotation: "-"
+  resolution: "-"
+  capture: "-"
+  data_kind: secuencias
+  license: NCBI
+  access: público
+  status: DESCARTADO
+  role: NOT_RELEVANT_TO_CURRENT_TASK
+  duplicates: "-"
+  relevance: nula para visión
+  limitations: no contiene fotografías
+  next: ninguna
+# ------------------------------------------------------------------ contexto visual de arándano
+- id: blueberry_dcm
+  title: "BlueberryDCM: canopias de arándano para detección, conteo y madurez"
+  url: https://zenodo.org/records/14002517
+  authors: Lu, Yuzhen (Mississippi State / Michigan)
+  published: 2024-10-28
+  crop: arándano (highbush, campo)
+  organ: [fruto, canopia]
+  target: [contexto, madurez]
+  n_images: "140 (ficha); ver auditoría local"
+  n_instances: "17.955 cajas (ficha)"
+  classes: "[Blue, Unblue] × [visible, occluded]"
+  annotation: cajas VIA JSON (+ VOC/YOLO derivados)
+  resolution: ver auditoría local
+  capture: smartphone, luz natural, 134 Mississippi + 6 Michigan, 2022
+  data_kind: real
+  license: CC BY-NC 4.0
+  access: Zenodo, 107,3 MB (.7z), MD5 publicado
+  status: DESCARGADO_Y_AUDITADO
+  role: DOMAIN_GENERALIZATION
+  duplicates: comparar con blueberry_yolo_zhang
+  relevance: "contexto de canopia real (fondos, oclusión, luz); NO fitosanitario"
+  limitations: "no hay etiquetas de enfermedad; no implica plantas sanas"
+  next: usar como crop_context y para medir falsas alarmas fuera de dominio
+- id: blueberry_yolo_zhang
+  title: Blueberry images and labels for YOLO model training
+  url: https://zenodo.org/records/14014858
+  authors: "Zhang, Jing (código: github.com/jeromemaleski/blueberry)"
+  published: 2024-10-30
+  crop: arándano
+  organ: fruto en arbusto
+  target: [conteo de frutos maduros/inmaduros]
+  n_images: ver auditoría local
+  n_instances: ver auditoría local
+  classes: ver auditoría local
+  annotation: YOLO (export Roboflow 'Blueberry.v3i.yolov11')
+  resolution: ver auditoría local
+  capture: "?"
+  data_kind: real (+ posibles aumentaciones de Roboflow)
+  license: CC BY 4.0 (datos); repositorio de código sin licencia
+  access: Zenodo, 110,2 MB, MD5 publicado
+  status: DESCARGADO_Y_AUDITADO
+  role: DOMAIN_GENERALIZATION
+  duplicates: "0 duplicados con blueberry_dcm; 466 recortes de 92 fotos de origen, 37 cruzan las particiones del autor (fuga) → usar manifests/splits/blueberry_yolo_zhang_groups.csv"
+  relevance: contexto visual; NO fitosanitario
+  limitations: tarea de conteo
+  next: crop_context
+- id: agrivision_db
+  title: "AgriVision: benchmark de visión robótica en arándano densamente fructificado (DB-1/2/3)"
+  url: https://doi.org/10.1038/s41597-025-06263-3
+  authors: Owais, Shafay, Zubair, Mohammed, Seneviratne, Hussain (Scientific Data 2025)
+  published: 2025-12-17
+  crop: arándano (invernadero, UAE)
+  organ: fruto, canopia
+  target: [segmentación de frutos]
+  n_images: "DB-1 1.195 imágenes (51.145 instancias); DB-2 141.453 fotogramas; DB-3 10.000 sintéticas"
+  n_instances: "51.145 (DB-1)"
+  classes: [blueberry]
+  annotation: polígonos (DB-1 manual), máscaras semiautomáticas (DB-2), sintéticas (DB-3)
+  resolution: 3024x4032 a 4000x6000
+  capture: 4 celulares, invernadero comercial, 0,5–1,5 m, luz variable
+  data_kind: real + semiautomático + sintético
+  license: CC BY-NC-ND 4.0 (Figshare doi:10.6084/m9.figshare.29222462)
+  access: público
+  status: LICENCIA_PENDIENTE
+  role: BLOCKED_BY_LICENSE_OR_ACCESS
+  duplicates: "-"
+  relevance: "escenas densas tipo robot; sin enfermedades"
+  limitations: "ND: entrenar y compartir derivados podría infringir 'NoDerivatives'; consultar a los autores antes de usar"
+  next: consulta de licencia a los autores (request_institutions.md)
+- id: aerialyield_b2d
+  title: "AerialYield-B2D: invernadero, 5 estadios de madurez con máscaras"
+  url: https://arxiv.org/abs/2608.16973
+  authors: Ganapathi, Azam, Owais, Hussain, Abdulrahman (arXiv 2026-08-17)
+  published: 2026-08-17
+  crop: arándano (invernadero)
+  organ: fruto
+  target: [madurez]
+  n_images: 514
+  n_instances: 30195
+  classes: [verde, rosa pálido, rosa-púrpura, maduro, sobremaduro]
+  annotation: máscaras
+  resolution: "?"
+  capture: 424 celular + 67 fotogramas de video + 23 DJI
+  data_kind: real
+  license: "CC0 1.0 (icono del registro arXiv; verificar en el repositorio de datos)"
+  access: sin enlace de descarga en la página
+  status: ACCESO_PENDIENTE
+  role: DOMAIN_GENERALIZATION
+  duplicates: mismo grupo que AgriVision
+  relevance: contexto; NO fitosanitario
+  limitations: sin datos descargables localizados
+  next: buscar enlace de datos de los autores
+- id: plantvillage_blueberry_healthy
+  title: PlantVillage raw/color/Blueberry___healthy
+  url: https://github.com/spMohanty/PlantVillage-Dataset
+  authors: Hughes & Salathé
+  published: 2015
+  crop: arándano
+  organ: hoja desprendida (laboratorio)
+  target: [sana_laboratorio]
+  n_images: 1502
+  n_instances: 1502
+  classes: [Blueberry___healthy]
+  annotation: etiqueta de imagen
+  resolution: 256x256
+  capture: laboratorio
+  data_kind: real
+  license: CC BY-SA 3.0 (ficha HF)
+  access: descargado
+  status: DESCARGADO_Y_AUDITADO
+  role: DOMAIN_GENERALIZATION
+  duplicates: "Plant_Village_Blueberry declara 3.004 (=2×1.502)"
+  relevance: control de sesgo de laboratorio
+  limitations: fondo uniforme
+  next: ninguna
+- id: plant_village_blueberry_derived
+  title: Plant_Village_Blueberry (derivado)
+  url: https://github.com/ai-agriculture-circuits-and-systems/Plant_Village_Blueberry
+  authors: ai-agriculture-circuits-and-systems
+  published: "?"
+  crop: arándano
+  organ: hoja
+  target: [sana_laboratorio]
+  n_images: "5.290 declaradas (3.004 healthy + 2.286 background)"
+  n_instances: "-"
+  classes: [healthy, background_without_leaves]
+  annotation: CSV + COCO
+  resolution: 256x256
+  capture: laboratorio
+  data_kind: derivado
+  license: CC BY 4.0 (derivado)
+  access: requiere Kaggle
+  status: DESCARTADO
+  role: NOT_RELEVANT_TO_CURRENT_TASK
+  duplicates: no independiente de PlantVillage
+  relevance: nula adicional
+  limitations: posible doble conteo
+  next: ninguna
+- id: plantdoc_blueberry
+  title: PlantDoc-Object-Detection, 'Blueberry leaf'
+  url: https://github.com/pratikkayal/PlantDoc-Object-Detection-Dataset
+  authors: Singh et al. 2020
+  published: 2020
+  crop: arándano
+  organ: hoja
+  target: [hoja_condición_no_especificada]
+  n_images: 117
+  n_instances: 849
+  classes: [Blueberry leaf]
+  annotation: cajas de hoja (incompletas)
+  resolution: 91 distintas
+  capture: internet
+  data_kind: real (web)
+  license: CC BY 4.0 declarada; fotos de terceros
+  access: descargado
+  status: DESCARGADO_Y_AUDITADO
+  role: DOMAIN_GENERALIZATION
+  duplicates: 1 duplicado train/test; plant_doc_detection es la misma colección
+  relevance: "generalización y falsos positivos fuera de dominio (E4c: 77 % de alertas)"
+  limitations: no es 'sana'
+  next: revisión manual
+- id: plant_doc_detection_standardized
+  title: plant_doc_detection (PlantDoc estandarizado)
+  url: https://github.com/ai-agriculture-circuits-and-systems/plant_doc_detection
+  authors: ai-agriculture-circuits-and-systems
+  published: "push 2026-01-25"
+  crop: 13 especies
+  organ: hoja
+  target: [29 clases declaradas]
+  n_images: "2.585 declaradas"
+  n_instances: "?"
+  classes: "29 declaradas (no listadas aquí)"
+  annotation: conversión de PlantDoc
+  resolution: "-"
+  capture: internet
+  data_kind: derivado
+  license: "README CC BY 4.0; GitHub NOASSERTION"
+  access: GitHub
+  status: DESCARTADO
+  role: NOT_RELEVANT_TO_CURRENT_TASK
+  duplicates: "misma colección que PlantDoc; NO contar como independiente"
+  relevance: ninguna adicional
+  limitations: "-"
+  next: ninguna
+# ------------------------------------------------------------------ trips
+- id: rutgers_blueberry_thrips
+  title: Blueberry Thrips — Rutgers Pemaucci Center
+  url: https://pemaruccicenter.rutgers.edu/programs/entomology/pest-management-information/blueberry-thrips/
+  authors: Rutgers, The State University of New Jersey
+  published: "?"
+  crop: arándano
+  organ: [flor, hoja joven, fruto]
+  target: [trips (Frankliniella tritici en flor; Scirtothrips ruthveni en hoja)]
+  n_images: 1
+  n_instances: 0
+  classes: "-"
+  annotation: ninguna
+  resolution: "-"
+  capture: "-"
+  data_kind: referencia
+  license: "© Rutgers 2026; sin licencia de reutilización"
+  access: web
+  status: SOLO_REFERENCIA_VISUAL
+  role: VISUAL_REFERENCE_ONLY
+  duplicates: "-"
+  relevance: "síntomas: encrespamiento de hoja joven; daño parecido a deficiencias y enfermedades; monitoreo con trampa blanca y bandeja"
+  limitations: no es dataset
+  next: guía de anotación
+- id: thrip_leaf_dataset
+  title: Thrip_Leaf_Dataset
+  url: https://github.com/ZZL0897/thrip_leaf_dataset
+  authors: ZZL0897
+  published: "?"
+  crop: Spathiphyllum
+  organ: hoja
+  target: [trips_en_hoja]
+  n_images: 5618
+  n_instances: 47726
+  classes: Megalurothrips usitatus
+  annotation: LabelMe/COCO/YOLO
+  resolution: "?"
+  capture: cámara de crecimiento
+  data_kind: real
+  license: solo académico; sin redistribución
+  access: contraseña por correo
+  status: LICENCIA_PENDIENTE
+  role: BLOCKED_BY_LICENSE_OR_ACCESS
+  duplicates: "-"
+  relevance: baja (otra especie)
+  limitations: licencia y especie
+  next: ninguna por ahora
+- id: greenhouse_annotations_thrips
+  title: GreenHouse Annotations (Roboflow)
+  url: https://universe.roboflow.com/detection-7o9pm/greenhouse-annotations-lciej
+  authors: workspace detection-7o9pm
+  published: "?"
+  crop: "? (invernadero)"
+  organ: "?"
+  target: [trips y otros insectos]
+  n_images: 504
+  n_instances: "?"
+  classes: [Fungus_Gnats, Insects, Pea_Aphids, Spider_Mite, Thrips]
+  annotation: cajas
+  resolution: "?"
+  capture: "?"
+  data_kind: "?"
+  license: CC BY 4.0
+  access: API key
+  status: ACCESO_PENDIENTE
+  role: AUXILIARY_TRAINING
+  duplicates: "?"
+  relevance: "insectos pequeños; cultivo y soporte (¿trampa?) por verificar"
+  limitations: no es arándano
+  next: descargar con API key y revisar
+- id: thrip_64mp_bb
+  title: 64mp_thrip_bb (Roboflow)
+  url: https://universe.roboflow.com/yu-gxyy1/64mp_thrip_bb
+  authors: workspace yu-gxyy1
+  published: "?"
+  crop: "?"
+  organ: "?"
+  target: [trips]
+  n_images: "?"
+  n_instances: "?"
+  classes: "?"
+  annotation: cajas (por nombre)
+  resolution: "64 MP (por nombre, no verificado)"
+  capture: "?"
+  data_kind: "?"
+  license: "?"
+  access: página tras Cloudflare
+  status: ACCESO_PENDIENTE
+  role: AUXILIARY_TRAINING
+  duplicates: "?"
+  relevance: "posible alta resolución para insectos diminutos"
+  limitations: nada verificado
+  next: reintentar con API key
+- id: ilvo_thrips_sticky_traps
+  title: "Species-level monitoring of thrips and whiteflies on yellow sticky traps (ILVO)"
+  url: https://zenodo.org/records/15574405
+  authors: Laekeman et al. (ILVO; Frontiers in Plant Science 2025, doi:10.3389/fpls.2025.1668795)
+  published: 2025-11-01
+  crop: ornamentales/hortícolas de invernadero (trampas)
+  organ: sticky_trap
+  target: [trips en trampa (F. occidentalis, E. americanus), moscas blancas]
+  n_images: "5.105 parches 640x640 + 246 de test externo (artículo)"
+  n_instances: "4.000 + 216 (artículo)"
+  classes: [F. occidentalis, E. americanus, B. tabaci, T. vaporariorum]
+  annotation: cajas
+  resolution: Sony α7R III 42,4 MP, macro 50 mm (~5 µm/px)
+  capture: laboratorio/invernadero (Bélgica)
+  data_kind: real
+  license: CC BY 4.0
+  access: "Zenodo solo contiene README (2026-10-24): 'se publicará al final del proyecto (septiembre 2026)'"
+  status: ACCESO_PENDIENTE
+  role: AUXILIARY_TRAINING
+  duplicates: "-"
+  relevance: "tarea 3 (trampas); resolución muy superior a la del robot"
+  limitations: no es arándano ni planta; no publicado aún
+  next: revisar periódicamente o escribir a los autores
+- id: monash_thrips_microscope
+  title: Image dataset of two morphologically close thrip species (WFT y Plague Thrips)
+  url: https://bridges.monash.edu/articles/dataset/Image_dataset_of_two_morphologically_close_microscopic_insect_pest_species_Western_Flower_Thrips_and_Plague_Thrips/21547650/3
+  authors: Amarathunga, Ratnayake, Grundy, Dorin (Monash, 2022)
+  published: 2022-11-13
+  crop: fresa (origen de las muestras)
+  organ: insecto aislado
+  target: [identificación de especie de trips]
+  n_images: "536 (búsqueda; no verificado en archivos)"
+  n_instances: "-"
+  classes: [Western Flower Thrips, Plague Thrips]
+  annotation: etiqueta de imagen
+  resolution: microscopio USB DinoLite
+  capture: insectos recolectados en flores y trampas, fotografiados al microscopio
+  data_kind: real
+  license: CC BY 4.0
+  access: Figshare, zip de 677,6 MB
+  status: AUXILIAR
+  role: NOT_RELEVANT_TO_CURRENT_TASK
+  duplicates: "-"
+  relevance: "microscopía ≠ cámara del robot; útil solo para ID de especie en laboratorio"
+  limitations: no se descarga (costo/beneficio)
+  next: ninguna
+- id: ct_pestnet_ip102
+  title: CT PestNet crop pest classification (IP102)
+  url: https://huggingface.co/datasets/Project-AgML/CT_PestNet_crop_pest_classification
+  authors: Li, Cao, Zhang (PLOS One 2026); IP102
+  published: 2026
+  crop: varios (arroz, trigo, cítricos...)
+  organ: insecto
+  target: [102 plagas, varias de trips]
+  n_images: 75222
+  n_instances: "-"
+  classes: 102
+  annotation: etiqueta de imagen
+  resolution: 63–8.110 px de ancho
+  capture: campo, varias fuentes
+  data_kind: real
+  license: CC BY 4.0
+  access: HF, 3,19 GB
+  status: AUXILIAR
+  role: AUXILIARY_TRAINING
+  duplicates: derivado de IP102
+  relevance: preentrenamiento de reconocimiento de insectos; no arándano
+  limitations: no localiza; no se descarga ahora
+  next: considerar solo si se aborda la tarea 1
+# ------------------------------------------------------------------ otros cultivos (auxiliares)
+- id: strawberry_hybrid_traditional
+  title: Strawberry Disease Detection — Hybrid Augmentation (variante traditional)
+  url: https://data.mendeley.com/datasets/k2ptxmfjhj/1
+  authors: Galarza-Falfan et al. 2025 (bases Afzaal 2021 + Pérez-Borrero 2020)
+  published: 2025-09-23
+  crop: fresa
+  organ: [hoja, fruto, flor]
+  target: [gray_mold y 6 enfermedades]
+  n_images: "4.591 (auditoría local, traditional)"
+  n_instances: "8.693"
+  classes: 8
+  annotation: polígonos COCO
+  resolution: 640x640
+  capture: invernadero Corea + campo España (asintomáticas)
+  data_kind: real + aumentadas (+ sintéticas en variante hybrid, excluidas)
+  license: CC BY-NC 4.0
+  access: descargado
+  status: DESCARGADO_Y_AUDITADO
+  role: AUXILIARY_TRAINING
+  duplicates: split del autor con fuga
+  relevance: método; NO arándano
+  limitations: clase sin síntomas confundida con la fuente
+  next: ninguna
+- id: tomato_disease_c2x8rynybg
+  title: Tomato Disease Dataset (Mendeley c2x8rynybg)
+  url: https://data.mendeley.com/datasets/c2x8rynybg/1
+  authors: Yongbo Liu
+  published: 2025-07-22
+  crop: tomate
+  organ: [hoja, fruto, tallo]
+  target: [virosis, gray mold, marchitez bacteriana]
+  n_images: 1026
+  n_instances: "?"
+  classes: 3
+  annotation: VOC (LabelImg)
+  resolution: "?"
+  capture: "?"
+  data_kind: real
+  license: CC BY 4.0
+  access: Mendeley, 3,14 GB
+  status: AUXILIAR
+  role: AUXILIARY_TRAINING
+  duplicates: "-"
+  relevance: gray mold en tomate (método); NO arándano
+  limitations: no se descarga ahora (tamaño)
+  next: solo si se estudia gray mold multi-cultivo
+- id: strawberry_mm_straw5
+  title: Strawberry-MM-Straw5 (imagen + ambiente)
+  url: https://huggingface.co/datasets/Qin2006/Strawberry-MM-Straw5
+  authors: Agricultural AI research team (sin cita)
+  published: "?"
+  crop: fresa
+  organ: fruto
+  target: [normal, gray_mold, powdery_mildew, black_spot, overripe]
+  n_images: 1170
+  n_instances: 1161
+  classes: 5
+  annotation: YOLO + variables ambientales por imagen (temperatura, HR del aire, humedad del suelo)
+  resolution: 717–4.100 px de ancho
+  capture: "?"
+  data_kind: real
+  license: CC BY-NC-SA 4.0
+  access: HF, 356 MB
+  status: AUXILIAR
+  role: AUXILIARY_TRAINING
+  duplicates: "-"
+  relevance: "ejemplo de vínculo imagen-ambiente para diseñar el esquema de AGRAR; NO arándano"
+  limitations: sin procedencia ni cita; ambiente puntual por foto
+  next: candidato para estudiar fusión imagen+ambiente
+- id: cucumber_botrytis_vit_2024
+  title: Vision Transformers in Optimization of AI-Based Early Detection of Botrytis cinerea
+  url: https://zenodo.org/records/15039896
+  authors: Christakakis, Giakoumoglou, Kapetas, Tzovaras (AI 2024)
+  published: 2024-08-01
+  crop: cucurbitáceas
+  organ: hoja
+  target: [botrytis temprana]
+  n_images: "-"
+  n_instances: "-"
+  classes: "-"
+  annotation: "-"
+  resolution: multiespectral
+  capture: "-"
+  data_kind: solo PDF en este registro
+  license: CC BY 4.0
+  access: público
+  status: SOLO_REFERENCIA_VISUAL
+  role: NOT_RELEVANT_TO_CURRENT_TASK
+  duplicates: "-"
+  relevance: método de detección temprana de Botrytis (otra especie, multiespectral)
+  limitations: no contiene datos
+  next: ninguna
+- id: disease_detector_ut_tyler
+  title: "'DiseaseDetector' (University of Texas at Tyler, Roboflow) — afirmación de un buscador"
+  url: null
+  authors: "?"
+  published: "?"
+  crop: varios (¿arándano?)
+  organ: "?"
+  target: "'blueberry anthracnose', 'blueberry botrytis blight' (según el resumen de un buscador)"
+  n_images: "~6.340 (no verificado)"
+  n_instances: "?"
+  classes: "?"
+  annotation: "?"
+  resolution: "?"
+  capture: "?"
+  data_kind: "?"
+  license: "?"
+  access: no localizado
+  status: ACCESO_PENDIENTE
+  role: BLOCKED_BY_LICENSE_OR_ACCESS
+  duplicates: "?"
+  relevance: "potencialmente alta (Botrytis en arándano) SI existe"
+  limitations: "NO VERIFICADO: la búsqueda directa no encontró el proyecto"
+  next: buscar en Roboflow con API key o sesión web

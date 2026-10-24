@@ -3,6 +3,8 @@
 | Archivo | Contenido |
 |---|---|
 | `catalog.yaml` | Ficha v2 de cada fuente: versión, URL, clases, conteos verificados, anotación, licencia, acceso, estado, papel y resultado de auditoría |
+| `blueberry_image_sources.yaml` | **Catálogo ampliado de 33 fuentes de arándano y afines (fuente única de la matriz `reports/blueberry_image_repository_matrix.csv`)** |
+| `blueberry_taxonomy.yaml` | Condición × nivel de evidencia × tarea para datos propios de AGRAR |
 | `taxonomy.yaml` | Clases canónicas, equivalencias permitidas y prohibidas, y clases no entrenables |
 | `dataset_comparison.md` | Histórico de la primera comparación (superada por el informe de selección) |
 | `../../reports/dataset_selection_report.md` | Informe de selección reproducible (decisiones, evidencia, auditoría, plan) |
