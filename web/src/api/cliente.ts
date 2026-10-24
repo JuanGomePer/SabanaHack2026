@@ -10,6 +10,7 @@
 const BASE_URL = (import.meta.env.VITE_API_URL ?? '/api').replace(/\/$/, '');
 
 import type {
+  AccionVigia,
   Alerta,
   Cama,
   Configuracion,
@@ -18,16 +19,21 @@ import type {
   DetallePlanta,
   EntradaRegistro,
   EquiposRespuesta,
+  EstadoInsight,
   EventoEquipo,
   EventoVivo,
   Hallazgo,
   MapaRespuesta,
   RegistroRespuesta,
   RespuestaGafas,
+  RespuestaVigia,
   Resumen,
   RevisionHallazgo,
+  SimulacionRespuesta,
   SmsRespuesta,
   VerificacionPasarela,
+  VigiaInsightsRespuesta,
+  VigiaRespuestaAcciones,
 } from '@vigia/shared/tipos';
 
 async function pedir<T>(ruta: string, opciones?: RequestInit): Promise<T> {
@@ -109,6 +115,33 @@ export const api = {
   verificarPasarela: () =>
     pedir<SmsRespuesta & { verificacion: VerificacionPasarela }>('/sms/verificar', {
       method: 'POST',
+    }),
+
+  /** Simulación de tratar vs. no tratar un hallazgo (vigIA). */
+  simular: (idHallazgo: string, dias = 7) =>
+    pedir<SimulacionRespuesta>(`/hallazgos/${idHallazgo}/simular`, {
+      method: 'POST',
+      body: JSON.stringify({ dias }),
+    }),
+
+  // ── vigIA: botones de consulta + insights automáticos ─────────────────────
+  vigiaAcciones: () => pedir<VigiaRespuestaAcciones>('/vigia/acciones'),
+
+  vigiaConsultar: (accion: AccionVigia | null, parametros?: Record<string, string>, pregunta?: string) =>
+    pedir<RespuestaVigia>('/vigia/consultar', {
+      method: 'POST',
+      body: JSON.stringify({ accion, parametros, pregunta }),
+    }),
+
+  vigiaInsights: (estado?: EstadoInsight, limite?: number) =>
+    pedir<VigiaInsightsRespuesta>(
+      `/vigia/insights${estado ? `?estado=${estado}${limite ? `&limite=${limite}` : ''}` : limite ? `?limite=${limite}` : ''}`,
+    ),
+
+  marcarInsight: (id: string, estado: EstadoInsight) =>
+    pedir<VigiaInsightsRespuesta['insights'][number]>(`/vigia/insights/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ estado }),
     }),
 };
 

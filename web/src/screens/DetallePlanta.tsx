@@ -28,6 +28,7 @@ import { Chip } from '../components/Chip';
 import { Segmentado } from '../components/Segmentado';
 import { GraficoHumedad } from '../components/GraficoHumedad';
 import { VistaGafas } from '../components/VistaGafas';
+import { SimulacionTratamiento } from '../components/SimulacionTratamiento';
 import { haceCuanto } from '../utilidades/formato';
 
 const VISTAS = ['Foto', 'Gafas Meta'] as const;
@@ -288,6 +289,9 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
                       : 'Sin acciones pendientes para esta planta.'}
                 </p>
               </div>
+
+              {/* ── Simulación vigIA: tratar vs. no tratar ─────────────── */}
+              {hallazgo && <SimulacionTratamiento hallazgoId={hallazgo.id} />}
 
               {/* ── Plantas vecinas ────────────────────────────────────── */}
               <div>

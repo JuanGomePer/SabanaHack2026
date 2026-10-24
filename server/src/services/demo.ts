@@ -14,6 +14,7 @@ import { emitir } from '../sse.js';
 import { aAlerta, crearHallazgo } from './hallazgos.js';
 import { aplicarReglas, responderAAlerta } from './equipos.js';
 import { avisarPorSms, reiniciarSms } from './sms.js';
+import { generarInsightDeAlerta, revisarPatrones } from '../vigia/reglas.js';
 
 let programada = false;
 let yaLlego = false;
@@ -53,6 +54,11 @@ export async function lanzarAlertaDemo(): Promise<void> {
     console.error('[demo] no se pudo avisar por SMS:', error),
   );
 
+  // vigIA anota el hallazgo como insight, para el chat y el historial.
+  await generarInsightDeAlerta(alerta).catch((error) =>
+    console.error('[demo] vigIA no pudo generar el insight:', error),
+  );
+
   const nuevos = await responderAAlerta(hallazgo.nave, hallazgo.plantaId, hallazgo.cama);
   emitir({ tipo: 'equipos_actualizados', eventos: nuevos });
 }
@@ -74,7 +80,7 @@ export async function reiniciarDemo(): Promise<void> {
   }
 }
 
-/** Eventos periódicos del programador de clima. */
+/** Eventos periódicos del programador de clima + chequeo de patrones de vigIA. */
 export function arrancarLatido(): NodeJS.Timeout {
   return setInterval(() => {
     aplicarReglas()
@@ -82,5 +88,7 @@ export function arrancarLatido(): NodeJS.Timeout {
         if (nuevos.length > 0) emitir({ tipo: 'equipos_actualizados', eventos: nuevos });
       })
       .catch((error) => console.error('[latido] aplicarReglas falló:', error));
+
+    revisarPatrones().catch((error) => console.error('[latido] vigIA.revisarPatrones falló:', error));
   }, 20_000);
 }

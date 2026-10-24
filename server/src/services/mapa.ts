@@ -114,7 +114,7 @@ function construirNavesDesde(plantas: Planta[]): Nave[] {
   });
 }
 
-function zonasHumedasDesde(plantas: Planta[]): ZonaHumeda[] {
+export function zonasHumedasDesde(plantas: Planta[]): ZonaHumeda[] {
   const umbral = configuracionActual().umbrales.humedadRiesgo;
   const porCama = new Map<number, Planta[]>();
   for (const p of plantas) {

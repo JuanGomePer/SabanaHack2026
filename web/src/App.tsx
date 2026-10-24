@@ -19,6 +19,7 @@ import { Registro } from './screens/Registro';
 import { Configuracion } from './screens/Configuracion';
 import { ComoLlegaUnaAlerta } from './screens/ComoLlegaUnaAlerta';
 import { DetallePlanta } from './screens/DetallePlanta';
+import { VigIA } from './components/VigIA';
 import { haceCuanto, idDesdeTexto } from './utilidades/formato';
 
 type Flujo = 'login' | 'bienvenida' | 'app';
@@ -189,6 +190,15 @@ export function App() {
           }}
         />
       )}
+
+      <VigIA
+        contexto={{
+          pantalla,
+          plantaId: plantaAbierta,
+          hallazgoId: plantaAbierta ? alertas.find((a) => a.plantaId === plantaAbierta)?.hallazgoId : undefined,
+        }}
+        alAbrirPlanta={abrirPlanta}
+      />
     </div>
   );
 }

@@ -8,9 +8,11 @@ import { Chip } from '../components/Chip';
 import { TarjetaKpi } from '../components/TarjetaKpi';
 import { Segmentado } from '../components/Segmentado';
 import { MapaArandanos, type CapaMapa } from '../components/MapaArandanos';
+import { Mapa3D } from '../components/Mapa3D';
 import { etiquetaDesdeId, hora, haceCuanto, numero, porcentaje } from '../utilidades/formato';
 
 const CAPAS = ['Estado', 'Humedad', 'Temperatura'] as const;
+const VISTAS_MAPA = ['2D', '3D'] as const;
 
 const LEYENDA: Array<{ estado: 'ok' | 'riesgo' | 'alerta' | 'sin_dato'; texto: string }> = [
   { estado: 'ok', texto: 'Sana' },
@@ -29,6 +31,7 @@ interface Props {
 
 export function Mapa({ mapa, alertas, plantaResaltada, alAbrirPlanta, alVerAlertas }: Props) {
   const [capa, setCapa] = useState<CapaMapa>('Estado');
+  const [vista, setVista] = useState<(typeof VISTAS_MAPA)[number]>('2D');
   const { resumen } = mapa;
 
   const pendientes = alertas.filter((a) => a.revision === 'pendiente');
@@ -73,38 +76,54 @@ export function Mapa({ mapa, alertas, plantaResaltada, alAbrirPlanta, alVerAlert
                 abrir la planta.
               </p>
             </div>
-            <Segmentado
-              opciones={CAPAS}
-              valor={capa}
-              alCambiar={setCapa}
-              etiquetaAccesible="Capa del mapa"
-            />
+            <div className="fila" style={{ gap: 10 }}>
+              <Segmentado
+                opciones={VISTAS_MAPA}
+                valor={vista}
+                alCambiar={setVista}
+                etiquetaAccesible="2D o 3D"
+              />
+              {vista === '2D' && (
+                <Segmentado
+                  opciones={CAPAS}
+                  valor={capa}
+                  alCambiar={setCapa}
+                  etiquetaAccesible="Capa del mapa"
+                />
+              )}
+            </div>
           </div>
 
-          <div className="mapa-eje txt-etiqueta apagado">
-            <span>Planta 1</span>
-            <span>Planta 50</span>
-            <span>Planta 100</span>
-          </div>
+          {vista === '2D' ? (
+            <>
+              <div className="mapa-eje txt-etiqueta apagado">
+                <span>Planta 1</span>
+                <span>Planta 50</span>
+                <span>Planta 100</span>
+              </div>
 
-          <MapaArandanos
-            camas={mapa.camas}
-            naves={mapa.naves}
-            capa={capa}
-            plantaResaltada={plantaResaltada}
-            alElegirCelda={(celda: Celda) => {
-              if (celda.plantaId) alAbrirPlanta(celda.plantaId);
-            }}
-          />
+              <MapaArandanos
+                camas={mapa.camas}
+                naves={mapa.naves}
+                capa={capa}
+                plantaResaltada={plantaResaltada}
+                alElegirCelda={(celda: Celda) => {
+                  if (celda.plantaId) alAbrirPlanta(celda.plantaId);
+                }}
+              />
 
-          <div className="leyenda">
-            {LEYENDA.map(({ estado, texto }) => (
-              <span className="leyenda-item txt-pequeno" key={estado}>
-                <span className={`leyenda-color ${estado}`} />
-                {texto}
-              </span>
-            ))}
-          </div>
+              <div className="leyenda">
+                {LEYENDA.map(({ estado, texto }) => (
+                  <span className="leyenda-item txt-pequeno" key={estado}>
+                    <span className={`leyenda-color ${estado}`} />
+                    {texto}
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : (
+            <Mapa3D mapa={mapa} alAbrirPlanta={alAbrirPlanta} />
+          )}
         </div>
 
         <div className="panel-derecho">

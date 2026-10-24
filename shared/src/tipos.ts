@@ -428,12 +428,151 @@ export interface Configuracion {
 // memoria del servidor y no en la tabla Configuracion, para no mezclar los
 // umbrales del cultivo con los datos de contacto.
 
+// ── vigIA: agente de consulta + insights automáticos ────────────────────────
+/**
+ * vigIA NO es un modelo de lenguaje: cada "pregunta" es un botón que llama a
+ * una herramienta determinista sobre datos reales (ver server/src/vigia/).
+ * Nunca inventa cifras — si falta un dato, la respuesta lo dice.
+ */
+export type PrioridadInsight = 'alta' | 'media' | 'baja';
+export type EstadoInsight = 'nuevo' | 'revisado' | 'descartado';
+export type TipoInsight =
+  | 'alerta_nueva'
+  | 'zona_recurrente'
+  | 'humedad_persistente'
+  | 'cambio_ambiental'
+  | 'equipo_sin_respuesta'
+  | 'resumen_ronda';
+
+export type TipoDetalleVigia = 'planta' | 'hallazgo' | 'cama' | 'nave' | 'equipo';
+
+export interface Insight {
+  id: string;
+  tipo: TipoInsight;
+  titulo: string;
+  descripcion: string;
+  prioridad: PrioridadInsight;
+  /** ISO 8601 */
+  fecha: string;
+  /** Etiqueta corta de dónde aplica, ej. "C14-P65" o "Nave 5". */
+  ubicacion?: string;
+  cama?: number;
+  planta?: number;
+  nave?: number;
+  /** Los números que respaldan el insight, tal como estaban al generarlo. */
+  datos: unknown;
+  /** Qué condiciones contribuyeron, ej. ["humedad 92 %", "3 hallazgos en 7 días"]. */
+  factores?: string[];
+  /** 0–1 cuando hay una estimación válida (ej. viene de la confianza del robot). */
+  confianza?: number;
+  explicacion?: string;
+  recomendacion?: string;
+  detalleTipo?: TipoDetalleVigia;
+  detalleId?: string;
+  estado: EstadoInsight;
+}
+
+/** Las "preguntas" que vigIA sabe responder — cada una es un botón en el chat. */
+export type AccionVigia =
+  | 'estado_general'
+  | 'alertas_pendientes'
+  | 'explicar_alerta'
+  | 'comparar_camas'
+  | 'zonas_recurrentes'
+  | 'resumen_ronda'
+  | 'informe_diario'
+  | 'informe_semanal'
+  | 'precision_detecciones'
+  | 'sugerir_inspeccion'
+  | 'estado_equipos'
+  | 'tendencia_humedad'
+  | 'consultar_configuracion';
+
+export interface ParametroVigia {
+  nombre: string;
+  tipo: 'planta' | 'cama' | 'numero' | 'texto';
+  requerido: boolean;
+  etiqueta: string;
+}
+
+export interface AccionVigiaInfo {
+  id: AccionVigia;
+  etiqueta: string;
+  descripcion: string;
+  parametros?: ParametroVigia[];
+}
+
+export interface EnlaceVigia {
+  texto: string;
+  tipo: TipoDetalleVigia;
+  id: string;
+}
+
+export interface RespuestaVigia {
+  accion: AccionVigia;
+  titulo: string;
+  texto: string;
+  prioridad?: PrioridadInsight;
+  datos?: unknown;
+  factores?: string[];
+  /** 0–1; solo cuando la respuesta trae una estimación (no un conteo exacto). */
+  confianza?: number;
+  explicacion?: string;
+  recomendacion?: string;
+  enlaces?: EnlaceVigia[];
+  /** ISO 8601 */
+  generadoEn: string;
+  /** Si la acción no pudo responder (faltan datos, parámetro inválido). */
+  error?: string;
+}
+
+export interface VigiaRespuestaAcciones {
+  acciones: AccionVigiaInfo[];
+}
+
+export interface VigiaInsightsRespuesta {
+  insights: Insight[];
+  nuevos: number;
+}
+
+// ── Simulación: tratar vs no tratar un hallazgo ─────────────────────────────
+/**
+ * Proyección determinista (no es un modelo epidemiológico real): sirve para
+ * mostrar en la demo el contraste entre tratar a tiempo y no hacerlo. Ver
+ * server/src/vigia/simulacion.ts para las reglas exactas.
+ */
+export interface EstadoSimuladoDia {
+  dia: number;
+  sanas: number;
+  riesgo: number;
+  alerta: number;
+  /** Ids de plantas que pasan a alerta ESE día (para animar/resaltar). */
+  nuevasAfectadas: string[];
+}
+
+export interface SimulacionRespuesta {
+  hallazgoId: string;
+  plantaId: string;
+  etiqueta: string;
+  tipo: TipoHallazgo;
+  cama: number;
+  dias: number;
+  tratada: EstadoSimuladoDia[];
+  noTratada: EstadoSimuladoDia[];
+  resumen: {
+    tratada: string;
+    noTratada: string;
+  };
+  nota: string;
+}
+
 // ── Eventos en vivo (SSE) ───────────────────────────────────────────────────
 export type EventoVivo =
   | { tipo: 'alerta_nueva'; alerta: Alerta }
   | { tipo: 'estado_cambiado'; plantaId: string; estado: EstadoCelda }
   | { tipo: 'equipos_actualizados'; eventos: EventoEquipo[] }
-  | { tipo: 'sms_enviado'; envios: EnvioSms[] };
+  | { tipo: 'sms_enviado'; envios: EnvioSms[] }
+  | { tipo: 'insight_nuevo'; insight: Insight };
 
 // ── Respuesta de "enviar a las gafas" ───────────────────────────────────────
 export interface RespuestaGafas {

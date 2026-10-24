@@ -67,6 +67,28 @@ enum AccionRegistro {
   sms
 }
 
+enum PrioridadInsight {
+  alta
+  media
+  baja
+}
+
+enum EstadoInsight {
+  nuevo
+  revisado
+  descartado
+}
+
+/// Qué tipo de regla generó el insight — ver server/src/vigia/reglas.ts.
+enum TipoInsight {
+  alerta_nueva
+  zona_recurrente
+  humedad_persistente
+  cambio_ambiental
+  equipo_sin_respuesta
+  resumen_ronda
+}
+
 /// Una planta del cultivo. Id en formato "B5-C14-P065".
 ///
 /// `hallazgoId` apunta al hallazgo que la tiene en alerta ahora mismo, pero es
@@ -184,6 +206,44 @@ model EventoEquipo {
   plantaId  String?
 
   @@index([fecha])
+}
+
+/// Hallazgo de vigIA: lo que el motor de reglas detecta al leer el estado del
+/// cultivo (no un hallazgo del robot — ver Hallazgo para eso). Persistido para
+/// no repetir el mismo aviso en cada evento, y para que el chat pueda listar
+/// "lo que vigIA ya notó" en vez de recalcularlo todo cada vez.
+model Insight {
+  id            String           @id @default(cuid())
+  tipo          TipoInsight
+  titulo        String
+  descripcion   String
+  prioridad     PrioridadInsight
+  fecha         DateTime         @default(now())
+  /// Etiqueta corta de dónde aplica, ej. "C14-P65" o "Nave 5".
+  ubicacion     String?
+  cama          Int?
+  planta        Int?
+  nave          Int?
+  /// Los números que respaldan el insight (snapshot al momento de generarlo).
+  datos         Json
+  /// Qué condiciones contribuyeron (ej. ["humedad 92%", "3 hallazgos en 7 días"]).
+  factores      Json?
+  /// 0–1 cuando hay una estimación válida (ej. viene de la confianza del robot).
+  confianza     Float?
+  explicacion   String?
+  recomendacion String?
+  /// id de referencia para "ver detalle" — una planta, un hallazgo, una nave.
+  detalleTipo   String?
+  detalleId     String?
+  estado        EstadoInsight    @default(nuevo)
+  /// Evita duplicar el mismo aviso: una combinación de tipo + ubicación + una
+  /// ventana de tiempo (ej. "zona_recurrente:C14:2026-W43"). Null = no se
+  /// controla duplicado para ese tipo (ej. resumen_ronda, que es puntual).
+  dedupeKey     String?          @unique
+
+  @@index([fecha])
+  @@index([estado])
+  @@index([tipo])
 }
 
 /// Fila única (singleton, id fijo = 1) con los supuestos editables del prototipo.

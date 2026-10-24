@@ -26,6 +26,7 @@ import { aAlerta, crearHallazgo } from './hallazgos.js';
 import { responderAAlerta } from './equipos.js';
 import { configuracionActual } from './configuracion.js';
 import { avisarPorSms } from './sms.js';
+import { generarInsightDeAlerta } from '../vigia/reglas.js';
 
 const CLASES_RECONOCIDAS: Record<string, TipoHallazgo> = {
   Botrytis: 'Botrytis',
@@ -173,6 +174,10 @@ export async function procesarObservacion(
     // Canal de respaldo: si toca, el aviso sale también al celular.
     await avisarPorSms(alerta).catch((error) =>
       console.error('[ingesta] no se pudo avisar por SMS:', error),
+    );
+
+    await generarInsightDeAlerta(alerta).catch((error) =>
+      console.error('[ingesta] vigIA no pudo generar el insight:', error),
     );
 
     const eventosEquipo = await responderAAlerta(hallazgo.nave, hallazgo.plantaId, hallazgo.cama);
