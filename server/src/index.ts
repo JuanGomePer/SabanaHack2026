@@ -33,10 +33,23 @@ import {
 import { eventos, listarEquipos } from './equipos';
 import { fotoReal, placeholderSvg } from './fotos';
 import { arrancarLatido, programarAlertaDemo, reiniciarDemo } from './simulador';
+import { verificarCredenciales } from './pasarela';
+import {
+  agregarDestino,
+  cambiarDestino,
+  enviarPrueba,
+  quitarDestino,
+  respuestaSms,
+} from './sms';
 import { emitir, suscribir } from './sse';
 
 const app = express();
-const PUERTO = Number(process.env.PORT ?? 3001);
+/**
+ * Puerto propio de la API. No se usa PORT porque algunos lanzadores se lo
+ * inyectan al `npm run dev` entero y la API terminaba peleando el puerto con
+ * Vite; el proxy del frontend apunta a este mismo número.
+ */
+const PUERTO = Number(process.env.API_PORT ?? 3001);
 
 app.use(cors());
 app.use(express.json());
@@ -198,10 +211,64 @@ app.get('/api/configuracion', (_req, res) => {
 });
 
 app.put('/api/configuracion', (req, res) => {
-  const { estructura, umbrales } = req.body ?? {};
+  const { estructura, umbrales, sms } = req.body ?? {};
   if (estructura) Object.assign(configuracion.estructura, estructura);
   if (umbrales) Object.assign(configuracion.umbrales, umbrales);
+  // Los números se tocan por /api/sms/destinos, no de un solo golpe.
+  if (sms) {
+    const { destinos: _ignorados, ...preferencias } = sms;
+    Object.assign(configuracion.sms, preferencias);
+  }
   res.json(configuracion);
+});
+
+// ── Avisos por SMS (canal de respaldo) ──────────────────────────────────────
+// SIMULACIÓN: no hay pasarela de SMS. Ver server/src/sms.ts.
+app.get('/api/sms', (_req, res) => {
+  res.json(respuestaSms());
+});
+
+app.put('/api/sms', (req, res) => {
+  const { activo, cuando, prioridadMinima, hayInternet } = req.body ?? {};
+
+  if (typeof activo === 'boolean') configuracion.sms.activo = activo;
+  if (typeof hayInternet === 'boolean') configuracion.sms.hayInternet = hayInternet;
+  if (cuando === 'siempre' || cuando === 'sin_internet') configuracion.sms.cuando = cuando;
+  if (prioridadMinima === 'alta' || prioridadMinima === 'media' || prioridadMinima === 'baja') {
+    configuracion.sms.prioridadMinima = prioridadMinima;
+  }
+
+  res.json(respuestaSms());
+});
+
+app.post('/api/sms/destinos', (req, res) => {
+  const resultado = agregarDestino(req.body?.nombre, req.body?.numero);
+  if ('error' in resultado) return res.status(400).json(resultado);
+  res.status(201).json({ destino: resultado, ...respuestaSms() });
+});
+
+app.patch('/api/sms/destinos/:id', (req, res) => {
+  const resultado = cambiarDestino(req.params.id, req.body ?? {});
+  if ('error' in resultado) return res.status(400).json(resultado);
+  res.json({ destino: resultado, ...respuestaSms() });
+});
+
+app.delete('/api/sms/destinos/:id', (req, res) => {
+  const resultado = quitarDestino(req.params.id);
+  if ('error' in resultado) return res.status(404).json(resultado);
+  res.json(respuestaSms());
+});
+
+/** Comprueba las credenciales de la pasarela SIN mandar ningún mensaje. */
+app.post('/api/sms/verificar', async (_req, res) => {
+  res.json({ verificacion: await verificarCredenciales(), ...respuestaSms() });
+});
+
+/** Manda un mensaje de prueba de verdad (si hay pasarela) a los números activos. */
+app.post('/api/sms/prueba', (_req, res) => {
+  const resultado = enviarPrueba();
+  if ('error' in resultado) return res.status(400).json(resultado);
+  res.json({ enviados: resultado.length, ...respuestaSms() });
 });
 
 // ── Equipos ─────────────────────────────────────────────────────────────────

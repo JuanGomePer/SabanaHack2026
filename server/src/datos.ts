@@ -14,6 +14,7 @@ import {
   REVISORES,
   RECOMENDACIONES,
   ROBOT,
+  SMS,
   TIPOS_SEMILLA,
   TOTAL_CAMAS,
   TOTAL_PLANTAS,
@@ -68,6 +69,7 @@ export const registro: EntradaRegistro[] = [];
 export const configuracion: Configuracion = {
   estructura: { ...ESTRUCTURA },
   umbrales: { ...UMBRALES },
+  sms: { ...SMS, destinos: SMS.destinos.map((destino) => ({ ...destino })) },
 };
 
 let contadorHallazgos = 0;

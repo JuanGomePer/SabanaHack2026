@@ -10,6 +10,7 @@
 import { ALERTA_DEMO, USUARIO } from '@vigia/shared/config';
 import { aAlerta, anotar, crearHallazgo, hallazgos, plantas } from './datos';
 import { aplicarReglas, responderAAlerta } from './equipos';
+import { avisarPorSms, reiniciarSms } from './sms';
 import { emitir } from './sse';
 
 let programada = false;
@@ -42,7 +43,11 @@ export function lanzarAlertaDemo(): void {
     nota: `Hallazgo de ${hallazgo.tipo} con ${Math.round(hallazgo.confianza * 100)} % de confianza.`,
   });
 
-  emitir({ tipo: 'alerta_nueva', alerta: aAlerta(hallazgo) });
+  const alerta = aAlerta(hallazgo);
+  emitir({ tipo: 'alerta_nueva', alerta });
+
+  // Canal de respaldo: si la finca está sin internet, el aviso sale por SMS.
+  avisarPorSms(alerta);
 
   // Los equipos de la nave reaccionan a la alerta.
   const nuevos = responderAAlerta(hallazgo.nave, hallazgo.plantaId, hallazgo.cama);
@@ -55,6 +60,7 @@ export function reiniciarDemo(): void {
   temporizador = undefined;
   programada = false;
   yaLlego = false;
+  reiniciarSms();
 
   // Quita la alerta del demo y devuelve la planta a su estado anterior.
   for (const [id, h] of hallazgos) {

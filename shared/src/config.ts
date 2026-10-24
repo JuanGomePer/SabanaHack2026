@@ -8,6 +8,7 @@
 
 import type {
   ConfiguracionEstructura,
+  ConfiguracionSms,
   ConfiguracionUmbrales,
   TipoHallazgo,
 } from './tipos';
@@ -295,3 +296,49 @@ export const USUARIO = {
 
 /** Nombre del dispositivo al que se "envían" los hallazgos (simulado). */
 export const DISPOSITIVO_GAFAS = 'Meta Quest 3';
+
+// ── Avisos por SMS ──────────────────────────────────────────────────────────
+/**
+ * Canal de respaldo para cuando la finca se queda sin internet: el aviso
+ * también sale como mensaje de texto al celular del encargado.
+ *
+ * SIMULACIÓN: el prototipo no manda mensajes de verdad. No hay pasarela de SMS
+ * ni operador conectado; los envíos solo se registran y se muestran en pantalla.
+ */
+export const SMS: ConfiguracionSms = {
+  activo: true,
+  /**
+   * Para la demo va en 'siempre', así la alerta nueva hace sonar el celular
+   * delante del jurado. 'sin_internet' es el modo que tiene sentido en campo
+   * (no duplica avisos) y se cambia desde la misma pantalla.
+   */
+  cuando: 'siempre',
+  prioridadMinima: 'media',
+  hayInternet: true,
+  /**
+   * Ojo con la cuenta de prueba de Twilio: solo escribe a números verificados
+   * en la consola. Los demás quedan apagados para que no fallen en la demo.
+   */
+  destinos: [
+    { id: 'SMS-1', nombre: 'Samuel R. · encargado', numero: '+57 312 654 0694', activo: true },
+    { id: 'SMS-2', nombre: 'Marcela P. · agrónoma', numero: '+57 311 555 0198', activo: false },
+  ],
+};
+
+/** Un SMS estándar: pasado de aquí el operador lo parte en dos mensajes. */
+export const LIMITE_SMS = 160;
+
+/**
+ * Texto que llega al celular. Las llaves se reemplazan con los datos del
+ * hallazgo; conviene dejarlo corto para que quepa en un solo mensaje.
+ */
+export const PLANTILLA_SMS =
+  'VIGIA {etiqueta}: posible {tipo} {confianza}%. Nave {nave}, cama {cama}. Humedad {humedad}%. Revisa la planta.';
+
+/** Aviso en la configuración de SMS cuando no hay pasarela conectada. */
+export const NOTA_SMS =
+  'Simulación. Ahora mismo no sale ningún mensaje: no hay pasarela conectada. Los envíos quedan en pantalla y en el registro para mostrar el flujo. Para mandarlos de verdad, configura el .env (ver NOTAS.md).';
+
+/** Aviso cuando sí hay pasarela: los mensajes salen y se cobran. */
+export const NOTA_SMS_REAL =
+  'Pasarela conectada: los mensajes salen de verdad al celular y cada envío se cobra en la cuenta del proveedor. Cuidado con el botón de prueba.';

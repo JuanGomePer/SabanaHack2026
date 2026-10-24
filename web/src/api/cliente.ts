@@ -7,6 +7,8 @@ import type {
   Alerta,
   Cama,
   Configuracion,
+  ConfiguracionSms,
+  DestinoSms,
   DetallePlanta,
   EntradaRegistro,
   EquiposRespuesta,
@@ -18,6 +20,8 @@ import type {
   RespuestaGafas,
   Resumen,
   RevisionHallazgo,
+  SmsRespuesta,
+  VerificacionPasarela,
 } from '@vigia/shared/tipos';
 
 async function pedir<T>(ruta: string, opciones?: RequestInit): Promise<T> {
@@ -71,6 +75,35 @@ export const api = {
     }),
 
   reiniciarDemo: () => pedir<{ ok: boolean }>('/demo/reiniciar', { method: 'POST' }),
+
+  // ── Avisos por SMS (canal de respaldo; el envío es simulado) ──────────────
+  sms: () => pedir<SmsRespuesta>('/sms'),
+
+  guardarSms: (cambios: Partial<Omit<ConfiguracionSms, 'destinos'>>) =>
+    pedir<SmsRespuesta>('/sms', { method: 'PUT', body: JSON.stringify(cambios) }),
+
+  agregarNumeroSms: (nombre: string, numero: string) =>
+    pedir<SmsRespuesta & { destino: DestinoSms }>('/sms/destinos', {
+      method: 'POST',
+      body: JSON.stringify({ nombre, numero }),
+    }),
+
+  cambiarNumeroSms: (id: string, cambios: Partial<Pick<DestinoSms, 'nombre' | 'numero' | 'activo'>>) =>
+    pedir<SmsRespuesta & { destino: DestinoSms }>(`/sms/destinos/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(cambios),
+    }),
+
+  quitarNumeroSms: (id: string) =>
+    pedir<SmsRespuesta>(`/sms/destinos/${id}`, { method: 'DELETE' }),
+
+  probarSms: () => pedir<SmsRespuesta & { enviados: number }>('/sms/prueba', { method: 'POST' }),
+
+  /** Comprueba las credenciales de la pasarela sin gastar un mensaje. */
+  verificarPasarela: () =>
+    pedir<SmsRespuesta & { verificacion: VerificacionPasarela }>('/sms/verificar', {
+      method: 'POST',
+    }),
 };
 
 /** Suscripción a los eventos en vivo (SSE). Devuelve la función para cerrar. */

@@ -152,7 +152,11 @@ export function App() {
           )}
 
           {pantalla === 'alertas' && (
-            <Alertas alertas={alertas} alAbrirPlanta={abrirPlanta} />
+            <Alertas
+              alertas={alertas}
+              alAbrirPlanta={abrirPlanta}
+              alConfigurarAvisos={() => setPantalla('configuracion')}
+            />
           )}
 
           {pantalla === 'equipos' && <Equipos />}

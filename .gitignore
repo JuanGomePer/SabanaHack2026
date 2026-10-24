@@ -5,3 +5,6 @@ dist/
 .env
 .env.local
 *.bundle
+
+# Ajustes locales de Claude Code (permisos de cada quien)
+.claude/settings.local.json
