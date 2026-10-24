@@ -2093,8 +2093,27 @@
   padding: 8px 12px;
   box-shadow: var(--sombra-tarjeta);
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.mapa-3d-boton-play {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  background: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mapa-3d-boton-play:hover {
+  filter: brightness(1.08);
 }
 
 .mapa-3d-nota {

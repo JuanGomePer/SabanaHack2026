@@ -131,6 +131,11 @@ export function App() {
             const id = idDesdeTexto(texto, ESTRUCTURA.bloque);
             if (id) abrirPlanta(id);
           }}
+          alCerrarSesion={() => {
+            setFlujo('login');
+            setPantalla('mapa');
+            setPlantaAbierta(undefined);
+          }}
         />
 
         <main className="contenido">

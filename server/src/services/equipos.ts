@@ -42,7 +42,8 @@ async function resumenEquipos(equipos: Equipo[]): Promise<ResumenEquipos> {
   const enMarcha = equipos.filter((e) => e.estado === 'En marcha' || e.estado === 'Activo').length;
   const enEspera = equipos.filter((e) => e.estado === 'En espera').length;
   const conAviso = equipos.filter((e) => e.estado === 'Aviso');
-  const humedadMedia = Math.round((equipos.reduce((s, e) => s + e.humedad, 0) / equipos.length) * 10) / 10;
+  const humedadMedia =
+    equipos.length === 0 ? 0 : Math.round((equipos.reduce((s, e) => s + e.humedad, 0) / equipos.length) * 10) / 10;
 
   const camas = await camasHumedas();
   const naves = new Set(camas.map((c) => c.nave));
