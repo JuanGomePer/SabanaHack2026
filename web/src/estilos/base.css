@@ -445,6 +445,18 @@ button {
   background: var(--color-status-alert-bg);
   color: var(--color-status-alert-fg);
 }
+.chip.revision {
+  background: var(--color-status-review-bg);
+  color: var(--color-status-review-fg);
+}
+.chip.confirmada {
+  background: var(--color-status-confirmed-bg);
+  color: var(--color-status-confirmed-fg);
+}
+.chip.aviso {
+  background: var(--color-aviso-bg);
+  color: var(--color-aviso-fg);
+}
 .chip.neutro {
   background: var(--color-bg-subtle);
   color: var(--color-text-secondary);

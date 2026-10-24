@@ -20,10 +20,13 @@ import * as THREE from 'three';
 import { idPlanta } from '@vigia/shared/config';
 import type { Cama, EstadoCelda, MapaRespuesta } from '@vigia/shared/tipos';
 
+/** Misma escala que el mapa 2D: verde sana, morado comprometida, azul confirmada. */
 const COLOR_ESTADO: Record<EstadoCelda, string> = {
   ok: '#2f9e6a',
-  riesgo: '#e39a1b',
-  alerta: '#cc3b33',
+  riesgo: '#c6adea',
+  alerta: '#6b3fa0',
+  en_revision: '#8257c5',
+  confirmada: '#2b5ea8',
   sin_dato: '#8d9a90',
 };
 

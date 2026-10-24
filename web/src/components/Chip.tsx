@@ -1,6 +1,16 @@
 /** Chip de estado · componente 3:17 del sistema de diseño. */
 
-export type TonoChip = 'ok' | 'riesgo' | 'alerta' | 'neutro' | 'marca' | 'humedad';
+export type TonoChip =
+  | 'ok'
+  | 'riesgo'
+  | 'alerta'
+  | 'revision'
+  | 'confirmada'
+  | 'neutro'
+  | 'marca'
+  | 'humedad'
+  /** Avisos que no son del cultivo (equipos, advertencias de la app). */
+  | 'aviso';
 
 interface Props {
   tono?: TonoChip;

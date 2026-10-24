@@ -141,7 +141,7 @@ export function ComoLlegaUnaAlerta() {
       </div>
 
       <p className="apagado txt-pequeno" style={{ marginTop: 22 }}>
-        Los canales de WhatsApp, SMS y correo son una maqueta: el prototipo no envía mensajes. El
+        El aviso al celular sale por la pasarela configurada en Ajustes · Alertas y umbrales. El
         umbral de confianza actual es {Math.round(UMBRALES.confianzaMinima * 100)} %.
       </p>
     </section>

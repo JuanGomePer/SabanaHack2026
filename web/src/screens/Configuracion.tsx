@@ -332,7 +332,7 @@ export function Configuracion({ alVerComoLlega }: Props) {
             <div className="tarjeta">
               <h2 className="tarjeta-titulo">Umbrales</h2>
               <p className="secundario txt-pequeno" style={{ margin: '4px 0 6px' }}>
-                Valores provisionales del prototipo, pendientes de confirmar con el mentor.
+                Ajusta los umbrales a tu cultivo: cambian el mapa, las alertas y la ventilación.
               </p>
 
               <div className="campo">
@@ -426,15 +426,15 @@ export function Configuracion({ alVerComoLlega }: Props) {
 
               <div className="campo">
                 <div className="columna">
-                  <span className="txt-cuerpo-fuerte">Demora del aviso de la demo</span>
+                  <span className="txt-cuerpo-fuerte">Demora del primer aviso</span>
                   <span className="apagado txt-pequeno">
-                    Segundos desde que entras al mapa hasta la alerta nueva
+                    Segundos desde que entras al mapa hasta el primer aviso del robot
                   </span>
                 </div>
                 <Contador
                   valor={umbrales.segundosAlertaDemo}
                   minimo={1}
-                  etiqueta="segundos de la demo"
+                  etiqueta="segundos"
                   alCambiar={(valor) => cambiarUmbral('segundosAlertaDemo', valor)}
                 />
               </div>
@@ -448,8 +448,7 @@ export function Configuracion({ alVerComoLlega }: Props) {
           <div className="tarjeta">
             <h2 className="tarjeta-titulo">Equipo y accesos</h2>
             <p className="secundario txt-pequeno" style={{ margin: '4px 0 14px' }}>
-              Quién entra a la plataforma y qué puede hacer. En el prototipo los accesos son de
-              ejemplo.
+              Quién entra a la plataforma y qué puede hacer.
             </p>
 
             {[

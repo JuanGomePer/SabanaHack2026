@@ -2,22 +2,24 @@
 
 import { useState } from 'react';
 import { Wind } from 'lucide-react';
-import type { Alerta, Celda, MapaRespuesta } from '@vigia/shared/tipos';
+import type { Alerta, Celda, MapaRespuesta, EstadoCelda } from '@vigia/shared/tipos';
 import { Boton } from '../components/Boton';
 import { Chip } from '../components/Chip';
 import { TarjetaKpi } from '../components/TarjetaKpi';
 import { Segmentado } from '../components/Segmentado';
-import { MapaArandanos, type CapaMapa } from '../components/MapaArandanos';
+import { LeyendaCalor, MapaArandanos, type CapaMapa } from '../components/MapaArandanos';
 import { Mapa3D } from '../components/Mapa3D';
 import { etiquetaDesdeId, hora, haceCuanto, numero, porcentaje } from '../utilidades/formato';
 
 const CAPAS = ['Estado', 'Humedad', 'Temperatura'] as const;
 const VISTAS_MAPA = ['2D', '3D'] as const;
 
-const LEYENDA: Array<{ estado: 'ok' | 'riesgo' | 'alerta' | 'sin_dato'; texto: string }> = [
+const LEYENDA: Array<{ estado: EstadoCelda; texto: string }> = [
   { estado: 'ok', texto: 'Sana' },
   { estado: 'riesgo', texto: 'En riesgo' },
   { estado: 'alerta', texto: 'En alerta' },
+  { estado: 'en_revision', texto: 'En revisión' },
+  { estado: 'confirmada', texto: 'Afectada' },
   { estado: 'sin_dato', texto: 'Sin dato' },
 ];
 
@@ -112,14 +114,19 @@ export function Mapa({ mapa, alertas, plantaResaltada, alAbrirPlanta, alVerAlert
                 }}
               />
 
-              <div className="leyenda">
-                {LEYENDA.map(({ estado, texto }) => (
-                  <span className="leyenda-item txt-pequeno" key={estado}>
-                    <span className={`leyenda-color ${estado}`} />
-                    {texto}
-                  </span>
-                ))}
-              </div>
+              {/* La leyenda sigue a la capa: estados o escala de color. */}
+              {capa === 'Estado' ? (
+                <div className="leyenda">
+                  {LEYENDA.map(({ estado, texto }) => (
+                    <span className="leyenda-item txt-pequeno" key={estado}>
+                      <span className={`leyenda-color ${estado}`} />
+                      {texto}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <LeyendaCalor capa={capa} />
+              )}
             </>
           ) : (
             <Mapa3D mapa={mapa} alAbrirPlanta={alAbrirPlanta} />

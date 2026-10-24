@@ -6,7 +6,7 @@
  * la función devuelve `null` o un campo vacío, nunca un valor inventado.
  */
 import { ESTRUCTURA, naveDeCama } from '@vigia/shared/config';
-import type { Hallazgo, TipoHallazgo } from '@vigia/shared/tipos';
+import type { EstadoCelda, Hallazgo, TipoHallazgo } from '@vigia/shared/tipos';
 import { listarPlantas, listarPlantasDeCama } from '../repositories/plantas.js';
 import { listarHallazgos, listarHallazgosDesde, obtenerHallazgo } from '../repositories/hallazgos.js';
 import { construirResumen, camasHumedasDesde, zonasHumedasDesde } from '../services/mapa.js';
@@ -37,7 +37,14 @@ export async function explicarAlerta(hallazgoId: string) {
 
 async function resumenDeCama(cama: number) {
   const plantas = await listarPlantasDeCama(cama);
-  const conteo = { ok: 0, riesgo: 0, alerta: 0, sin_dato: 0 };
+  const conteo: Record<EstadoCelda, number> = {
+    ok: 0,
+    riesgo: 0,
+    alerta: 0,
+    en_revision: 0,
+    confirmada: 0,
+    sin_dato: 0,
+  };
   let sumaHumedad = 0;
   let sumaTemp = 0;
   for (const p of plantas) {

@@ -24,7 +24,7 @@ import { DISPOSITIVO_GAFAS, UMBRALES } from '@vigia/shared/config';
 import type { DetallePlanta as Detalle, EstadoCelda } from '@vigia/shared/tipos';
 import { api } from '../api/cliente';
 import { Boton } from '../components/Boton';
-import { Chip } from '../components/Chip';
+import { Chip, type TonoChip } from '../components/Chip';
 import { Segmentado } from '../components/Segmentado';
 import { GraficoHumedad } from '../components/GraficoHumedad';
 import { VistaGafas } from '../components/VistaGafas';
@@ -38,13 +38,17 @@ const TEXTO_ESTADO: Record<EstadoCelda, string> = {
   ok: 'Sana',
   riesgo: 'En riesgo',
   alerta: 'En alerta',
+  en_revision: 'En revisión',
+  confirmada: 'Afectada',
   sin_dato: 'Sin dato',
 };
 
-const TONO_ESTADO: Record<EstadoCelda, 'ok' | 'riesgo' | 'alerta' | 'neutro'> = {
+const TONO_ESTADO: Record<EstadoCelda, TonoChip> = {
   ok: 'ok',
   riesgo: 'riesgo',
   alerta: 'alerta',
+  en_revision: 'revision',
+  confirmada: 'confirmada',
   sin_dato: 'neutro',
 };
 
@@ -107,7 +111,7 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
   }, [detalle]);
 
   const revisar = useCallback(
-    async (revision: 'confirmada' | 'falsa_alarma') => {
+    async (revision: 'en_revision' | 'confirmada' | 'falsa_alarma') => {
       if (!detalle?.hallazgo) return;
       setGuardando(true);
       try {
@@ -236,7 +240,7 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
                     <Chip tono="ok">{gafas === 'recibido' ? 'Recibido' : 'Enviado'}</Chip>
                   </div>
                   <p className="apagado txt-etiqueta" style={{ margin: 0 }}>
-                    Simulación de la interfaz. El prototipo no se conecta a ningún visor.
+                    Vista previa de lo que reciben las gafas. La conexión con el visor todavía no está disponible.
                   </p>
                 </div>
               )}
@@ -309,15 +313,31 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
               </div>
             </div>
 
+            {/*
+              La revisión va en dos pasos: primero se toma la alerta para ir a
+              mirarla, y ya en campo se decide si la planta está afectada. Así
+              el mapa distingue lo que nadie ha visto de lo que ya tiene dueño.
+            */}
             <footer>
-              <Boton
-                bloque
-                icono={<Check size={18} />}
-                onClick={() => revisar('confirmada')}
-                disabled={!hallazgo || guardando || hallazgo.revision === 'confirmada'}
-              >
-                Confirmar alerta
-              </Boton>
+              {hallazgo?.revision === 'en_revision' ? (
+                <Boton
+                  bloque
+                  icono={<Check size={18} />}
+                  onClick={() => revisar('confirmada')}
+                  disabled={guardando}
+                >
+                  Sí está afectada
+                </Boton>
+              ) : (
+                <Boton
+                  bloque
+                  icono={<Check size={18} />}
+                  onClick={() => revisar('en_revision')}
+                  disabled={!hallazgo || guardando || hallazgo.revision === 'confirmada'}
+                >
+                  Tomar para revisar
+                </Boton>
+              )}
               <Boton
                 bloque
                 variante="peligro"

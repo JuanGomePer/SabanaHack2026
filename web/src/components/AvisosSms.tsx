@@ -277,7 +277,7 @@ export function PanelSms({
         <div className="columna">
           <span className="txt-cuerpo-fuerte">Simular finca sin internet</span>
           <span className="apagado txt-pequeno">
-            Para mostrar el respaldo en la demo: apaga la conexión de la finca
+            Simula que la finca se queda sin cobertura, para ver el respaldo
           </span>
         </div>
         <Interruptor
@@ -406,7 +406,7 @@ export function PanelSms({
               mostrarAviso(
                 pasarela.real
                   ? `Mensaje enviado de verdad a ${respuesta.enviados} número(s) por ${pasarela.nombre}.`
-                  : `SMS de prueba a ${respuesta.enviados} número(s) — simulado, no sale de la demo.`,
+                  : `SMS de prueba registrado para ${respuesta.enviados} número(s). No salió: no hay pasarela conectada.`,
               );
               // El acuse de entrega llega un momento después.
               window.setTimeout(() => void recargar(), 2200);

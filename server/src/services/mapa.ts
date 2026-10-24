@@ -36,8 +36,15 @@ import { listarPlantas, contarPlantas } from '../repositories/plantas.js';
 import { plantaIdsConHallazgoPendiente } from '../repositories/hallazgos.js';
 import { configuracionActual } from './configuracion.js';
 
+/**
+ * Qué estado manda cuando una celda agrupa plantas distintas. Lo confirmado en
+ * campo pesa más que lo que nadie ha mirado, y una alerta sin revisar pesa más
+ * que una que ya tiene a alguien encima.
+ */
 const PESO_ESTADO: Record<EstadoCelda, number> = {
+  confirmada: 4,
   alerta: 3,
+  en_revision: 2.5,
   riesgo: 2,
   sin_dato: 1,
   ok: 0,

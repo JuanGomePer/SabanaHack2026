@@ -10,13 +10,20 @@ import { haceCuanto } from '../utilidades/formato';
 
 interface Props {
   alerta: Alerta;
+  /** Posición en la pila: 0 es la de arriba, las de atrás se ven más apagadas. */
+  atras?: number;
   alVerPlanta: () => void;
   alCerrar: () => void;
 }
 
-export function AvisoAlerta({ alerta, alVerPlanta, alCerrar }: Props) {
+export function AvisoAlerta({ alerta, atras = 0, alVerPlanta, alCerrar }: Props) {
   return (
-    <div className="aviso" role="alert" aria-live="assertive">
+    <div
+      className={`aviso ${atras > 0 ? 'aviso--atras' : ''}`}
+      style={atras > 0 ? { opacity: 1 - atras * 0.18 } : undefined}
+      role="alert"
+      aria-live="assertive"
+    >
       <button type="button" className="cerrar aviso-cerrar" onClick={alCerrar} aria-label="Cerrar aviso">
         <X size={16} />
       </button>

@@ -29,26 +29,57 @@
   /* ── Bordes ─────────────────────────────────────────────────────────── */
   --color-border-default: #d5e1cf;
 
-  /* ── Estados ────────────────────────────────────────────────────────── */
+  /**
+   * ── Estados del cultivo ─────────────────────────────────────────────
+   * La escala sigue a la propia fruta: la planta sana es verde, y a medida
+   * que se compromete va tomando el morado del arándano. La confirmación en
+   * campo la saca de esa escala y la pasa al azul de la mora madura, para
+   * que se distinga de un vistazo lo que ya está verificado.
+   */
   --color-status-ok: #2f9e6a;
   --color-status-ok-fg: #1e7048;
   --color-status-ok-bg: #e3f5ea;
   --color-status-ok-cell: #8fd3ab;
 
-  --color-status-risk: #e39a1b;
-  --color-status-risk-fg: #8a5a00;
-  --color-status-risk-bg: #fdf3dd;
-  --color-status-risk-cell: #f2b84b;
+  /* En riesgo: humedad alta, todavía sin hallazgo. Morado claro. */
+  --color-status-risk: #9b7bd4;
+  --color-status-risk-fg: #58399a;
+  --color-status-risk-bg: #f1ebfb;
+  --color-status-risk-cell: #c6adea;
 
-  --color-status-alert: #cc3b33;
-  --color-status-alert-fg: #8f241e;
-  --color-status-alert-bg: #fde8e6;
+  /* En alerta: el robot encontró algo y nadie lo ha mirado. Morado arándano. */
+  --color-status-alert: #6b3fa0;
+  --color-status-alert-fg: #4a2a73;
+  --color-status-alert-bg: #ede4f8;
+  --color-status-alert-cell: #6b3fa0;
+
+  /* En revisión: alguien va a mirarla en campo. Morado con anillo ámbar. */
+  --color-status-review: #8257c5;
+  --color-status-review-fg: #523391;
+  --color-status-review-bg: #f0e9fb;
+  --color-status-review-cell: #8257c5;
+  --color-status-review-ring: #e39a1b;
+
+  /* Confirmada: revisada en campo y sí está afectada. Azul mora madura. */
+  --color-status-confirmed: #2b5ea8;
+  --color-status-confirmed-fg: #1b3f74;
+  --color-status-confirmed-bg: #e3edf9;
+  --color-status-confirmed-cell: #2b5ea8;
 
   /**
    * "Sin dato" no tiene variable propia en Figma. El valor sale de muestrear
    * las celdas grises del componente "Mapa de arándanos" (20:702).
    */
   --color-status-nodata-cell: #d1dfce;
+
+  /**
+   * Ámbar de avisos que no son del cultivo (equipos, advertencias de la app).
+   * Antes compartían variable con "en riesgo"; ahora que el riesgo es morado
+   * necesitan la suya para no teñirse de morado también.
+   */
+  --color-aviso: #e39a1b;
+  --color-aviso-fg: #8a5a00;
+  --color-aviso-bg: #fdf3dd;
 
   /* ── Datos (humedad) ────────────────────────────────────────────────── */
   --color-data-humidity: #3a87c6;

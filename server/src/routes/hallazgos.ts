@@ -20,8 +20,10 @@ hallazgosRouter.get('/hallazgos/:id', async (req, res) => {
 /** Confirmar o marcar como falsa alarma. */
 hallazgosRouter.post('/hallazgos/:id/revision', async (req, res) => {
   const revision = req.body?.revision as RevisionHallazgo | undefined;
-  if (revision !== 'confirmada' && revision !== 'falsa_alarma') {
-    return res.status(400).json({ error: 'revision debe ser "confirmada" o "falsa_alarma"' });
+  if (revision !== 'en_revision' && revision !== 'confirmada' && revision !== 'falsa_alarma') {
+    return res.status(400).json({
+      error: 'revision debe ser "en_revision", "confirmada" o "falsa_alarma"',
+    });
   }
 
   const nota = typeof req.body?.nota === 'string' ? req.body.nota : undefined;

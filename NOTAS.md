@@ -116,6 +116,48 @@ campos pueden no coincidir.
 - **Las cifras de estructura, umbrales y equipos son supuestos** pendientes de
   confirmar con el mentor. Están todas en `shared/src/config.ts`.
 
+## Rediseño: la escala del arándano y el ciclo de revisión
+
+El mapa dejó de usar el semáforo rojo/ámbar y pasó a la escala de la propia
+fruta, que es lo que mira el encargado todo el día:
+
+| Estado | Color | Qué significa |
+| --- | --- | --- |
+| Sana | verde | nada que reportar |
+| En riesgo | morado claro | humedad sobre el umbral, sin hallazgo |
+| En alerta | morado arándano | el robot encontró algo y nadie lo ha mirado |
+| En revisión | morado con anillo ámbar | alguien la tomó para mirarla en campo |
+| Afectada | azul mora | revisada en campo y confirmada |
+
+El ciclo de revisión pasó de un paso a dos: **Tomar para revisar** mueve la
+planta a "en revisión" (así el resto del equipo ve que ya tiene dueño) y, ya en
+campo, **Sí está afectada** la confirma. **Falsa alarma** la devuelve a riesgo u
+ok según su humedad. Son dos valores nuevos en los enums `EstadoCelda`,
+`RevisionHallazgo` y `AccionRegistro`, con su migración
+(`20261024090000_estado_en_revision`).
+
+**Las alertas ya no esperan turno.** Antes llegaba una y el simulador no
+mandaba la siguiente hasta que se revisara. Ahora el guion
+(`GUION_ALERTAS_DEMO`) las suelta a los 3, 13, 24 y 38 segundos pase lo que
+pase, y en pantalla se apilan: se ven las tres más recientes y el resto se
+cuenta. Es lo que hace el robot de verdad: no se detiene porque nadie conteste.
+
+**Las capas de clima se leen como un mapa del tiempo.** Humedad y temperatura
+ya no pintan arándano por arándano: se dibuja la rejilla de color y se
+difumina, con su barra de escala. La capa de estado sigue mostrando la fruta,
+que es donde el color por planta sí importa.
+
+**Pantalla nueva de Análisis** (`/api/series`): humedad y temperatura del
+bloque en 24 h, 7 o 30 días, hallazgos por día y tipo, y cómo va cada nave. Los
+hallazgos y el clima por nave son datos reales de la base; la curva del clima
+en el tiempo se reconstruye del promedio actual y del ciclo diario, porque cada
+planta solo guarda su última lectura — y la pantalla lo dice.
+
+**Fotos del robot**: el generador ahora arma la imagen según la enfermedad
+(moho velloso para Botrytis, anillos concéntricos para Alternaria, polvo blanco
+para Oídio), con profundidad de campo y la caja de detección etiquetada. Se
+siguen reemplazando dejando el archivo en `server/fotos/<idHallazgo>.jpg`.
+
 ## Cómo conectar la pasarela de SMS
 
 Por defecto el proyecto va en **modo simulado** y no manda nada. Para que los

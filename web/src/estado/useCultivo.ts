@@ -18,9 +18,14 @@ export interface Cultivo {
   registro?: RegistroRespuesta;
   cargando: boolean;
   error?: string;
-  /** Alerta recién llegada, para el aviso emergente. */
+  /**
+   * Alertas recién llegadas, de la más nueva a la más vieja. Se apilan: el
+   * robot sigue encontrando cosas aunque no hayas revisado la anterior.
+   */
+  alertasNuevas: Alerta[];
+  /** La más reciente, que es la que encabeza la pila. */
   alertaNueva?: Alerta;
-  descartarAlertaNueva: () => void;
+  descartarAlertaNueva: (id?: string) => void;
   recargar: () => Promise<void>;
 }
 
@@ -40,7 +45,7 @@ export function useCultivo({ cargar, escuchar }: Opciones): Cultivo {
   const [registro, setRegistro] = useState<RegistroRespuesta>();
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string>();
-  const [alertaNueva, setAlertaNueva] = useState<Alerta>();
+  const [alertasNuevas, setAlertasNuevas] = useState<Alerta[]>([]);
   const conectado = useRef(false);
 
   const recargar = useCallback(async () => {
@@ -73,7 +78,12 @@ export function useCultivo({ cargar, escuchar }: Opciones): Cultivo {
 
     const cerrar = escucharEventos((evento: EventoVivo) => {
       if (evento.tipo === 'alerta_nueva') {
-        setAlertaNueva(evento.alerta);
+        // Se añade al frente sin pisar las que ya estaban sin revisar.
+        setAlertasNuevas((previas) =>
+          previas.some((a) => a.id === evento.alerta.id)
+            ? previas
+            : [evento.alerta, ...previas],
+        );
         void recargar();
       } else if (evento.tipo === 'estado_cambiado') {
         void recargar();
@@ -86,7 +96,11 @@ export function useCultivo({ cargar, escuchar }: Opciones): Cultivo {
     };
   }, [escuchar, recargar]);
 
-  const descartarAlertaNueva = useCallback(() => setAlertaNueva(undefined), []);
+  const descartarAlertaNueva = useCallback(
+    (id?: string) =>
+      setAlertasNuevas((previas) => (id ? previas.filter((a) => a.id !== id) : [])),
+    [],
+  );
 
   return {
     mapa,
@@ -94,7 +108,8 @@ export function useCultivo({ cargar, escuchar }: Opciones): Cultivo {
     registro,
     cargando,
     error,
-    alertaNueva,
+    alertasNuevas,
+    alertaNueva: alertasNuevas[0],
     descartarAlertaNueva,
     recargar,
   };
