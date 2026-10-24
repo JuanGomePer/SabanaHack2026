@@ -8,13 +8,14 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Droplets, Thermometer, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Droplets, Thermometer, TrendingUp, TriangleAlert } from 'lucide-react';
 import type { RangoSerie, SeriesRespuesta } from '@vigia/shared/tipos';
-import { ETIQUETA_CIENTIFICA_TIPO } from '@vigia/shared/config';
+import { ESTRUCTURA, ETIQUETA_CIENTIFICA_TIPO } from '@vigia/shared/config';
 import { api } from '../api/cliente';
 import { Chip } from '../components/Chip';
 import { Segmentado } from '../components/Segmentado';
 import { TarjetaKpi } from '../components/TarjetaKpi';
+import { numero as numeroMil } from '../utilidades/formato';
 
 const RANGOS = ['24 horas', '7 días', '30 días'] as const;
 type EtiquetaRango = (typeof RANGOS)[number];
@@ -119,6 +120,17 @@ function GraficoLinea({ valores, etiquetas, color, umbral, unidad }: Serie) {
   );
 }
 
+/** "13, 14 y 15" — hasta 6 camas; de ahí en adelante, "y N más". */
+function listaCorta(camas: number[], maximo = 6): string {
+  if (camas.length === 0) return '—';
+  if (camas.length <= maximo) {
+    return camas.length === 1
+      ? String(camas[0])
+      : `${camas.slice(0, -1).join(', ')} y ${camas[camas.length - 1]}`;
+  }
+  return `${camas.slice(0, maximo).join(', ')} y ${camas.length - maximo} más`;
+}
+
 /** Barras apiladas por tipo de hallazgo. */
 function GraficoHallazgos({ datos }: { datos: SeriesRespuesta['hallazgos'] }) {
   const maximo = Math.max(1, ...datos.map((d) => d.total));
@@ -169,7 +181,7 @@ export function Analisis() {
 
   if (!datos) return <p className="cargando">{cargando ? 'Cargando el análisis…' : 'Sin datos.'}</p>;
 
-  const { resumen, clima, porNave, hallazgos } = datos;
+  const { resumen, clima, porNave, hallazgos, propagacion } = datos;
   const humedadAlta = resumen.humedadMaxima >= resumen.umbralHumedad;
 
   return (
@@ -209,13 +221,85 @@ export function Analisis() {
         />
         <TarjetaKpi
           tono="riesgo"
-          etiqueta="Naves con camas en riesgo"
-          valor={String(porNave.filter((n) => n.camasEnRiesgo > 0).length)}
-          detalle={`De ${porNave.length} naves del bloque`}
+          etiqueta="Camas en riesgo"
+          valor={String(propagacion.camasHoy.length)}
+          detalle={
+            propagacion.camasHoy.length > 0
+              ? `Camas ${listaCorta(propagacion.camasHoy)} · nave${propagacion.naves.length === 1 ? '' : 's'} ${propagacion.naves.join(', ')}`
+              : `Ninguna cama sobre ${resumen.umbralHumedad} %`
+          }
         />
       </div>
 
       <div className="analisis-grid">
+        {/*
+          Lo que de verdad importa de "hay una cama en riesgo": que mañana
+          probablemente sean más. La cuenta es una regla de vecindad, no un
+          modelo — y la tarjeta lo dice.
+        */}
+        <div className="tarjeta tarjeta-ancha">
+          <div className="fila-entre">
+            <h2 className="tarjeta-titulo">
+              <TrendingUp size={17} /> Si no se atiende
+            </h2>
+            <Chip tono={propagacion.camasExpuestas.length > 0 ? 'riesgo' : 'ok'}>
+              Proyección a {propagacion.horas} h
+            </Chip>
+          </div>
+
+          {propagacion.camasHoy.length === 0 ? (
+            <p className="secundario txt-pequeno" style={{ margin: '10px 0 0' }}>
+              Ninguna cama pasa de {resumen.umbralHumedad} % de humedad: no hay nada que pueda
+              propagarse ahora mismo.
+            </p>
+          ) : (
+            <>
+              <div className="propagacion">
+                <div className="propagacion-paso">
+                  <span className="propagacion-cifra">{propagacion.camasHoy.length}</span>
+                  <span className="txt-pequeno-fuerte">camas en riesgo hoy</span>
+                  <span className="apagado txt-etiqueta">Camas {listaCorta(propagacion.camasHoy)}</span>
+                </div>
+                <ArrowRight className="propagacion-flecha" size={22} />
+                <div className="propagacion-paso expuesto">
+                  <span className="propagacion-cifra">{propagacion.proyeccion}</span>
+                  <span className="txt-pequeno-fuerte">camas en {propagacion.horas} h</span>
+                  <span className="apagado txt-etiqueta">
+                    {propagacion.camasExpuestas.length > 0
+                      ? `Se suman las camas ${listaCorta(propagacion.camasExpuestas)}`
+                      : 'No queda cama vecina limpia'}
+                  </span>
+                </div>
+                <div className="propagacion-paso">
+                  <span className="propagacion-cifra">{numeroMil(propagacion.plantasExpuestas)}</span>
+                  <span className="txt-pequeno-fuerte">plantas expuestas</span>
+                  <span className="apagado txt-etiqueta">
+                    Las que hay en esas camas vecinas
+                  </span>
+                </div>
+              </div>
+
+              <p className="secundario txt-pequeno" style={{ margin: '12px 0 0' }}>
+                Hoy hay {propagacion.camasHoy.length === 1 ? 'una cama' : `${propagacion.camasHoy.length} camas`} con
+                humedad sobre {resumen.umbralHumedad} % en la{propagacion.naves.length === 1 ? '' : 's'} nave
+                {propagacion.naves.length === 1 ? '' : 's'} {propagacion.naves.join(', ')}
+                {propagacion.confirmados > 0
+                  ? `, y ${propagacion.confirmados} hallazgo${propagacion.confirmados === 1 ? '' : 's'} ya confirmado${propagacion.confirmados === 1 ? '' : 's'} en campo`
+                  : ''}
+                . Si la humedad sigue igual, lo siguiente en caer son las camas de al lado de la
+                misma nave: por ahí pasa el salpique de agua, el roce de follaje y el aire.
+              </p>
+
+              <div className="aviso-ambar txt-pequeno">
+                Baja la humedad de la nave{propagacion.naves.length === 1 ? '' : 's'}{' '}
+                {propagacion.naves.join(', ')} antes de la noche y revisa las camas{' '}
+                {listaCorta(propagacion.camasExpuestas)} en la próxima ronda, aunque todavía no
+                tengan alerta.
+              </div>
+            </>
+          )}
+        </div>
+
         <div className="tarjeta">
           <div className="fila-entre">
             <h2 className="tarjeta-titulo">
@@ -301,7 +385,14 @@ export function Analisis() {
                   </td>
                   <td>
                     {nave.camasEnRiesgo > 0 ? (
-                      <Chip tono="riesgo">{nave.camasEnRiesgo}</Chip>
+                      <div className="columna" style={{ gap: 4, alignItems: 'flex-start' }}>
+                        <Chip tono="riesgo">
+                          {nave.camasEnRiesgo} de {ESTRUCTURA.camasPorNave}
+                        </Chip>
+                        <span className="apagado txt-etiqueta">
+                          Camas {listaCorta(nave.camasEnRiesgoLista)}
+                        </span>
+                      </div>
                     ) : (
                       <span className="apagado txt-pequeno">—</span>
                     )}

@@ -197,6 +197,8 @@ model Equipo {
   queEstaPasando  String
   icono           IconoEquipo
   conBarra        Boolean      @default(true)
+  /// Apagado a mano por el encargado: el programador no lo vuelve a encender.
+  desactivado     Boolean      @default(false)
 }
 
 /// Lista "Qué está pasando" de la pantalla de equipos.

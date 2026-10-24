@@ -18,12 +18,14 @@ import type {
   DestinoSms,
   DetallePlanta,
   EntradaRegistro,
+  Equipo,
   EquiposRespuesta,
   EstadoInsight,
   EventoEquipo,
   EventoVivo,
   Hallazgo,
   MapaRespuesta,
+  PrediccionRespuesta,
   RegistroRespuesta,
   RespuestaGafas,
   RespuestaVigia,
@@ -85,11 +87,23 @@ export const api = {
       body: JSON.stringify(cambios),
     }),
 
+  /**
+   * Confirmar, tomar para revisar o descartar. Al confirmar o descartar, el
+   * servidor manda además el aviso de la decisión a quien esté en campo:
+   * `camasVigilar` son las camas donde hay que tener cuidado y `avisos`
+   * cuántos mensajes salieron.
+   */
   revisar: (idHallazgo: string, revision: Exclude<RevisionHallazgo, 'pendiente'>, nota?: string) =>
-    pedir<{ hallazgo: Hallazgo; alerta: Alerta; resumen: Resumen }>(
-      `/hallazgos/${idHallazgo}/revision`,
-      { method: 'POST', body: JSON.stringify({ revision, nota }) },
-    ),
+    pedir<{
+      hallazgo: Hallazgo;
+      alerta: Alerta;
+      resumen: Resumen;
+      camasVigilar: number[];
+      avisos: number;
+    }>(`/hallazgos/${idHallazgo}/revision`, {
+      method: 'POST',
+      body: JSON.stringify({ revision, nota }),
+    }),
 
   /**
    * Envío a las gafas: el servidor solo simula el envío.
@@ -101,10 +115,14 @@ export const api = {
   equipos: () => pedir<EquiposRespuesta & { nota: string }>('/equipos'),
   eventosEquipos: () => pedir<EventoEquipo[]>('/equipos/eventos'),
 
-  servicio: (tipo: 'servicio' | 'catalogo') =>
-    pedir<{ ok: boolean; tipo: string; mensaje: string }>('/equipos/servicio', {
-      method: 'POST',
-      body: JSON.stringify({ tipo }),
+  /**
+   * Desactiva o reactiva un equipo. Desactivado = apagado y el programador no
+   * lo vuelve a encender; es el primer paso del protocolo ante una alerta.
+   */
+  cambiarEquipo: (id: string, desactivado: boolean, motivo?: string) =>
+    pedir<{ equipo: Equipo; evento: EventoEquipo }>(`/equipos/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ desactivado, motivo }),
     }),
 
   /** Series del bloque para la pantalla de análisis. */
@@ -112,6 +130,10 @@ export const api = {
 
   /** Dónde se concentra cada tipo de hallazgo, para la pantalla de Protocolos. */
   protocolos: () => pedir<ProtocolosRespuesta>('/protocolos'),
+
+  /** Modelo predictivo de humedad (regresión + clima de la Sabana). */
+  prediccion: (dias?: number) =>
+    pedir<PrediccionRespuesta>(`/prediccion${dias ? `?dias=${dias}` : ''}`),
 
   reiniciarDemo: () => pedir<{ ok: boolean }>('/demo/reiniciar', { method: 'POST' }),
 

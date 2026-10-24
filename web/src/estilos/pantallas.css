@@ -374,6 +374,35 @@
   background: var(--color-bg-surface);
 }
 
+/* Paso 3 de la revisión: qué se avisó al campo y dónde hay que cuidar. */
+.footer-decision {
+  flex-direction: column;
+}
+
+.decision-aviso {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-status-confirmed-bg);
+  color: var(--color-status-confirmed-fg);
+}
+
+.decision-aviso.falsa_alarma {
+  background: var(--color-status-ok-bg);
+  color: var(--color-status-ok-fg);
+}
+
+.decision-icono {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-surface);
+  display: grid;
+  place-items: center;
+}
+
 .foto-hallazgo {
   position: relative;
   border-radius: var(--radius-md);
@@ -794,6 +823,17 @@
   gap: 12px;
 }
 
+/* Apagado a mano: la tarjeta se ve en reposo, no en falla. */
+.equipo.desactivado {
+  border: 1px dashed var(--color-border-default);
+  box-shadow: none;
+}
+
+.equipo.desactivado .equipo-icono {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
 .equipo .cabecera {
   display: flex;
   align-items: flex-start;
@@ -844,11 +884,6 @@
   flex-shrink: 0;
 }
 
-.equipo-icono.oscuro {
-  background: var(--color-brand-primary);
-  color: var(--color-text-on-brand);
-}
-
 .equipo-nota {
   display: flex;
   align-items: flex-start;
@@ -871,10 +906,6 @@
   background: var(--color-status-alert-bg);
 }
 
-.servicio-tarjeta {
-  padding: 22px;
-}
-
 .boton-separado {
   margin-top: 10px;
 }
@@ -882,7 +913,7 @@
 /* ── 08 · Cómo llega una alerta ───────────────────────────────────────── */
 .pasos-fila {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   align-items: stretch;
 }
@@ -1106,6 +1137,50 @@
   background: var(--color-status-alert);
 }
 
+/* Medidas de la nave: dos campos cortos, ancho × largo. */
+.campo-medida {
+  width: 86px;
+  text-align: center;
+}
+
+/* Robots del bloque (Configuración · Estructura). */
+.lista-robots {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lista-robots li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-app);
+  border: 1px solid var(--color-border-default);
+}
+
+.robot-marca {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-tint);
+  color: var(--color-brand-primary);
+  display: grid;
+  place-items: center;
+}
+
+@media (max-width: 900px) {
+  .lista-robots li {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    row-gap: 6px;
+  }
+}
+
 .aviso-ambar {
   margin-top: 16px;
   background: var(--color-aviso-bg);
@@ -1149,65 +1224,6 @@
 }
 
 /* ── Login y bienvenida ───────────────────────────────────────────────── */
-.fondo-verde {
-  position: relative;
-  overflow: hidden;
-  background:
-    radial-gradient(120% 90% at 50% 18%, #2e8b5f 0%, #1b7550 38%, #0f4a33 100%);
-  color: var(--color-text-on-brand);
-}
-
-.fondo-rayos {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.fondo-puntos {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.26) 1.4px, transparent 1.6px);
-  background-size: 56px 56px;
-  opacity: 0.55;
-}
-
-.fondo-contenido {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.acceso-tarjeta {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  backdrop-filter: blur(3px);
-}
-
-.acceso-icono {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-on-brand);
-  flex-shrink: 0;
-}
-
-.acceso-icono.chico {
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-full);
-}
-
 .campo-icono {
   display: flex;
   align-items: center;
@@ -1282,36 +1298,39 @@
 }
 
 .bienvenida-pasos {
-  width: 400px;
-  max-width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  gap: 14px;
+  background: var(--color-bg-app);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
-  padding: 20px 22px;
-  text-align: left;
-  margin-top: 8px;
+  padding: 18px 20px;
+}
+
+.bienvenida-check {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--color-status-ok);
+  color: var(--color-text-on-brand);
+  display: grid;
+  place-items: center;
 }
 
 .bienvenida-cifras {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
-  width: 400px;
-  max-width: 100%;
 }
 
 .bienvenida-cifras > div {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--color-bg-app);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  text-align: left;
-  color: rgba(255, 255, 255, 0.72);
 }
 
 .bienvenida-cifras .cifra {
@@ -1319,14 +1338,12 @@
   font-weight: 800;
   font-size: 22px;
   line-height: 30px;
-  color: var(--color-text-on-brand);
+  color: var(--color-text-primary);
 }
 
 .boton-bienvenida {
-  width: 400px;
-  max-width: 100%;
   height: 52px;
-  margin-top: 6px;
+  margin-top: 2px;
 }
 
 .acceso {
@@ -1368,28 +1385,107 @@
   color: var(--color-text-primary);
 }
 
-.bienvenida {
+/* ── Bienvenida: panel claro con la previa del mapa ─────────────────────── */
+.bienvenida-clara {
   min-height: 100vh;
+  background: var(--color-bg-app);
+  display: grid;
+  place-items: center;
+  padding: 40px 24px;
 }
 
-.bienvenida .fondo-contenido {
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  text-align: center;
-  padding: 48px;
-  min-height: 100vh;
-}
-
-.bienvenida .marca-grande {
-  width: 76px;
-  height: 76px;
-  border-radius: var(--radius-lg);
-  background: var(--color-brand-primary);
-  color: var(--color-text-on-brand);
+.bienvenida-panel {
+  width: 560px;
+  max-width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--sombra-tarjeta);
+  padding: 32px;
+}
+
+.bienvenida-marca {
+  color: var(--color-text-primary);
+}
+
+.bienvenida-previa {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/*
+ * Previa del mapa 2D: una columna por nave, dentro de cada nave una franja
+ * por cama. Es un resumen, no el mapa (ver components/PreviaBloque.tsx).
+ */
+.previa-bloque {
+  display: flex;
+  gap: 10px;
+  background: var(--color-bg-app);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: 12px;
+}
+
+.previa-bloque-nave {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.previa-bloque-nombre {
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.previa-bloque-camas {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.previa-bloque-cama {
+  display: flex;
+  gap: 1px;
+}
+
+.previa-bloque-tramo {
+  flex: 1;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--color-status-ok-cell);
+}
+
+.previa-bloque-tramo.riesgo {
+  background: var(--color-status-risk-cell);
+}
+
+.previa-bloque-tramo.alerta {
+  background: var(--color-status-alert-cell);
+}
+
+.previa-bloque-tramo.en_revision {
+  background: var(--color-status-review-cell);
+}
+
+.previa-bloque-tramo.confirmada {
+  background: var(--color-status-confirmed-cell);
+}
+
+.previa-bloque-tramo.sin_dato {
+  background: var(--color-status-nodata-cell);
+}
+
+.previa-bloque-esqueleto {
+  height: 118px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-app);
+  border: 1px solid var(--color-border-default);
 }
 
 /* ── Responsive razonable en escritorio ──────────────────────────────── */
@@ -1427,7 +1523,9 @@
   .acceso {
     grid-template-columns: minmax(0, 1fr);
   }
-  .acceso-arte {
+  /* El panel de la ilustración se esconde: el formulario manda. */
+  .acceso-arte,
+  .acceso-arte-clara {
     display: none;
   }
 }
@@ -1678,6 +1776,12 @@
   color: var(--color-text-primary);
 }
 
+/* El aviso de la decisión, cuando está apagado: se ve, pero no promete nada. */
+.burbuja-sms.apagada {
+  background: var(--color-bg-subtle);
+  opacity: 0.7;
+}
+
 .lista-envios {
   list-style: none;
   margin: 4px 0 16px;
@@ -1739,6 +1843,11 @@
   gap: 4px;
   color: var(--color-data-humidity-fg);
   white-space: nowrap;
+}
+
+/* Segundo aviso: la decisión ya salió al campo. */
+.marca-sms.decision {
+  color: var(--color-status-confirmed-fg);
 }
 
 /* Envío que salió pero con salvedad (ej. la plantilla fija del trial). */
@@ -1879,18 +1988,26 @@
   color: var(--color-brand-primary);
 }
 
+/*
+ * La insignia hereda el line-height de 22 px del body. Con `box-sizing:
+ * border-box`, el borde de 2 px deja 14 px de caja interior y el "9+" salía
+ * cortado por arriba y por abajo: de ahí el line-height: 1 y la caja un poco
+ * más alta.
+ */
 .vigia-insignia {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
+  top: -5px;
+  right: -5px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
   border-radius: var(--radius-full);
   background: var(--color-status-alert);
   color: #fff;
+  font-family: var(--font-texto);
   font-size: 11px;
   font-weight: 700;
+  line-height: 1;
   display: grid;
   place-items: center;
   border: 2px solid var(--color-bg-app);
@@ -2388,6 +2505,59 @@
   align-items: start;
 }
 
+/* Tarjetas que ocupan las dos columnas de la rejilla de análisis. */
+.tarjeta-ancha {
+  grid-column: 1 / -1;
+}
+
+/* Hoy → en 72 h → plantas expuestas. */
+.propagacion {
+  display: grid;
+  grid-template-columns: auto 24px auto 1fr;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.propagacion-paso {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-app);
+  border: 1px solid var(--color-border-default);
+  min-width: 0;
+}
+
+.propagacion-paso.expuesto {
+  background: var(--color-status-risk-bg);
+  border-color: var(--color-status-risk-cell);
+}
+
+.propagacion-cifra {
+  font-family: var(--font-titulo);
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 34px;
+  letter-spacing: -0.6px;
+}
+
+.propagacion-flecha {
+  color: var(--color-text-muted);
+  justify-self: center;
+}
+
+@media (max-width: 1100px) {
+  .propagacion {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .propagacion-flecha {
+    transform: rotate(90deg);
+  }
+}
+
 .analisis-grid .tarjeta-titulo {
   display: flex;
   align-items: center;
@@ -2582,69 +2752,6 @@
   color: var(--color-text-primary);
 }
 
-/* ── Aprendizaje ──────────────────────────────────────────────────────────── */
-.aprendizaje-lista {
-  list-style: none;
-  margin: 14px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.aprendizaje-etapa {
-  display: flex;
-  gap: 14px;
-  padding-bottom: 20px;
-}
-
-.aprendizaje-etapa:last-child {
-  padding-bottom: 0;
-}
-
-.aprendizaje-punto {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.aprendizaje-punto svg {
-  width: 34px;
-  height: 34px;
-  padding: 7px;
-  border-radius: var(--radius-full);
-  background: var(--color-bg-subtle);
-  color: var(--color-text-muted);
-  box-sizing: border-box;
-}
-
-.aprendizaje-etapa.hecho .aprendizaje-punto svg {
-  background: var(--color-status-ok-bg);
-  color: var(--color-status-ok-fg);
-}
-
-.aprendizaje-etapa.en_curso .aprendizaje-punto svg {
-  background: var(--color-aviso-bg);
-  color: var(--color-aviso-fg);
-}
-
-.aprendizaje-linea {
-  flex: 1;
-  width: 2px;
-  min-height: 14px;
-  background: var(--color-border-default);
-  margin-top: 4px;
-}
-
-.aprendizaje-checklist {
-  margin: 10px 0 0;
-  padding-left: 18px;
-  color: var(--color-text-secondary);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
 /* ── Protocolos ───────────────────────────────────────────────────────────── */
 .protocolos-lista {
   display: flex;
@@ -2698,6 +2805,106 @@
   justify-content: center;
 }
 
+/* Paso con casillas: la lista de equipos va debajo del texto del paso. */
+.protocolo-pasos li.con-casillas {
+  align-items: flex-start;
+}
+
+.apagar-equipos {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-app);
+  border: 1px solid var(--color-border-default);
+}
+
+.apagar-lista {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 6px 14px;
+}
+
+.apagar-lista .casilla {
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  padding: 4px 0;
+}
+
+.apagar-lista .casilla:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.apagar-lista .casilla svg {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+/* ── Aprendizaje: modelo predictivo ─────────────────────────────────────── */
+.tarjeta-prediccion {
+  margin-top: 20px;
+}
+
+.prediccion-formula {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: var(--color-text-secondary);
+}
+
+.prediccion-formula li {
+  padding-left: 12px;
+  border-left: 2px solid var(--color-border-default);
+}
+
+.prediccion-formula strong {
+  color: var(--color-text-primary);
+}
+
+.prediccion-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-status-alert-bg);
+  color: var(--color-status-alert-fg);
+}
+
+.prediccion-aviso svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.prediccion-camas {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prediccion-camas li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-app);
+  border: 1px solid var(--color-border-default);
+}
+
 /* ── Login: panel claro con ilustración de arándanos ─────────────────────── */
 .acceso-arte-clara {
   position: relative;
@@ -2709,6 +2916,15 @@
   gap: 24px;
   padding: 56px;
   border-right: 1px solid var(--color-border-default);
+}
+
+/*
+ * El logo de la barra lateral va sobre verde oscuro, así que .logo-nombre es
+ * blanco por defecto. Aquí el panel es claro: el nombre tiene que ir en el
+ * negro del texto, o se pierde contra el fondo.
+ */
+.acceso-arte-clara .logo-nombre {
+  color: var(--color-text-primary);
 }
 
 .acceso-ilustracion {

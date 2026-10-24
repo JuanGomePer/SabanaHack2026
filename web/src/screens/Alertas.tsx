@@ -1,7 +1,7 @@
 /** 04 · Alertas (8:3326). */
 
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowRight, Camera, MessageSquare, Search } from 'lucide-react';
+import { ArrowRight, BellRing, Camera, MessageSquare, Search } from 'lucide-react';
 import type { Alerta, RevisionHallazgo, TipoHallazgo } from '@vigia/shared/tipos';
 import { ETIQUETA_CIENTIFICA_TIPO } from '@vigia/shared/config';
 import { Boton } from '../components/Boton';
@@ -65,9 +65,27 @@ export function Alertas({ alertas, alAbrirPlanta, alConfigurarAvisos, alRecargar
     return () => window.clearInterval(intervalo);
   }, [alRecargar]);
 
-  /** Alertas que ya salieron por mensaje de texto. */
+  /** Alertas que ya salieron por mensaje de texto cuando el robot las detectó. */
   const avisadasPorSms = useMemo(
-    () => new Set((sms.datos?.envios ?? []).map((envio) => envio.alertaId).filter(Boolean)),
+    () =>
+      new Set(
+        (sms.datos?.envios ?? [])
+          .filter((envio) => envio.motivo === 'alerta')
+          .map((envio) => envio.alertaId)
+          .filter(Boolean),
+      ),
+    [sms.datos],
+  );
+
+  /** Alertas cuya decisión ya se le avisó a quien está en campo (segundo aviso). */
+  const decisionAvisada = useMemo(
+    () =>
+      new Set(
+        (sms.datos?.envios ?? [])
+          .filter((envio) => envio.motivo === 'decision')
+          .map((envio) => envio.alertaId)
+          .filter(Boolean),
+      ),
     [sms.datos],
   );
 
@@ -183,6 +201,14 @@ export function Alertas({ alertas, alAbrirPlanta, alConfigurarAvisos, alRecargar
                     {avisadasPorSms.has(alerta.id) && (
                       <span className="marca-sms txt-etiqueta" title="También se avisó por mensaje de texto">
                         <MessageSquare size={12} /> Avisada por SMS
+                      </span>
+                    )}
+                    {decisionAvisada.has(alerta.id) && (
+                      <span
+                        className="marca-sms decision txt-etiqueta"
+                        title="La decisión ya le llegó a quien está en campo, con las camas que hay que cuidar"
+                      >
+                        <BellRing size={12} /> Decisión avisada
                       </span>
                     )}
                   </div>

@@ -17,6 +17,8 @@ import {
   PAIS_TELEFONO_DEFECTO,
   PAISES_TELEFONO,
   PLANTILLA_SMS,
+  PLANTILLA_SMS_DECISION,
+  PLANTILLA_SMS_DESCARTE,
   SMS,
   USUARIO,
   etiquetaPlanta,
@@ -27,6 +29,7 @@ import type {
   DestinoSms,
   EnvioSms,
   PrioridadAlerta,
+  RevisionHallazgo,
   SmsRespuesta,
 } from '@vigia/shared/tipos';
 import { anotarRegistro } from '../repositories/registro.js';
@@ -63,6 +66,7 @@ export function actualizarPreferencias(
 ): ConfiguracionSms {
   if (typeof cambios.activo === 'boolean') configSms.activo = cambios.activo;
   if (typeof cambios.hayInternet === 'boolean') configSms.hayInternet = cambios.hayInternet;
+  if (typeof cambios.avisarDecision === 'boolean') configSms.avisarDecision = cambios.avisarDecision;
   if (cambios.cuando === 'siempre' || cambios.cuando === 'sin_internet') {
     configSms.cuando = cambios.cuando;
   }
@@ -183,6 +187,35 @@ export function textoDeAlerta(alerta: Alerta): string {
     .slice(0, LIMITE_SMS);
 }
 
+/** "las camas 13 y 15", "la cama 13" o, si la cama no tiene vecinas, la propia. */
+function listaDeCamas(camas: number[], camaPropia: number): string {
+  if (camas.length === 0) return `la cama ${camaPropia}`;
+  if (camas.length === 1) return `la cama ${camas[0]}`;
+  return `las camas ${camas.slice(0, -1).join(', ')} y ${camas[camas.length - 1]}`;
+}
+
+/**
+ * El aviso de la decisión: qué se decidió y dónde hay que tener cuidado.
+ * `camasVigilar` son las camas vecinas de la misma nave, que es por donde se
+ * propaga; las calcula quien revisa el hallazgo (services/hallazgos.ts).
+ */
+export function textoDeDecision(
+  alerta: Alerta,
+  revision: RevisionHallazgo,
+  camasVigilar: number[] = [],
+  usuario = USUARIO.firma,
+): string {
+  const plantilla = revision === 'falsa_alarma' ? PLANTILLA_SMS_DESCARTE : PLANTILLA_SMS_DECISION;
+  return plantilla
+    .replace('{etiqueta}', etiquetaPlanta(alerta.cama, alerta.planta))
+    .replace('{tipo}', alerta.tipo)
+    .replace('{usuario}', usuario)
+    .replace('{nave}', String(alerta.nave))
+    .replace('{cama}', String(alerta.cama))
+    .replace('{vecinas}', listaDeCamas(camasVigilar, alerta.cama))
+    .slice(0, LIMITE_SMS);
+}
+
 /** Ejemplo para la pantalla de configuración, sin necesidad de una alerta real. */
 export function textoDeEjemplo(): string {
   return textoDeAlerta({
@@ -202,6 +235,29 @@ export function textoDeEjemplo(): string {
   });
 }
 
+/** Ejemplo del aviso de la decisión, para la pantalla de configuración. */
+export function textoDeEjemploDecision(): string {
+  return textoDeDecision(
+    {
+      id: 'A-ejemplo',
+      hallazgoId: 'H-ejemplo',
+      plantaId: 'B5-C14-P065',
+      cama: 14,
+      planta: 65,
+      nave: 5,
+      tipo: 'Botrytis',
+      confianza: 0.93,
+      humedad: 91,
+      prioridad: 'alta',
+      revision: 'confirmada',
+      detectadoEn: new Date().toISOString(),
+      fotoUrl: '',
+    },
+    'confirmada',
+    [13, 15],
+  );
+}
+
 // ── Reglas de envío ─────────────────────────────────────────────────────────
 
 /**
@@ -218,6 +274,22 @@ export function porQueNoSeEnvia(prioridad: PrioridadAlerta): string | null {
   if (cuando === 'sin_internet' && hayInternet) {
     return 'Hay internet: la alerta llega por la app y no hace falta el SMS.';
   }
+  if (!destinos.some((d) => d.activo)) return 'No hay ningún número activo.';
+  return null;
+}
+
+/**
+ * Por qué NO sale el aviso de la decisión, o null si sí sale.
+ *
+ * Este segundo aviso no mira la prioridad ni si hay internet: va dirigido a
+ * quien está en campo y ya decidió alguien por él — si se confirmó algo, tiene
+ * que saber dónde tener cuidado, haya o no wifi en el invernadero.
+ */
+export function porQueNoSeEnviaDecision(): string | null {
+  const { activo, avisarDecision, destinos } = configSms;
+
+  if (!activo) return 'El aviso por SMS está apagado.';
+  if (!avisarDecision) return 'El aviso de la decisión está apagado.';
   if (!destinos.some((d) => d.activo)) return 'No hay ningún número activo.';
   return null;
 }
@@ -318,6 +390,42 @@ export async function avisarPorSms(alerta: Alerta): Promise<EnvioSms[]> {
   return lote;
 }
 
+/**
+ * Segundo aviso: la decisión ya tomada.
+ *
+ * Se llama al revisar un hallazgo (services/hallazgos.ts). El mensaje dice qué
+ * se decidió, quién lo decidió y en qué camas hay que tener cuidado.
+ */
+export async function avisarDecisionPorSms(
+  alerta: Alerta,
+  revision: RevisionHallazgo,
+  camasVigilar: number[],
+  usuario = USUARIO.firma,
+): Promise<EnvioSms[]> {
+  if (porQueNoSeEnviaDecision() !== null) return [];
+
+  const texto = textoDeDecision(alerta, revision, camasVigilar, usuario);
+  const lote = crearEnvios(texto, 'decision', alerta);
+  if (lote.length === 0) return [];
+
+  await anotarRegistro({
+    plantaId: alerta.plantaId,
+    cama: alerta.cama,
+    accion: 'sms',
+    tipo: alerta.tipo,
+    usuario: 'Vigía',
+    nota:
+      revision === 'falsa_alarma'
+        ? `Descarte de ${etiquetaPlanta(alerta.cama, alerta.planta)} avisado por SMS a ` +
+          `${lote.length === 1 ? '1 número' : `${lote.length} números`}.`
+        : `Decisión de ${etiquetaPlanta(alerta.cama, alerta.planta)} avisada por SMS a ` +
+          `${lote.length === 1 ? '1 número' : `${lote.length} números`}: cuidado en ` +
+          `${listaDeCamas(camasVigilar, alerta.cama)} de la nave ${alerta.nave}.`,
+  });
+
+  return lote;
+}
+
 /** SMS de prueba, para comprobar que el número quedó bien. */
 export async function enviarPrueba(): Promise<EnvioSms[] | { error: string }> {
   if (!configSms.destinos.some((d) => d.activo)) {
@@ -348,7 +456,9 @@ export function respuestaSms(): SmsRespuesta {
     envios,
     limite: LIMITE_SMS,
     ejemplo: textoDeEjemplo(),
+    ejemploDecision: textoDeEjemploDecision(),
     motivoBloqueo: porQueNoSeEnvia('alta'),
+    motivoBloqueoDecision: porQueNoSeEnviaDecision(),
     nota: pasarela.real ? NOTA_SMS_REAL : NOTA_SMS,
   };
 }

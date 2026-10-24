@@ -5,11 +5,12 @@
  * cada una sale de contar los hallazgos reales de los últimos 30 días
  * (GET /api/protocolos) — no es una cifra inventada para la demo.
  */
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ListChecks, MapPin, ShieldAlert } from 'lucide-react';
-import { ETIQUETA_CIENTIFICA_TIPO, PROTOCOLOS } from '@vigia/shared/config';
-import type { ProtocolosRespuesta, TipoHallazgo } from '@vigia/shared/tipos';
+import { ETIQUETA_CIENTIFICA_TIPO, PASO_APAGAR_EQUIPOS, PROTOCOLOS } from '@vigia/shared/config';
+import type { Equipo, ProtocolosRespuesta, TipoHallazgo } from '@vigia/shared/tipos';
 import { api } from '../api/cliente';
+import { ApagarEquipos } from '../components/ApagarEquipos';
 import { Chip } from '../components/Chip';
 
 const TONO: Record<TipoHallazgo, 'alerta' | 'riesgo' | 'marca'> = {
@@ -20,10 +21,37 @@ const TONO: Record<TipoHallazgo, 'alerta' | 'riesgo' | 'marca'> = {
 
 export function Protocolos() {
   const [datos, setDatos] = useState<ProtocolosRespuesta>();
+  const [equipos, setEquipos] = useState<Equipo[]>([]);
+  /** Id del equipo que se está apagando o encendiendo ahora mismo. */
+  const [ocupado, setOcupado] = useState<string>();
+
+  const cargarEquipos = useCallback(async () => {
+    const respuesta = await api.equipos();
+    setEquipos(respuesta.equipos);
+  }, []);
 
   useEffect(() => {
     void api.protocolos().then(setDatos);
-  }, []);
+    void cargarEquipos();
+  }, [cargarEquipos]);
+
+  /** El paso 1 de los tres protocolos apaga equipos de verdad. */
+  const cambiarEquipo = useCallback(
+    async (id: string, desactivado: boolean, tipo: TipoHallazgo) => {
+      setOcupado(id);
+      try {
+        await api.cambiarEquipo(
+          id,
+          desactivado,
+          desactivado ? `Apagado por el protocolo de ${ETIQUETA_CIENTIFICA_TIPO[tipo]}.` : undefined,
+        );
+        await cargarEquipos();
+      } finally {
+        setOcupado(undefined);
+      }
+    },
+    [cargarEquipos],
+  );
 
   return (
     <section>
@@ -70,9 +98,21 @@ export function Protocolos() {
 
               <ol className="protocolo-pasos">
                 {PROTOCOLOS[tipo].map((paso, i) => (
-                  <li key={i}>
+                  <li key={i} className={paso === PASO_APAGAR_EQUIPOS ? 'con-casillas' : ''}>
                     <span className="protocolo-numero">{i + 1}</span>
-                    <span className="txt-pequeno">{paso}</span>
+                    <div className="columna" style={{ gap: 0, flex: 1, minWidth: 0 }}>
+                      <span className="txt-pequeno">{paso}</span>
+                      {paso === PASO_APAGAR_EQUIPOS && (
+                        <ApagarEquipos
+                          equipos={equipos}
+                          naveFoco={peor?.nave}
+                          ocupado={ocupado}
+                          alCambiar={(id, desactivado) =>
+                            void cambiarEquipo(id, desactivado, tipo)
+                          }
+                        />
+                      )}
+                    </div>
                   </li>
                 ))}
               </ol>

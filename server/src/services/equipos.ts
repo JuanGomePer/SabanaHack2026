@@ -4,7 +4,7 @@
  * DATOS DE EJEMPLO: los estados, potencias y eventos los simula el
  * prototipo. No son lecturas reales de los equipos de Agrar.
  */
-import { REGLAS_PROGRAMADOR, SERVICIO_TECNICO, UMBRALES } from '@vigia/shared/config';
+import { REGLAS_PROGRAMADOR, UMBRALES } from '@vigia/shared/config';
 import type { Equipo, EquiposRespuesta, EventoEquipo, ResumenEquipos } from '@vigia/shared/tipos';
 import * as equiposRepo from '../repositories/equipos.js';
 import { camasHumedas, humedadDeNave } from './mapa.js';
@@ -39,8 +39,10 @@ function calcularMetricas(equipo: Equipo): Array<{ etiqueta: string; valor: stri
 }
 
 async function resumenEquipos(equipos: Equipo[]): Promise<ResumenEquipos> {
-  const enMarcha = equipos.filter((e) => e.estado === 'En marcha' || e.estado === 'Activo').length;
-  const enEspera = equipos.filter((e) => e.estado === 'En espera').length;
+  const enMarcha = equipos.filter(
+    (e) => !e.desactivado && (e.estado === 'En marcha' || e.estado === 'Activo'),
+  ).length;
+  const enEspera = equipos.filter((e) => !e.desactivado && e.estado === 'En espera').length;
   const conAviso = equipos.filter((e) => e.estado === 'Aviso');
   const humedadMedia =
     equipos.length === 0 ? 0 : Math.round((equipos.reduce((s, e) => s + e.humedad, 0) / equipos.length) * 10) / 10;
@@ -52,6 +54,7 @@ async function resumenEquipos(equipos: Equipo[]): Promise<ResumenEquipos> {
     enMarcha,
     total: equipos.length,
     enEspera,
+    desactivados: equipos.filter((e) => e.desactivado).length,
     avisos: conAviso.length,
     humedadMedia,
     camasHumedas: camas.map((c) => c.cama),
@@ -70,11 +73,61 @@ export async function listarEquipos(): Promise<EquiposRespuesta> {
     }),
   );
 
-  return { equipos, resumen: await resumenEquipos(equipos), servicio: SERVICIO_TECNICO };
+  return { equipos, resumen: await resumenEquipos(equipos) };
 }
 
 export async function listarEventosEquipo(): Promise<EventoEquipo[]> {
   return equiposRepo.listarEventosEquipo();
+}
+
+/**
+ * Desactiva (o vuelve a activar) un equipo a mano.
+ *
+ * Desactivar es lo primero del protocolo cuando se confirma un hongo: con la
+ * ventilación encendida, el aire reparte las esporas por toda la nave. Un
+ * equipo desactivado queda en espera, a potencia 0, y el programador no lo
+ * vuelve a encender hasta que alguien lo reactive aquí.
+ */
+export async function cambiarActivacionEquipo(
+  id: string,
+  desactivado: boolean,
+  motivo?: string,
+): Promise<{ equipo: Equipo; evento: EventoEquipo } | null> {
+  const fila = await equiposRepo.obtenerEquipo(id);
+  if (!fila) return null;
+
+  const queEstaPasando = desactivado
+    ? (motivo ?? 'Apagado a mano por el encargado. El programador no lo vuelve a encender.')
+    : 'Reactivado a mano: vuelve a responder al programador.';
+
+  await equiposRepo.actualizarEquipo(id, {
+    desactivado,
+    estado: desactivado ? 'En espera' : fila.estado,
+    potencia: desactivado ? 0 : fila.potencia,
+    queEstaPasando,
+    ultimoDato: new Date(),
+  });
+
+  const evento = await equiposRepo.crearEventoEquipo({
+    texto: desactivado
+      ? `${nombreCorto(fila)} de la nave ${fila.nave} desactivado a mano.`
+      : `${nombreCorto(fila)} de la nave ${fila.nave} reactivado a mano.`,
+    nave: fila.nave,
+    equipoId: id,
+  });
+
+  const humedad = await humedadDeNave(fila.nave);
+  const actualizado: Equipo = {
+    ...fila,
+    desactivado,
+    estado: desactivado ? 'En espera' : fila.estado,
+    potencia: desactivado ? 0 : fila.potencia,
+    queEstaPasando,
+    humedad,
+    metricas: [],
+  };
+
+  return { equipo: { ...actualizado, metricas: calcularMetricas(actualizado) }, evento };
 }
 
 /** Regla del programador: humedad ≥ umbral enciende ventilación en la nave. */
@@ -84,7 +137,8 @@ export async function aplicarReglas(): Promise<EventoEquipo[]> {
 
   for (const equipo of filas) {
     const humedad = await humedadDeNave(equipo.nave);
-    if (equipo.icono === 'cpu' || equipo.estado === 'Aviso') continue;
+    // Si el encargado lo apagó a mano, el programador no lo vuelve a encender.
+    if (equipo.icono === 'cpu' || equipo.estado === 'Aviso' || equipo.desactivado) continue;
 
     const debeVentilar = UMBRALES.ventilacionAutomatica && humedad >= UMBRALES.humedadAlta;
     if (debeVentilar && equipo.estado === 'En espera') {
@@ -118,6 +172,7 @@ export async function responderAAlerta(nave: number, plantaId: string, cama: num
 
   for (const equipo of filas) {
     if (equipo.nave !== nave || equipo.icono === 'cpu' || equipo.estado === 'Aviso') continue;
+    if (equipo.desactivado) continue;
     await equiposRepo.actualizarEquipo(equipo.id, {
       estado: 'En marcha',
       potencia: 100,

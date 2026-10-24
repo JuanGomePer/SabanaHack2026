@@ -22,11 +22,27 @@ const PERFIL_DEFECTO: PerfilUsuario = {
 
 let cache: Configuracion | null = null;
 
+/**
+ * La estructura se guarda como JSON, así que una fila sembrada antes de que
+ * existiera un campo llega sin él. Aquí se rellena con el supuesto de
+ * `@vigia/shared/config` en vez de dejar `undefined` suelto por la API.
+ */
+function conCamposNuevos(estructura: Configuracion['estructura']): Configuracion['estructura'] {
+  return {
+    ...estructura,
+    robots: estructura.robots?.length ? estructura.robots : ESTRUCTURA.robots,
+  };
+}
+
 /** Se llama una vez al arrancar el servidor, antes de aceptar tráfico. */
 export async function cargarConfiguracion(): Promise<Configuracion> {
   const fila = await obtenerConfiguracionDb();
   if (fila) {
-    cache = { estructura: fila.estructura, umbrales: fila.umbrales, perfil: fila.perfil ?? PERFIL_DEFECTO };
+    cache = {
+      estructura: conCamposNuevos(fila.estructura),
+      umbrales: fila.umbrales,
+      perfil: fila.perfil ?? PERFIL_DEFECTO,
+    };
   } else {
     cache = { estructura: { ...ESTRUCTURA }, umbrales: { ...UMBRALES }, perfil: { ...PERFIL_DEFECTO } };
     await crearConfiguracionDb(cache);
@@ -46,7 +62,7 @@ export async function actualizarConfiguracion(
 ): Promise<Configuracion> {
   const actual = configuracionActual();
   const nueva: Configuracion = {
-    estructura: { ...actual.estructura, ...(cambios.estructura ?? {}) },
+    estructura: conCamposNuevos({ ...actual.estructura, ...(cambios.estructura ?? {}) }),
     umbrales: { ...actual.umbrales, ...(cambios.umbrales ?? {}) },
     perfil: { ...actual.perfil, ...(cambios.perfil ?? {}) },
   };

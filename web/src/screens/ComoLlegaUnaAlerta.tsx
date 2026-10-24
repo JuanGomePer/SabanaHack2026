@@ -1,6 +1,6 @@
 /** 08 · Cómo llega una alerta (11:3515). */
 
-import { AlertTriangle, ArrowRight, Bell, Bot, Camera, Check } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Bell, BellRing, Bot, Camera, Check } from 'lucide-react';
 import { UMBRALES } from '@vigia/shared/config';
 import { Chip } from '../components/Chip';
 import { Boton } from '../components/Boton';
@@ -40,6 +40,13 @@ const PASOS = [
     titulo: 'Tú decides',
     texto: 'Confirmas o descartas con un clic y queda en el registro.',
     pie: 'Registro + CSV',
+    tono: 'ok' as const,
+  },
+  {
+    Icono: BellRing,
+    titulo: 'La decisión baja al campo',
+    texto: 'A quien está en la nave le llega si toca cuidar y en qué camas.',
+    pie: 'Cama + camas vecinas',
     tono: 'ok' as const,
   },
 ];

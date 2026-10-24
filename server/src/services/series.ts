@@ -14,10 +14,13 @@
  *   invernadero: fresco y húmedo de madrugada, cálido y seco a media tarde.
  *   Es una reconstrucción, no una medición, y la pantalla lo dice.
  */
-import { ESTRUCTURA, naveDeCama } from '@vigia/shared/config';
+import { ESTRUCTURA, camasDeNave, naveDeCama } from '@vigia/shared/config';
 import type {
   ClimaDeNave,
+  Hallazgo,
   HallazgosDelDia,
+  Planta,
+  PropagacionRiesgo,
   PuntoClima,
   RangoSerie,
   SeriesRespuesta,
@@ -68,6 +71,49 @@ function etiquetaDe(momento: Date, rango: RangoSerie): string {
   return `${dia} ${momento.getDate()}`;
 }
 
+/** Ventana de la proyección de propagación: tres días. */
+const HORAS_PROPAGACION = 72;
+
+/**
+ * Si hoy hay una cama en riesgo, lo probable es que mañana haya más.
+ *
+ * Regla de vecindad, no modelo epidemiológico: Botrytis y Alternaria se
+ * propagan por salpique de agua, roce de follaje y aire de la misma nave, así
+ * que cada cama en riesgo expone a las camas contiguas de SU nave (las camas
+ * de otra nave no se tocan). La proyección son las camas de hoy más las
+ * vecinas que todavía están limpias.
+ */
+function propagacionDesde(
+  plantas: Planta[],
+  umbral: number,
+  hallazgos: Hallazgo[],
+): PropagacionRiesgo {
+  const camasHoy = [
+    ...new Set(plantas.filter((p) => p.humedad >= umbral).map((p) => p.cama)),
+  ].sort((a, b) => a - b);
+
+  const enRiesgo = new Set(camasHoy);
+  const expuestas = new Set<number>();
+  for (const cama of camasHoy) {
+    for (const vecina of camasDeNave(naveDeCama(cama))) {
+      if (Math.abs(vecina - cama) === 1 && !enRiesgo.has(vecina)) expuestas.add(vecina);
+    }
+  }
+
+  const camasExpuestas = [...expuestas].sort((a, b) => a - b);
+  const plantasExpuestas = plantas.filter((p) => expuestas.has(p.cama)).length;
+
+  return {
+    camasHoy,
+    camasExpuestas,
+    proyeccion: camasHoy.length + camasExpuestas.length,
+    horas: HORAS_PROPAGACION,
+    plantasExpuestas,
+    naves: [...new Set(camasHoy.map((c) => naveDeCama(c)))].sort((a, b) => a - b),
+    confirmados: hallazgos.filter((h) => h.revision === 'confirmada' && enRiesgo.has(h.cama)).length,
+  };
+}
+
 export async function construirSeries(rango: RangoSerie): Promise<SeriesRespuesta> {
   const { puntos, pasoHoras } = RANGOS[rango];
   const plantas = await listarPlantas();
@@ -103,18 +149,23 @@ export async function construirSeries(rango: RangoSerie): Promise<SeriesRespuest
     const suyas = conDato.filter((p) => naveDeCama(p.cama) === nave);
     if (suyas.length === 0) continue;
 
-    const camas = [...new Set(suyas.map((p) => p.cama))];
-    const camasEnRiesgo = camas.filter((cama) => {
-      const deLaCama = suyas.filter((p) => p.cama === cama);
-      const media = deLaCama.reduce((a, p) => a + p.humedad, 0) / deLaCama.length;
-      return media >= umbral;
-    }).length;
+    const camas = [...new Set(suyas.map((p) => p.cama))].sort((a, b) => a - b);
+    /**
+     * Una cama está en riesgo si tiene AL MENOS UN tramo sobre el umbral, no
+     * si su promedio lo pasa: una cama son 100 plantas y la humedad se
+     * acumula en un tramo de 20–25: antes esta columna salía siempre en 0
+     * porque el promedio de la cama nunca llegaba al umbral.
+     */
+    const camasEnRiesgoLista = camas.filter((cama) =>
+      suyas.some((p) => p.cama === cama && p.humedad >= umbral),
+    );
 
     porNave.push({
       nave,
       humedad: redondear(suyas.reduce((a, p) => a + p.humedad, 0) / suyas.length),
       temperatura: redondear(suyas.reduce((a, p) => a + p.temperatura, 0) / suyas.length),
-      camasEnRiesgo,
+      camasEnRiesgo: camasEnRiesgoLista.length,
+      camasEnRiesgoLista,
     });
   }
 
@@ -157,6 +208,7 @@ export async function construirSeries(rango: RangoSerie): Promise<SeriesRespuest
     clima,
     porNave,
     hallazgos,
+    propagacion: propagacionDesde(conDato, umbral, todos),
     resumen: {
       humedadMedia: redondear(humedades.reduce((a, v) => a + v, 0) / humedades.length),
       humedadMaxima: redondear(Math.max(...humedades)),

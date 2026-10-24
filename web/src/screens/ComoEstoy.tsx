@@ -9,9 +9,12 @@
  * supuesto que dio el equipo — todo esto se puede ajustar en
  * `shared/src/config.ts` si cambian los datos reales.
  */
-import { BatteryCharging, Clock, Gauge, MapPinned, Route } from 'lucide-react';
-import { ESTRUCTURA, TOTAL_CAMAS } from '@vigia/shared/config';
-import type { MapaRespuesta } from '@vigia/shared/tipos';
+import { useEffect, useState } from 'react';
+import { BatteryCharging, Bot, Clock, Gauge, MapPinned, Route } from 'lucide-react';
+import { ESTRUCTURA } from '@vigia/shared/config';
+import type { ConfiguracionEstructura, MapaRespuesta } from '@vigia/shared/tipos';
+import { api } from '../api/cliente';
+import { Chip } from '../components/Chip';
 import { RobotX2UltraAtras, RobotX2UltraFrente } from '../components/RobotX2Ultra';
 import { TarjetaKpi } from '../components/TarjetaKpi';
 import { haceCuanto } from '../utilidades/formato';
@@ -29,11 +32,23 @@ interface Props {
 export function ComoEstoy({ mapa }: Props) {
   const robot = mapa.resumen.robot;
   const bateria = robot.bateria;
+  /**
+   * La estructura se lee de /api/configuracion, no de la constante: así el
+   * cálculo sigue a lo que el encargado haya guardado (naves, camas, largo de
+   * la nave) y a los robots que haya dado de alta.
+   */
+  const [estructura, setEstructura] = useState<ConfiguracionEstructura>(ESTRUCTURA);
 
-  // Metros de cama que hay hoy en el bloque: cada nave mide ESTRUCTURA.largoNave
-  // metros, y cada una de sus camas corre a todo lo largo de la nave.
-  const metrosPorCama = ESTRUCTURA.largoNave;
-  const metrosTotalesHoy = TOTAL_CAMAS * metrosPorCama;
+  useEffect(() => {
+    void api.configuracion().then((config) => setEstructura(config.estructura));
+  }, []);
+
+  const totalCamas = estructura.naves * estructura.camasPorNave;
+
+  // Metros de cama que hay hoy en el bloque: cada nave mide largoNave metros, y
+  // cada una de sus camas corre a todo lo largo de la nave.
+  const metrosPorCama = estructura.largoNave;
+  const metrosTotalesHoy = totalCamas * metrosPorCama;
 
   const segundosCargaCompleta = HORAS_AUTONOMIA_CARGA_COMPLETA * 3600;
   const metrosPorCargaCompleta = VELOCIDAD_TIPICA_MS * segundosCargaCompleta;
@@ -92,6 +107,42 @@ export function ComoEstoy({ mapa }: Props) {
           </section>
 
           <div className="tarjeta">
+            <div className="fila-entre">
+              <h2 className="tarjeta-titulo">
+                <Bot size={17} /> Robots del bloque
+              </h2>
+              <Chip tono="neutro">
+                {estructura.robots.length === 1 ? '1 robot' : `${estructura.robots.length} robots`}
+              </Chip>
+            </div>
+            <p className="secundario txt-pequeno" style={{ margin: '4px 0 0' }}>
+              Los que están dados de alta en Configuración. Solo el que está conectado reporta
+              batería y posición en vivo.
+            </p>
+            <ul className="lista-robots" style={{ marginTop: 12 }}>
+              {estructura.robots.map((suyo) => {
+                const conectado = suyo.nombre === robot.nombre;
+                return (
+                  <li key={suyo.id}>
+                    <span className="robot-marca">
+                      <Bot size={17} />
+                    </span>
+                    <div className="columna" style={{ gap: 2, minWidth: 0 }}>
+                      <span className="txt-cuerpo-fuerte">{suyo.nombre}</span>
+                      <span className="apagado txt-etiqueta">
+                        Nave {suyo.nave} · {suyo.id}
+                      </span>
+                    </div>
+                    <Chip tono={conectado ? 'ok' : 'neutro'}>
+                      {conectado ? `Conectado · ${bateria} %` : 'Sin conexión'}
+                    </Chip>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          <div className="tarjeta">
             <h2 className="tarjeta-titulo">
               <Gauge size={17} /> Cómo se calcula
             </h2>
@@ -99,7 +150,7 @@ export function ComoEstoy({ mapa }: Props) {
               <div className="como-estoy-cuenta">
                 <MapPinned size={16} />
                 <span className="txt-pequeno">
-                  El bloque {mapa.bloque} tiene {TOTAL_CAMAS} camas de {metrosPorCama} m cada una (lo largo de cada
+                  El bloque {mapa.bloque} tiene {totalCamas} camas de {metrosPorCama} m cada una (lo largo de cada
                   nave) → <strong>{metrosTotalesHoy.toLocaleString('es-CO')} m</strong> de cama en total, hoy.
                 </span>
               </div>
@@ -140,9 +191,10 @@ export function ComoEstoy({ mapa }: Props) {
         <span className="punto neutro" style={{ marginTop: 7 }} />
         <span>
           La ilustración del robot es un dibujo vectorial propio, no un modelo CAD importado: en el repo no hay
-          ningún archivo 3D real del AgiBot X2 Ultra. Las proporciones (1,31 m de alto, 0,46 m de hombros) y los
-          sensores (LiDAR 3D, cámaras RGB-D estéreo al frente, cámara trasera, mochila de cómputo) sí siguen la
-          ficha técnica publicada del robot.
+          ningún archivo 3D real del AgiBot X2 Ultra. Lo que sí sigue al robot real son las proporciones (1,31 m
+          de alto, 0,46 m de hombros), los sensores (LiDAR 3D encima del casco, cámaras RGB-D estéreo detrás del
+          visor, cámara trasera, mochila de cómputo) y los detalles por los que se reconoce: carcasa blanca por
+          paneles, articulaciones en gris oscuro y los pies amarillos con suela negra.
         </span>
       </p>
     </section>

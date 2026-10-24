@@ -227,7 +227,11 @@ export interface EnvioSms {
   enviadoEn: string;
   /** ISO 8601 — cuándo lo confirmó la pasarela. */
   entregadoEn?: string;
-  motivo: 'alerta' | 'prueba';
+  /**
+   * `alerta` es el aviso del robot; `decision` es el segundo aviso, el que
+   * sale cuando el encargado ya confirmó o descartó en la app.
+   */
+  motivo: 'alerta' | 'decision' | 'prueba';
   alertaId?: string;
   plantaId?: string;
   /** Etiqueta corta de la planta, ej. "C14-P65". */
@@ -280,6 +284,11 @@ export interface ConfiguracionSms {
   prioridadMinima: PrioridadAlerta;
   /** Estado simulado de la conexión de la finca. */
   hayInternet: boolean;
+  /**
+   * Avisar también la decisión: cuando el encargado confirma o descarta en la
+   * app, al que está en campo le llega si toca tener cuidado y en qué camas.
+   */
+  avisarDecision: boolean;
   destinos: DestinoSms[];
 }
 
@@ -291,8 +300,12 @@ export interface SmsRespuesta {
   limite: number;
   /** Cómo quedaría el mensaje de la última alerta. */
   ejemplo: string;
+  /** Cómo quedaría el aviso de la decisión, una vez confirmada la alerta. */
+  ejemploDecision: string;
   /** Por qué una alerta alta NO saldría por SMS ahora; null si sí sale. */
   motivoBloqueo: string | null;
+  /** Por qué el aviso de la decisión NO saldría ahora; null si sí sale. */
+  motivoBloqueoDecision: string | null;
   nota: string;
 }
 
@@ -376,6 +389,11 @@ export interface Equipo {
   icono: IconoEquipo;
   /** Los equipos sin potencia regulable no muestran la barra. */
   conBarra: boolean;
+  /**
+   * Apagado a mano por el encargado (pantalla de Equipos o paso de protocolo).
+   * Mientras esté desactivado, el programador no lo vuelve a encender solo.
+   */
+  desactivado: boolean;
   /** Las dos cifras que muestra la tarjeta, ya formateadas. */
   metricas: Array<{ etiqueta: string; valor: string }>;
 }
@@ -395,6 +413,8 @@ export interface ResumenEquipos {
   enMarcha: number;
   total: number;
   enEspera: number;
+  /** Equipos apagados a mano por el encargado. */
+  desactivados: number;
   avisos: number;
   /** Promedio de humedad de las naves, en %. */
   humedadMedia: number;
@@ -409,12 +429,6 @@ export interface ResumenEquipos {
 export interface EquiposRespuesta {
   equipos: Equipo[];
   resumen: ResumenEquipos;
-  servicio: {
-    titulo: string;
-    texto: string;
-    telefono: string;
-    correo: string;
-  };
 }
 
 // ── Series y análisis ───────────────────────────────────────────────────────
@@ -435,8 +449,41 @@ export interface ClimaDeNave {
   nave: number;
   humedad: number;
   temperatura: number;
-  /** Camas de la nave por encima del umbral de riesgo. */
+  /**
+   * Cuántas camas de la nave tienen al menos un tramo por encima del umbral.
+   * Es el mismo criterio de "cama húmeda" del mapa: una cama de 100 plantas
+   * casi nunca pasa el umbral de promedio, pero el hongo arranca en el tramo
+   * húmedo, no en el promedio.
+   */
   camasEnRiesgo: number;
+  /** Qué camas son, para poder nombrarlas en pantalla. */
+  camasEnRiesgoLista: number[];
+}
+
+/**
+ * Proyección de propagación: si hoy hay camas en riesgo, cuántas más caerían
+ * si nadie baja la humedad.
+ *
+ * NO es un modelo epidemiológico. Es una regla de vecindad: Botrytis y
+ * Alternaria se propagan por salpique de agua, roce de follaje y aire dentro
+ * de la misma nave, así que cada cama en riesgo expone a las camas contiguas
+ * de su nave. La pantalla lo dice tal cual.
+ */
+export interface PropagacionRiesgo {
+  /** Camas con al menos una planta sobre el umbral, hoy. */
+  camasHoy: number[];
+  /** Camas vecinas que todavía no están en riesgo y quedarían expuestas. */
+  camasExpuestas: number[];
+  /** Camas en riesgo que habría al final de la ventana, si no se atiende. */
+  proyeccion: number;
+  /** Ventana de la proyección, en horas. */
+  horas: number;
+  /** Plantas que hay en las camas expuestas. */
+  plantasExpuestas: number;
+  /** Naves donde está pasando. */
+  naves: number[];
+  /** Hallazgos ya confirmados en campo en las camas de hoy. */
+  confirmados: number;
 }
 
 export interface HallazgosDelDia {
@@ -454,6 +501,7 @@ export interface SeriesRespuesta {
   clima: PuntoClima[];
   porNave: ClimaDeNave[];
   hallazgos: HallazgosDelDia[];
+  propagacion: PropagacionRiesgo;
   resumen: {
     humedadMedia: number;
     humedadMaxima: number;
@@ -463,6 +511,84 @@ export interface SeriesRespuesta {
     horasSobreUmbral: number;
     umbralHumedad: number;
     totalHallazgos: number;
+  };
+}
+
+// ── Predicción de humedad y temperatura ─────────────────────────────────────
+/** Un día del histórico con el que se entrena la regresión. */
+export interface DiaHistorico {
+  /** ISO de medianoche del día. */
+  dia: string;
+  etiqueta: string;
+  humedad: number;
+  temperatura: number;
+}
+
+/** Un día proyectado hacia adelante. */
+export interface DiaPredicho {
+  dia: string;
+  etiqueta: string;
+  /** Humedad relativa prevista, en %. */
+  humedad: number;
+  /** Temperatura prevista, en °C. */
+  temperatura: number;
+  /** Media banda de confianza, en puntos de humedad (± sobre `humedad`). */
+  margen: number;
+  /** Probabilidad estimada de pasar el umbral de riesgo (0–1). */
+  probabilidad: number;
+  /** Día de cuidado: la probabilidad de pasar el umbral llega a la mitad. */
+  cuidado: boolean;
+}
+
+/** El ajuste en sí, para poder mostrar de qué está hecha la predicción. */
+export interface ModeloPrediccion {
+  /** Puntos de humedad que sube (o baja) por día, según la regresión. */
+  pendiente: number;
+  /** Humedad ajustada al primer día del histórico, en %. */
+  intercepto: number;
+  /** Qué tanto explica la recta el histórico (0–1). */
+  r2: number;
+  /** Error típico del ajuste, en puntos de humedad. */
+  error: number;
+  /** Días de histórico usados. */
+  dias: number;
+  /** Peso del clima de la región frente a la tendencia propia (0–1). */
+  pesoClima: number;
+  /**
+   * Diferencia entre la humedad del invernadero y la normal de la Sabana para
+   * este mes, en puntos. Positiva = el invernadero va más húmedo que afuera.
+   */
+  desviacionRegional: number;
+}
+
+/** Cama que el robot debería revisar con más detalle el día de cuidado. */
+export interface CamaPrioritaria {
+  cama: number;
+  nave: number;
+  /** Humedad del tramo más húmedo de la cama, en %. */
+  humedad: number;
+  /** Plantas de la cama que hoy ya están sobre el umbral. */
+  plantasSobreUmbral: number;
+  /** Hallazgos de los últimos 30 días en esa cama. */
+  hallazgos: number;
+}
+
+export interface PrediccionRespuesta {
+  /** Umbral de humedad configurado, en %. */
+  umbral: number;
+  historico: DiaHistorico[];
+  prediccion: DiaPredicho[];
+  modelo: ModeloPrediccion;
+  /** Primer día de cuidado de la proyección, si hay alguno. */
+  diaCritico?: DiaPredicho;
+  /** Camas a revisar con más detalle ese día, de más a menos riesgo. */
+  camasPrioritarias: CamaPrioritaria[];
+  /** Clima de referencia de la Sabana usado para el mes del día crítico. */
+  climaReferencia: {
+    mes: string;
+    humedad: number;
+    temperatura: number;
+    temporada: string;
   };
 }
 
@@ -493,6 +619,14 @@ export interface ProtocolosRespuesta {
 export type EtapaCultivo = 'Vegetativa' | 'Floración' | 'Cuajado' | 'Cosecha';
 export type NumeracionCamas = 'seguida' | 'por_nave';
 
+/** Un robot dado de alta en el bloque. */
+export interface RobotConfigurado {
+  id: string;
+  nombre: string;
+  /** Nave que tiene asignada para sus rondas. */
+  nave: number;
+}
+
 export interface ConfiguracionEstructura {
   bloque: string;
   /** Nombre que se muestra, ej. "Bloque B5". */
@@ -506,6 +640,12 @@ export interface ConfiguracionEstructura {
   /** Medidas de una nave, en metros. */
   anchoNave: number;
   largoNave: number;
+  /**
+   * Robots del bloque. Puede haber más de uno: cada uno recorre la nave que
+   * tiene asignada. Solo el que está conectado reporta batería y posición en
+   * vivo; los demás quedan dados de alta con su nave.
+   */
+  robots: RobotConfigurado[];
 }
 
 export interface ConfiguracionUmbrales {

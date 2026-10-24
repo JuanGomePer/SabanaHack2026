@@ -89,9 +89,12 @@ export function ResumenSms({
         </span>
         <span className="apagado txt-pequeno">
           {datos.config.activo
-            ? datos.config.cuando === 'sin_internet'
-              ? 'Solo cuando la finca se queda sin internet. Respaldo por si el wifi del invernadero falla.'
-              : 'En cuanto el robot encuentra algo, sin esperar a que abras la app.'
+            ? (datos.config.cuando === 'sin_internet'
+                ? 'Solo cuando la finca se queda sin internet. Respaldo por si el wifi del invernadero falla.'
+                : 'En cuanto el robot encuentra algo, sin esperar a que abras la app.') +
+              (datos.config.avisarDecision
+                ? ' Y cuando tú decides, al campo le llega la decisión con las camas que hay que cuidar.'
+                : ' El aviso de la decisión está apagado.')
             : 'Actívalos para que la alerta llegue al celular aunque no haya internet.'}
         </span>
       </div>
@@ -151,7 +154,7 @@ export function PanelSms({
     );
   }
 
-  const { config, envios, limite, ejemplo, motivoBloqueo, nota, pasarela } = datos;
+  const { config, envios, limite, ejemplo, ejemploDecision, motivoBloqueo, nota, pasarela } = datos;
 
   async function ejecutar(accion: () => Promise<SmsRespuesta>, exito?: string) {
     setOcupado(true);
@@ -273,6 +276,25 @@ export function PanelSms({
         </select>
       </div>
 
+      {/*
+        El segundo aviso del flujo: el primero lo manda el robot al detectar,
+        este sale cuando el encargado ya decidió, para que el que está en campo
+        sepa si toca tener cuidado y en qué camas.
+      */}
+      <div className="campo">
+        <div className="columna">
+          <span className="txt-cuerpo-fuerte">Avisar también la decisión</span>
+          <span className="apagado txt-pequeno">
+            Cuando confirmes o descartes, al campo le llega qué se decidió y en qué camas cuidar
+          </span>
+        </div>
+        <Interruptor
+          activo={config.avisarDecision}
+          alCambiar={(valor) => void ejecutar(() => api.guardarSms({ avisarDecision: valor }))}
+          etiquetaAccesible="Avisar también la decisión"
+        />
+      </div>
+
       <div className="campo">
         <div className="columna">
           <span className="txt-cuerpo-fuerte">Simular finca sin internet</span>
@@ -373,11 +395,20 @@ export function PanelSms({
       {error && <p className="error-sms txt-pequeno">{error}</p>}
       {aviso && <p className="aviso-ok txt-pequeno">{aviso}</p>}
 
-      <h3 className="subtitulo-tarjeta">Así llega el mensaje</h3>
+      <h3 className="subtitulo-tarjeta">Así llegan los dos mensajes</h3>
       <div className="burbuja-sms">
+        <span className="apagado txt-etiqueta">1 · cuando el robot detecta</span>
         <p className="txt-pequeno">{ejemplo}</p>
         <span className="apagado txt-etiqueta">
           {ejemplo.length} de {limite} caracteres
+        </span>
+      </div>
+      <div className={`burbuja-sms ${config.avisarDecision ? '' : 'apagada'}`}>
+        <span className="apagado txt-etiqueta">2 · cuando tú ya decidiste</span>
+        <p className="txt-pequeno">{ejemploDecision}</p>
+        <span className="apagado txt-etiqueta">
+          {ejemploDecision.length} de {limite} caracteres
+          {config.avisarDecision ? '' : ' · ahora mismo este aviso está apagado'}
         </span>
       </div>
 

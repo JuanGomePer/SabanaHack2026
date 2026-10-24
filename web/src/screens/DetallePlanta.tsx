@@ -14,8 +14,10 @@ import {
   Droplet,
   Expand,
   Glasses,
+  MessageSquare,
   RefreshCw,
   Send,
+  ShieldAlert,
   Thermometer,
   Wind,
   X,
@@ -52,6 +54,13 @@ const TONO_ESTADO: Record<EstadoCelda, TonoChip> = {
   sin_dato: 'neutro',
 };
 
+/** "las camas 13 y 15", "la cama 13" o la propia si la cama no tiene vecinas. */
+function textoCamas(camas: number[], camaPropia: number): string {
+  if (camas.length === 0) return `la cama ${camaPropia}`;
+  if (camas.length === 1) return `la cama ${camas[0]}`;
+  return `las camas ${camas.slice(0, -1).join(', ')} y ${camas[camas.length - 1]}`;
+}
+
 /** Punto de rocío aproximado (Magnus simplificado), solo para mostrar. */
 function puntoDeRocio(temperatura: number, humedad: number): number {
   const a = 17.27;
@@ -73,6 +82,12 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
   const [gafas, setGafas] = useState<'no_enviado' | 'enviado' | 'recibido'>('no_enviado');
   const [enviando, setEnviando] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  /** Decisión ya tomada: lo que se le avisó al campo y dónde hay que cuidar. */
+  const [decision, setDecision] = useState<{
+    revision: 'confirmada' | 'falsa_alarma';
+    camasVigilar: number[];
+    avisos: number;
+  }>();
 
   useEffect(() => {
     let vigente = true;
@@ -110,14 +125,28 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
     }
   }, [detalle]);
 
+  /**
+   * Tercer paso de la revisión: cuando ya se decidió, el panel no se cierra de
+   * una — primero muestra qué se le avisó a quien está en campo y dónde tiene
+   * que tener cuidado. "Tomar para revisar" todavía no es una decisión, así
+   * que ese sí cierra directo.
+   */
   const revisar = useCallback(
     async (revision: 'en_revision' | 'confirmada' | 'falsa_alarma') => {
       if (!detalle?.hallazgo) return;
       setGuardando(true);
       try {
-        await api.revisar(detalle.hallazgo.id, revision);
+        const resultado = await api.revisar(detalle.hallazgo.id, revision);
         await alRevisar();
-        alCerrar();
+        if (revision === 'en_revision') {
+          alCerrar();
+          return;
+        }
+        setDecision({
+          revision,
+          camasVigilar: resultado.camasVigilar ?? [],
+          avisos: resultado.avisos ?? 0,
+        });
       } finally {
         setGuardando(false);
       }
@@ -336,36 +365,72 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
               mirarla, y ya en campo se decide si la planta está afectada. Así
               el mapa distingue lo que nadie ha visto de lo que ya tiene dueño.
             */}
-            <footer>
-              {hallazgo?.revision === 'en_revision' ? (
+            {decision ? (
+              <footer className="footer-decision">
+                <div className={`decision-aviso ${decision.revision}`}>
+                  <span className="decision-icono">
+                    {decision.revision === 'confirmada' ? (
+                      <ShieldAlert size={18} />
+                    ) : (
+                      <Check size={18} strokeWidth={3} />
+                    )}
+                  </span>
+                  <div className="columna" style={{ gap: 2 }}>
+                    <span className="txt-cuerpo-fuerte">
+                      {decision.revision === 'confirmada'
+                        ? 'Decidido: hay que tener cuidado'
+                        : 'Decidido: falsa alarma'}
+                    </span>
+                    <span className="txt-pequeno">
+                      {decision.revision === 'confirmada'
+                        ? `Nave ${planta.nave}, cama ${planta.cama}, planta ${detalle.etiqueta}. ` +
+                          `Revisa también ${textoCamas(decision.camasVigilar, planta.cama)} de la misma nave.`
+                        : `Nada por hacer en la cama ${planta.cama} de la nave ${planta.nave}.`}
+                    </span>
+                    <span className="apagado txt-etiqueta fila" style={{ gap: 6, marginTop: 2 }}>
+                      <MessageSquare size={12} />
+                      {decision.avisos > 0
+                        ? `Avisado a ${decision.avisos} ${decision.avisos === 1 ? 'número' : 'números'} por mensaje de texto.`
+                        : 'El aviso de la decisión está apagado: avísale tú a quien esté en campo (Configuración · Alertas y umbrales).'}
+                    </span>
+                  </div>
+                </div>
+                <Boton bloque onClick={alCerrar}>
+                  Listo
+                </Boton>
+              </footer>
+            ) : (
+              <footer>
+                {hallazgo?.revision === 'en_revision' ? (
+                  <Boton
+                    bloque
+                    icono={<Check size={18} />}
+                    onClick={() => revisar('confirmada')}
+                    disabled={guardando}
+                  >
+                    Sí está afectada
+                  </Boton>
+                ) : (
+                  <Boton
+                    bloque
+                    icono={<Check size={18} />}
+                    onClick={() => revisar('en_revision')}
+                    disabled={!hallazgo || guardando || hallazgo.revision === 'confirmada'}
+                  >
+                    Tomar para revisar
+                  </Boton>
+                )}
                 <Boton
                   bloque
-                  icono={<Check size={18} />}
-                  onClick={() => revisar('confirmada')}
-                  disabled={guardando}
+                  variante="peligro"
+                  icono={<X size={18} />}
+                  onClick={() => revisar('falsa_alarma')}
+                  disabled={!hallazgo || guardando}
                 >
-                  Sí está afectada
+                  Falsa alarma
                 </Boton>
-              ) : (
-                <Boton
-                  bloque
-                  icono={<Check size={18} />}
-                  onClick={() => revisar('en_revision')}
-                  disabled={!hallazgo || guardando || hallazgo.revision === 'confirmada'}
-                >
-                  Tomar para revisar
-                </Boton>
-              )}
-              <Boton
-                bloque
-                variante="peligro"
-                icono={<X size={18} />}
-                onClick={() => revisar('falsa_alarma')}
-                disabled={!hallazgo || guardando}
-              >
-                Falsa alarma
-              </Boton>
-            </footer>
+              </footer>
+            )}
           </>
         )}
       </aside>

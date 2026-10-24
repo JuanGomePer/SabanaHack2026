@@ -9,13 +9,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ChevronDown,
   Cpu,
-  Download,
   Droplets,
   Fan,
   LogOut,
+  Power,
+  PowerOff,
   RotateCw,
-  Send,
-  Wrench,
   Wind,
 } from 'lucide-react';
 import { NOTA_DATOS_EJEMPLO, UMBRALES } from '@vigia/shared/config';
@@ -65,12 +64,22 @@ function tonoEvento(evento: EventoEquipo): 'ok' | 'riesgo' | 'alerta' {
   return 'ok';
 }
 
-function TarjetaEquipo({ equipo, naveHumeda }: { equipo: Equipo; naveHumeda: boolean }) {
+function TarjetaEquipo({
+  equipo,
+  naveHumeda,
+  ocupado,
+  alCambiar,
+}: {
+  equipo: Equipo;
+  naveHumeda: boolean;
+  ocupado: boolean;
+  alCambiar: (desactivado: boolean) => void;
+}) {
   const Icono = ICONOS[equipo.icono];
   const tono = tonoNota(equipo, naveHumeda);
 
   return (
-    <article className="equipo">
+    <article className={`equipo ${equipo.desactivado ? 'desactivado' : ''}`}>
       <div className="cabecera">
         <span className="equipo-icono">
           <Icono size={20} strokeWidth={2} />
@@ -81,7 +90,9 @@ function TarjetaEquipo({ equipo, naveHumeda }: { equipo: Equipo; naveHumeda: boo
             {equipo.modelo} · {equipo.ubicacion}
           </span>
         </div>
-        <Chip tono={TONO_ESTADO[equipo.estado]}>{equipo.estado}</Chip>
+        <Chip tono={equipo.desactivado ? 'neutro' : TONO_ESTADO[equipo.estado]}>
+          {equipo.desactivado ? 'Desactivado' : equipo.estado}
+        </Chip>
       </div>
 
       <div className="datos">
@@ -101,10 +112,26 @@ function TarjetaEquipo({ equipo, naveHumeda }: { equipo: Equipo; naveHumeda: boo
         </div>
       )}
 
-      <div className={`equipo-nota ${tono}`}>
-        <span className={`punto ${tono}`} />
+      <div className={`equipo-nota ${equipo.desactivado ? 'ok' : tono}`}>
+        <span className={`punto ${equipo.desactivado ? 'neutro' : tono}`} />
         <span className="txt-pequeno">{equipo.queEstaPasando}</span>
       </div>
+
+      {/*
+        Un botón por equipo: apagarlo a mano. Es lo primero que hay que hacer
+        cuando se confirma un hongo — con la ventilación encendida el aire
+        reparte las esporas por toda la nave.
+      */}
+      <Boton
+        bloque
+        variante={equipo.desactivado ? 'secundario' : 'peligro'}
+        icono={equipo.desactivado ? <Power size={17} /> : <PowerOff size={17} />}
+        disabled={ocupado}
+        onClick={() => alCambiar(!equipo.desactivado)}
+        className="boton-separado"
+      >
+        {equipo.desactivado ? 'Volver a activar' : 'Desactivar'}
+      </Boton>
     </article>
   );
 }
@@ -113,7 +140,8 @@ export function Equipos() {
   const [datos, setDatos] = useState<EquiposRespuesta & { nota: string }>();
   const [eventos, setEventos] = useState<EventoEquipo[]>([]);
   const [eventosAbiertos, setEventosAbiertos] = useState(false);
-  const [aviso, setAviso] = useState<string>();
+  /** Id del equipo que se está apagando o encendiendo ahora mismo. */
+  const [ocupado, setOcupado] = useState<string>();
   const idsPrevios = useRef<Set<string>>(new Set());
 
   const cargar = useCallback(async () => {
@@ -133,15 +161,22 @@ export function Equipos() {
     idsPrevios.current = new Set(eventos.map((e) => e.id));
   }, [eventos]);
 
-  const pedir = useCallback(async (tipo: 'servicio' | 'catalogo') => {
-    const respuesta = await api.servicio(tipo);
-    setAviso(respuesta.mensaje);
-    window.setTimeout(() => setAviso(undefined), 4000);
-  }, []);
+  const cambiarEquipo = useCallback(
+    async (id: string, desactivado: boolean) => {
+      setOcupado(id);
+      try {
+        await api.cambiarEquipo(id, desactivado);
+        await cargar();
+      } finally {
+        setOcupado(undefined);
+      }
+    },
+    [cargar],
+  );
 
   if (!datos) return <p className="cargando">Cargando los equipos…</p>;
 
-  const { resumen, equipos, servicio } = datos;
+  const { resumen, equipos } = datos;
   const camas = resumen.camasHumedas;
   const textoCamas =
     camas.length === 0
@@ -156,7 +191,10 @@ export function Equipos() {
           tono="ok"
           etiqueta="Equipos en marcha"
           valor={`${resumen.enMarcha} de ${resumen.total}`}
-          detalle={`${resumen.enEspera} en espera · ${resumen.avisos} con aviso`}
+          detalle={
+            `${resumen.enEspera} en espera · ${resumen.avisos} con aviso` +
+            (resumen.desactivados > 0 ? ` · ${resumen.desactivados} desactivados` : '')
+          }
         />
         <TarjetaKpi
           etiqueta="Humedad promedio"
@@ -191,6 +229,8 @@ export function Equipos() {
               <TarjetaEquipo
                 equipo={equipo}
                 naveHumeda={equipo.nave === resumen.naveCamasHumedas}
+                ocupado={ocupado === equipo.id}
+                alCambiar={(desactivado) => void cambiarEquipo(equipo.id, desactivado)}
                 key={equipo.id}
               />
             ))}
@@ -256,37 +296,6 @@ export function Equipos() {
                   </button>
                 )}
               </div>
-            )}
-          </div>
-
-          <div className="tarjeta servicio-tarjeta">
-            <div className="fila" style={{ gap: 12 }}>
-              <span className="equipo-icono oscuro">
-                <Wrench size={20} strokeWidth={2} />
-              </span>
-              <h2 className="txt-pagina" style={{ margin: 0, fontSize: 20, lineHeight: '26px' }}>
-                {servicio.titulo}
-              </h2>
-            </div>
-            <p className="secundario txt-pequeno" style={{ margin: '12px 0 16px' }}>
-              {servicio.texto}
-            </p>
-            <Boton bloque icono={<Send size={17} />} onClick={() => void pedir('servicio')}>
-              Pedir servicio técnico
-            </Boton>
-            <Boton
-              bloque
-              variante="secundario"
-              icono={<Download size={17} />}
-              onClick={() => void pedir('catalogo')}
-              className="boton-separado"
-            >
-              Ver catálogo técnico
-            </Boton>
-            {aviso && (
-              <p className="txt-pequeno" style={{ margin: '12px 0 0', color: 'var(--color-brand-primary)' }}>
-                {aviso}
-              </p>
             )}
           </div>
         </div>

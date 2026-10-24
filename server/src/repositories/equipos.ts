@@ -18,6 +18,7 @@ function aEquipo(fila: EquipoDb): Omit<Equipo, 'humedad' | 'metricas'> {
     queEstaPasando: fila.queEstaPasando,
     icono: fila.icono,
     conBarra: fila.conBarra,
+    desactivado: fila.desactivado ?? false,
   };
 }
 
@@ -33,7 +34,13 @@ export async function obtenerEquipo(id: string): Promise<Omit<Equipo, 'humedad' 
 
 export async function actualizarEquipo(
   id: string,
-  datos: Partial<{ estado: Equipo['estado']; potencia: number; queEstaPasando: string; ultimoDato: Date }>,
+  datos: Partial<{
+    estado: Equipo['estado'];
+    potencia: number;
+    queEstaPasando: string;
+    ultimoDato: Date;
+    desactivado: boolean;
+  }>,
 ): Promise<void> {
   await db.equipo.update({
     where: { id },

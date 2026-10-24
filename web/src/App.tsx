@@ -58,7 +58,7 @@ const TITULOS: Record<Pantalla, { titulo: string; subtitulo: string }> = {
   },
   aprendizaje: {
     titulo: 'Aprendizaje',
-    subtitulo: 'Qué se hizo para enseñarle a reconocer enfermedades al robot.',
+    subtitulo: 'Modelo predictivo: qué día conviene tener cuidado y en qué camas.',
   },
   protocolos: {
     titulo: 'Protocolos',
@@ -124,7 +124,7 @@ export function App() {
   }
 
   if (flujo === 'bienvenida') {
-    return <Bienvenida resumen={mapa?.resumen} alEntrar={() => setFlujo('app')} />;
+    return <Bienvenida mapa={mapa} alEntrar={() => setFlujo('app')} />;
   }
 
   const subtituloMapa = mapa

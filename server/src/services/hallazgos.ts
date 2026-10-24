@@ -7,6 +7,7 @@ import {
   DISPOSITIVO_GAFAS,
   RECOMENDACIONES,
   USUARIO,
+  camasDeNave,
   etiquetaPlanta,
   idPlanta,
   naveDeCama,
@@ -27,6 +28,7 @@ import * as plantasRepo from '../repositories/plantas.js';
 import { anotarRegistro } from '../repositories/registro.js';
 import { emitir } from '../sse.js';
 import { configuracionActual } from './configuracion.js';
+import { avisarDecisionPorSms } from './sms.js';
 
 export interface OpcionesCrearHallazgo {
   detectadoEn?: Date;
@@ -126,6 +128,21 @@ export async function listarAlertas(filtroRevision?: RevisionHallazgo): Promise<
 export interface ResultadoRevision {
   hallazgo: Hallazgo;
   alerta: Alerta;
+  /** Camas donde hay que tener cuidado, las mismas que salen en el aviso. */
+  camasVigilar: number[];
+  /** Envíos del aviso de la decisión (vacío si no salió ninguno). */
+  avisos: number;
+}
+
+/**
+ * Camas vecinas de la misma nave: las de al lado en la numeración.
+ *
+ * Es por donde se propaga un hongo de hoja o de fruto (salpique, roce de
+ * follaje y aire de la misma nave), así que son las que hay que mirar primero
+ * cuando se confirma un hallazgo.
+ */
+export function camasVecinas(cama: number): number[] {
+  return camasDeNave(naveDeCama(cama)).filter((otra) => Math.abs(otra - cama) === 1);
 }
 
 export async function revisarHallazgo(
@@ -180,7 +197,18 @@ export async function revisarHallazgo(
     nota: nota?.trim() || notaPorDefecto,
   });
 
-  return { hallazgo: actualizado, alerta: aAlerta(actualizado) };
+  const alerta = aAlerta(actualizado);
+  const camasVigilar = camasVecinas(existente.cama);
+
+  /**
+   * Tercer paso del flujo, después de detectar y decidir: al que está en campo
+   * le llega la decisión ya tomada y dónde tiene que tener cuidado. "Tomada
+   * para revisar" todavía no es una decisión, así que no sale aviso.
+   */
+  const avisos =
+    revision === 'en_revision' ? [] : await avisarDecisionPorSms(alerta, revision, camasVigilar);
+
+  return { hallazgo: actualizado, alerta, camasVigilar, avisos: avisos.length };
 }
 
 // ── Envío a las gafas (simulado) ────────────────────────────────────────────

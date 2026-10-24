@@ -26,10 +26,34 @@ export const ESTRUCTURA: ConfiguracionEstructura = {
   plantasPorCelda: 2.5,
   /** Las camas se numeran seguidas de 1 a 24. */
   numeracion: 'seguida',
-  /** Medidas de una nave, en metros (supuesto). */
-  anchoNave: 6.8,
+  /**
+   * Medidas de una nave, en metros. Con 8 naves de 7,8 × 80 m el bloque da
+   * 4.992 m²: la media hectárea que tiene el cultivo de referencia.
+   */
+  anchoNave: 7.8,
   largoNave: 80,
+  /** Un robot de arranque; se dan de alta más desde Configuración. */
+  robots: [{ id: 'X2-01', nombre: 'Robot X2', nave: 6 }],
 };
+
+/** Superficie del bloque en m², a partir de las medidas de sus naves. */
+export function metrosCuadradosDe(estructura: ConfiguracionEstructura): number {
+  return estructura.naves * estructura.anchoNave * estructura.largoNave;
+}
+
+/** La misma superficie en hectáreas. */
+export function hectareasDe(estructura: ConfiguracionEstructura): number {
+  return metrosCuadradosDe(estructura) / 10_000;
+}
+
+/**
+ * Media hectárea, con holgura: el cultivo de referencia mide eso, y la etiqueta
+ * "≈ media hectárea" ayuda más que un número con cuatro decimales.
+ */
+export function esMediaHectarea(estructura: ConfiguracionEstructura): boolean {
+  const ha = hectareasDe(estructura);
+  return ha >= 0.4 && ha <= 0.6;
+}
 
 export const CELDAS_POR_CAMA = Math.round(
   ESTRUCTURA.plantasPorCama / ESTRUCTURA.plantasPorCelda,
@@ -175,6 +199,18 @@ export const RECOMENDACIONES: Record<TipoHallazgo, string> = {
 };
 
 /**
+ * Paso 1 de los tres protocolos: apagar lo que esté moviendo aire en la nave.
+ *
+ * Es el mismo para Botrytis, Alternaria y Trips porque el motivo es el mismo:
+ * con los ventiladores, extractores y brazos encendidos, el aire reparte las
+ * esporas (y arrastra los trips) a las camas vecinas antes de que alguien
+ * llegue a revisar. En la pantalla este paso trae una casilla por equipo
+ * encendido, para apagarlos sin salir de ahí.
+ */
+export const PASO_APAGAR_EQUIPOS =
+  'Apaga primero los equipos de clima encendidos en la nave afectada (ventiladores, extractores, brazos y el programador): con el aire en movimiento lo detectado se reparte a las camas vecinas. Puedes apagarlos aquí mismo, uno por uno.';
+
+/**
  * Protocolos de acción paso a paso por tipo, para la pantalla de Protocolos.
  * Son prácticas de manejo integrado de plagas/enfermedades conocidas para
  * arándano — igual que RECOMENDACIONES, la decisión final siempre es del
@@ -182,13 +218,15 @@ export const RECOMENDACIONES: Record<TipoHallazgo, string> = {
  */
 export const PROTOCOLOS: Record<TipoHallazgo, string[]> = {
   Botrytis: [
+    PASO_APAGAR_EQUIPOS,
     'Retira y saca del invernadero el fruto, flor o pétalo afectado — no lo dejes caer entre las camas, ahí esporula de nuevo.',
-    'Baja la humedad relativa por debajo de 85 % antes de que caiga la noche: ventila, abre cortinas o enciende extractores.',
+    'Baja la humedad relativa por debajo de 85 % antes de que caiga la noche, pero de forma pasiva: abre cortinas y ventanas. Los extractores se vuelven a encender solo cuando el foco ya esté retirado, para no soplar esporas a las camas vecinas.',
     'Mejora la circulación de aire podando follaje denso entre plantas vecinas a la mata afectada.',
     'Si hay flor abierta o fruto a punto de cosecha, coordina con el agrónomo la rotación de fungicida (nunca el mismo modo de acción dos veces seguidas, por resistencia).',
     'Marca la cama en el registro y revisa de nuevo en 48–72 h: Botrytis avanza rápido con humedad alta.',
   ],
   Alternaria: [
+    PASO_APAGAR_EQUIPOS,
     'Quita las hojas con manchas concéntricas y sácalas del invernadero — no las dejes en el suelo, ahí sobrevive el hongo.',
     'Evita el riego por aspersión en esta cama, sobre todo en la tarde/noche: la hoja mojada muchas horas es lo que dispara la infección.',
     'Mejora el drenaje y la circulación de aire alrededor de la planta.',
@@ -196,6 +234,7 @@ export const PROTOCOLOS: Record<TipoHallazgo, string[]> = {
     'Revisa semanalmente las camas vecinas: Alternaria se propaga por salpique de agua y viento.',
   ],
   Trips: [
+    PASO_APAGAR_EQUIPOS,
     'Confirma la plaga con trampas azules o amarillas pegajosas cerca de la zona — los trips son pequeños y fáciles de confundir con otra cosa a simple vista.',
     'Revisa y elimina malezas en floración alrededor del invernadero: son el hospedero habitual desde donde migran los trips.',
     'Evita insecticidas de amplio espectro: matan también a los ácaros depredadores (Amblyseius, Orius) que ya controlan la plaga de forma natural.',
@@ -317,14 +356,6 @@ export const EQUIPOS_SEMILLA: Array<{
 /** Reglas que tiene cargadas el programador de clima. */
 export const REGLAS_PROGRAMADOR = 2;
 
-export const SERVICIO_TECNICO = {
-  titulo: 'Servicio técnico Agrar',
-  texto:
-    'Soporte presencial y remoto, capacitación en mantenimiento y seguimiento postventa de tus equipos.',
-  telefono: '+57 000 000 0000',
-  correo: 'contacto@ejemplo.com',
-};
-
 /** Aviso obligatorio en la pantalla de equipos. */
 export const NOTA_DATOS_EJEMPLO =
   'Datos de ejemplo: las cifras y estados de esta pantalla todavía no vienen del sistema de control de los equipos.';
@@ -345,6 +376,62 @@ export const HISTORICO = {
   /** Días hacia atrás que cubre el historial. */
   dias: 7,
 };
+
+// ── Clima de referencia de la Sabana de Bogotá ──────────────────────────────
+/**
+ * Normales mensuales del altiplano cundiboyacense (≈ 2.600 m), donde están
+ * estos cultivos: humedad relativa media (%) y temperatura media (°C), con la
+ * temporada a la que pertenece el mes.
+ *
+ * SUPUESTOS DE REFERENCIA, no una serie descargada del IDEAM: son los valores
+ * típicos del régimen bimodal de la Sabana —seco en enero-febrero y
+ * julio-agosto, lluvioso en abril-mayo y octubre-noviembre— y están aquí para
+ * que la predicción tenga en cuenta la época del año. Si el equipo consigue la
+ * serie real de la estación más cercana, se reemplazan estos doce números y la
+ * predicción mejora sola.
+ */
+export type TemporadaSabana = 'seca' | 'transición' | 'lluvias';
+
+export const CLIMA_SABANA: Array<{
+  /** 1 = enero. */
+  mes: number;
+  nombre: string;
+  humedad: number;
+  temperatura: number;
+  temporada: TemporadaSabana;
+}> = [
+  { mes: 1, nombre: 'enero', humedad: 75, temperatura: 13.2, temporada: 'seca' },
+  { mes: 2, nombre: 'febrero', humedad: 76, temperatura: 13.5, temporada: 'seca' },
+  { mes: 3, nombre: 'marzo', humedad: 78, temperatura: 13.9, temporada: 'transición' },
+  { mes: 4, nombre: 'abril', humedad: 81, temperatura: 14.0, temporada: 'lluvias' },
+  { mes: 5, nombre: 'mayo', humedad: 81, temperatura: 14.0, temporada: 'lluvias' },
+  { mes: 6, nombre: 'junio', humedad: 79, temperatura: 13.7, temporada: 'transición' },
+  { mes: 7, nombre: 'julio', humedad: 77, temperatura: 13.3, temporada: 'seca' },
+  { mes: 8, nombre: 'agosto', humedad: 75, temperatura: 13.4, temporada: 'seca' },
+  { mes: 9, nombre: 'septiembre', humedad: 76, temperatura: 13.4, temporada: 'transición' },
+  { mes: 10, nombre: 'octubre', humedad: 80, temperatura: 13.6, temporada: 'lluvias' },
+  { mes: 11, nombre: 'noviembre', humedad: 82, temperatura: 13.7, temporada: 'lluvias' },
+  { mes: 12, nombre: 'diciembre', humedad: 79, temperatura: 13.4, temporada: 'transición' },
+];
+
+/** Clima de referencia del mes de una fecha (1 = enero). */
+export function climaSabanaDeMes(mes: number) {
+  return CLIMA_SABANA[Math.min(11, Math.max(0, mes - 1))];
+}
+
+/**
+ * Cuánto pesa el clima de la Sabana en la predicción, frente a la tendencia
+ * propia del invernadero (0 = solo tendencia, 1 = solo clima de la región).
+ * Dentro del invernadero manda lo que hacen el riego y la ventilación, así que
+ * la tendencia propia pesa más que la región.
+ */
+export const PESO_CLIMA_SABANA = 0.35;
+
+/** Días hacia adelante que proyecta el modelo. */
+export const DIAS_PREDICCION = 14;
+
+/** Días de histórico con los que se ajusta la regresión. */
+export const DIAS_HISTORICO_PREDICCION = 30;
 
 // ── Usuario de la demo ──────────────────────────────────────────────────────
 export const USUARIO = {
@@ -402,6 +489,11 @@ export const SMS: ConfiguracionSms = {
   prioridadMinima: 'media',
   hayInternet: true,
   /**
+   * El segundo aviso: cuando el encargado ya decidió en la app, al que está en
+   * campo le llega qué se decidió y dónde tiene que tener cuidado.
+   */
+  avisarDecision: true,
+  /**
    * Ojo con la cuenta de prueba de Twilio: solo escribe a números verificados
    * en la consola. Los demás quedan apagados para que no fallen en la demo.
    */
@@ -420,6 +512,19 @@ export const LIMITE_SMS = 160;
  */
 export const PLANTILLA_SMS =
   'VIGIA {etiqueta}: posible {tipo} {confianza}%. Nave {nave}, cama {cama}. Humedad {humedad}%. Revisa la planta.';
+
+/**
+ * Segundo mensaje, el de la decisión: sale cuando el encargado ya confirmó o
+ * descartó en la app, para que el que está en campo sepa si toca tener cuidado
+ * y exactamente dónde. {vecinas} son las camas de al lado, que es por donde se
+ * propaga.
+ */
+export const PLANTILLA_SMS_DECISION =
+  'VIGIA {etiqueta}: {tipo} CONFIRMADA por {usuario}. Nave {nave}, cama {cama}. Cuidado tambien en {vecinas}. Apaga la ventilacion de la nave.';
+
+/** El mismo aviso cuando la decisión fue descartar: así nadie va de más. */
+export const PLANTILLA_SMS_DESCARTE =
+  'VIGIA {etiqueta}: falsa alarma. {usuario} descarto {tipo} en nave {nave}, cama {cama}. No hay que hacer nada.';
 
 /** Aviso en la configuración de SMS cuando no hay pasarela conectada. */
 export const NOTA_SMS =

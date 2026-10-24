@@ -7,12 +7,14 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { Check, Minus, Plus, RotateCcw, UserPlus } from 'lucide-react';
+import { Bot, Check, Minus, Plus, RotateCcw, Trash2, UserPlus } from 'lucide-react';
 import type {
   Configuracion as Config,
   ConfiguracionEstructura,
   EtapaCultivo,
+  RobotConfigurado,
 } from '@vigia/shared/tipos';
+import { esMediaHectarea, hectareasDe, metrosCuadradosDe } from '@vigia/shared/config';
 import { api } from '../api/cliente';
 import { Boton } from '../components/Boton';
 import { Chip } from '../components/Chip';
@@ -146,9 +148,40 @@ export function Configuracion({ alVerComoLlega, alGuardarPerfil }: Props) {
   const cambiarPerfil = <K extends keyof Config['perfil']>(clave: K, valor: Config['perfil'][K]) =>
     setConfig({ ...config, perfil: { ...config.perfil, [clave]: valor } });
 
+  // ── Robots del bloque: puede haber más de uno ─────────────────────────────
+  const cambiarRobot = (id: string, cambios: Partial<RobotConfigurado>) =>
+    cambiarEstructura(
+      'robots',
+      estructura.robots.map((robot) => (robot.id === id ? { ...robot, ...cambios } : robot)),
+    );
+
+  const agregarRobot = () => {
+    // El número sigue al mayor que ya existe, para no repetir ids al quitar y
+    // volver a añadir.
+    const usados = estructura.robots
+      .map((robot) => Number(robot.id.replace(/\D/g, '')))
+      .filter((n) => Number.isFinite(n));
+    const siguiente = (usados.length ? Math.max(...usados) : 0) + 1;
+    cambiarEstructura('robots', [
+      ...estructura.robots,
+      {
+        id: `X2-${String(siguiente).padStart(2, '0')}`,
+        nombre: `Robot X2-${siguiente}`,
+        nave: Math.min(siguiente, estructura.naves),
+      },
+    ]);
+  };
+
+  const quitarRobot = (id: string) =>
+    cambiarEstructura(
+      'robots',
+      estructura.robots.filter((robot) => robot.id !== id),
+    );
+
   const camas = estructura.naves * estructura.camasPorNave;
   const plantas = camas * estructura.plantasPorCama;
-  const hectareas = (estructura.naves * estructura.anchoNave * estructura.largoNave) / 10_000;
+  const metros = metrosCuadradosDe(estructura);
+  const hectareas = hectareasDe(estructura);
 
   return (
     <section>
@@ -215,6 +248,44 @@ export function Configuracion({ alVerComoLlega, alGuardarPerfil }: Props) {
                   etiqueta="naves"
                   alCambiar={(valor) => cambiarEstructura('naves', valor)}
                 />
+              </div>
+
+              {/* Las medidas mandan la superficie: el cultivo de referencia es
+                  media hectárea, y de aquí sale ese número. */}
+              <div className="campo">
+                <div className="columna">
+                  <span className="txt-cuerpo-fuerte">Medidas de una nave</span>
+                  <span className="apagado txt-pequeno">
+                    Ancho × largo, en metros. Con estas medidas el bloque da{' '}
+                    {numero(Math.round(metros))} m²
+                    {esMediaHectarea(estructura) ? ' — media hectárea' : ''}
+                  </span>
+                </div>
+                <div className="fila" style={{ gap: 8 }}>
+                  <input
+                    type="number"
+                    className="campo-texto campo-medida"
+                    value={estructura.anchoNave}
+                    min={1}
+                    step={0.1}
+                    onChange={(e) =>
+                      cambiarEstructura('anchoNave', Math.max(1, Number(e.target.value)))
+                    }
+                    aria-label="Ancho de la nave, en metros"
+                  />
+                  <span className="apagado txt-pequeno">×</span>
+                  <input
+                    type="number"
+                    className="campo-texto campo-medida"
+                    value={estructura.largoNave}
+                    min={1}
+                    step={1}
+                    onChange={(e) =>
+                      cambiarEstructura('largoNave', Math.max(1, Number(e.target.value)))
+                    }
+                    aria-label="Largo de la nave, en metros"
+                  />
+                </div>
               </div>
 
               <div className="campo">
@@ -316,7 +387,10 @@ export function Configuracion({ alVerComoLlega, alGuardarPerfil }: Props) {
                   <span className="cifra-previa">
                     ≈ {hectareas.toFixed(2).replace('.', ',')}
                   </span>
-                  <span className="apagado txt-pequeno">hectáreas</span>
+                  <span className="apagado txt-pequeno">
+                    hectáreas
+                    {esMediaHectarea(estructura) ? ' · media hectárea' : ''}
+                  </span>
                 </div>
               </div>
 
@@ -330,6 +404,83 @@ export function Configuracion({ alVerComoLlega, alGuardarPerfil }: Props) {
               <Boton variante="secundario" onClick={alVerComoLlega} className="boton-separado">
                 Ver cómo llega una alerta
               </Boton>
+            </div>
+
+            {/*
+              El bloque puede tener más de un robot: uno no alcanza a recorrer
+              todas las naves en una ronda. Cada uno queda con su nave
+              asignada; el que esté conectado es el que reporta batería y
+              posición en vivo.
+            */}
+            <div className="tarjeta tarjeta-ancha">
+              <div className="fila-entre">
+                <h2 className="tarjeta-titulo">Robots del bloque</h2>
+                <Chip tono={estructura.robots.length > 0 ? 'ok' : 'neutro'}>
+                  {estructura.robots.length === 1
+                    ? '1 robot'
+                    : `${estructura.robots.length} robots`}
+                </Chip>
+              </div>
+              <p className="secundario txt-pequeno" style={{ margin: '4px 0 10px' }}>
+                Da de alta un robot por cada uno que recorra el bloque y asígnale su nave. Con{' '}
+                {estructura.naves} naves, un solo robot tiene que repartir la ronda entre todas.
+              </p>
+
+              <ul className="lista-robots">
+                {estructura.robots.map((robot) => (
+                  <li key={robot.id}>
+                    <span className="robot-marca">
+                      <Bot size={17} />
+                    </span>
+                    <input
+                      type="text"
+                      className="campo-texto"
+                      value={robot.nombre}
+                      onChange={(e) => cambiarRobot(robot.id, { nombre: e.target.value })}
+                      aria-label={`Nombre del robot ${robot.id}`}
+                    />
+                    <label className="fila" style={{ gap: 8 }}>
+                      <span className="apagado txt-pequeno">Nave</span>
+                      <select
+                        className="selector"
+                        value={robot.nave}
+                        onChange={(e) => cambiarRobot(robot.id, { nave: Number(e.target.value) })}
+                        aria-label={`Nave asignada al robot ${robot.id}`}
+                      >
+                        {Array.from({ length: estructura.naves }, (_, i) => i + 1).map((nave) => (
+                          <option key={nave} value={nave}>
+                            {nave}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <span className="apagado txt-etiqueta">{robot.id}</span>
+                    <button
+                      type="button"
+                      className="icono-boton"
+                      aria-label={`Quitar ${robot.nombre}`}
+                      onClick={() => quitarRobot(robot.id)}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+
+              {estructura.robots.length === 0 && (
+                <p className="apagado txt-pequeno" style={{ margin: '4px 0 0' }}>
+                  No hay ningún robot dado de alta: el mapa se queda sin rondas.
+                </p>
+              )}
+
+              <div className="fila" style={{ gap: 10, marginTop: 14 }}>
+                <Boton variante="secundario" icono={<Plus size={17} />} onClick={agregarRobot}>
+                  Añadir robot
+                </Boton>
+                <Boton icono={<Check size={18} />} onClick={() => void guardar()}>
+                  Guardar cambios
+                </Boton>
+              </div>
             </div>
           </>
         )}
