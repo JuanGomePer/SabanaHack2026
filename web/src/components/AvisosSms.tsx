@@ -3,7 +3,10 @@
  * internet. Se configura en 06 · Config · Alertas y umbrales y se resume
  * arriba de 04 · Alertas.
  *
- * El envío es una SIMULACIÓN del prototipo: no hay pasarela de SMS conectada.
+ * El envío real lo hace `server/src/pasarela.ts` (Twilio, WhatsApp o
+ * Telegram); sin credenciales en el `.env` del servidor, queda en modo
+ * simulado — el flujo se ve igual, pero no sale ningún mensaje de verdad.
+ * `datos.pasarela.real` dice en cuál de los dos modos está.
  */
 
 import { useCallback, useEffect, useState } from 'react';

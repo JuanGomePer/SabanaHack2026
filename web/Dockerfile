@@ -34,6 +34,14 @@ RUN npm install
 COPY shared shared
 COPY web web
 
+# Railway solo mete al build las variables del dashboard que el Dockerfile
+# pida explícito con ARG (no las inyecta todas solas). Vite las necesita como
+# variable de entorno real en el momento del build (las hornea en el bundle),
+# por eso el ENV después del ARG — sin esto, `npm run build` no las ve y el
+# frontend queda apuntando a `/api` (su propio dominio) en vez de la API.
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build --workspace web
 
 ENV NODE_ENV=production
