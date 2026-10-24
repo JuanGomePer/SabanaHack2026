@@ -17,6 +17,7 @@ import { api } from '../api/cliente';
 import { Boton } from '../components/Boton';
 import { Chip } from '../components/Chip';
 import { Interruptor } from '../components/Interruptor';
+import { PanelSms, useSms } from '../components/AvisosSms';
 import { Segmentado } from '../components/Segmentado';
 import { numero } from '../utilidades/formato';
 
@@ -105,6 +106,8 @@ export function Configuracion({ alVerComoLlega }: Props) {
   const [config, setConfig] = useState<Config>();
   const [original, setOriginal] = useState<Config>();
   const [guardado, setGuardado] = useState(false);
+  // Los avisos por SMS se guardan solos en /api/sms, no con este formulario.
+  const sms = useSms();
 
   useEffect(() => {
     void api.configuracion().then((datos) => {
@@ -115,7 +118,10 @@ export function Configuracion({ alVerComoLlega }: Props) {
 
   const guardar = useCallback(async () => {
     if (!config) return;
-    const actualizada = await api.guardarConfiguracion(config);
+    const actualizada = await api.guardarConfiguracion({
+      estructura: config.estructura,
+      umbrales: config.umbrales,
+    });
     setConfig(actualizada);
     setGuardado(true);
     window.setTimeout(() => setGuardado(false), 2500);
@@ -433,6 +439,8 @@ export function Configuracion({ alVerComoLlega }: Props) {
                 />
               </div>
             </div>
+
+            <PanelSms datos={sms.datos} setDatos={sms.setDatos} recargar={sms.recargar} />
           </>
         )}
 

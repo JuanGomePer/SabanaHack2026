@@ -11,7 +11,13 @@ function requerida(nombre: string): string {
 
 export const env = {
   databaseUrl: requerida('DATABASE_URL'),
-  puerto: Number(process.env.PORT ?? 3001),
+  /**
+   * `PORT` es lo que fijan Render y Railway, así que manda en producción.
+   * En local, `API_PORT` tiene prioridad: algunos lanzadores le inyectan un
+   * `PORT` al `npm run dev` entero y la API terminaba peleando el puerto con
+   * Vite. El proxy del frontend apunta al 3001.
+   */
+  puerto: Number(process.env.API_PORT ?? process.env.PORT ?? 3001),
   robotApiKey: process.env.ROBOT_API_KEY,
   corsOrigin: process.env.CORS_ORIGIN ?? '*',
   esProduccion: process.env.NODE_ENV === 'production',

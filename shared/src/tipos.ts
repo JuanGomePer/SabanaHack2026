@@ -170,13 +170,115 @@ export interface Alerta {
   fotoUrl: string;
 }
 
+// ── Avisos por SMS ──────────────────────────────────────────────────────────
+/**
+ * Canal de respaldo: en el campo el internet se cae, pero la señal de celular
+ * suele aguantar. Es una SIMULACIÓN: el servidor no manda mensajes de verdad,
+ * no hay pasarela ni operador conectado.
+ */
+export type EstadoSms = 'enviado' | 'entregado' | 'fallido';
+
+/** Cuándo se manda el SMS. */
+export type CuandoSms = 'siempre' | 'sin_internet';
+
+export interface DestinoSms {
+  /** Ej. "SMS-1" */
+  id: string;
+  nombre: string;
+  /** Formato internacional, ej. "+57 310 555 0142". */
+  numero: string;
+  activo: boolean;
+}
+
+export interface EnvioSms {
+  id: string;
+  destinoId: string;
+  numero: string;
+  nombre: string;
+  /** Texto tal como llegaría al celular. */
+  texto: string;
+  estado: EstadoSms;
+  /** ISO 8601 */
+  enviadoEn: string;
+  /** ISO 8601 — cuándo lo confirmó la pasarela. */
+  entregadoEn?: string;
+  motivo: 'alerta' | 'prueba';
+  alertaId?: string;
+  plantaId?: string;
+  /** Etiqueta corta de la planta, ej. "C14-P65". */
+  etiqueta?: string;
+  /** Qué pasarela lo mandó. */
+  proveedor: ProveedorSms;
+  /** Identificador del mensaje en la pasarela (evidencia del envío real). */
+  referencia?: string;
+  /** Por qué falló, si falló. */
+  error?: string;
+  /** Salió, pero con alguna salvedad (ej. la plantilla fija del trial). */
+  aviso?: string;
+}
+
+// ── Pasarela de mensajes ────────────────────────────────────────────────────
+/**
+ * `simulado` no manda nada: deja el envío en pantalla y en el registro.
+ * `twilio` manda SMS de verdad (en cuenta de prueba, con plantilla fija).
+ * `whatsapp` usa el sandbox de WhatsApp de Twilio: gratis y con texto propio.
+ * `telegram` manda al chat de un bot, también gratis.
+ * Los dos últimos necesitan internet en el celular, así que no cubren el caso
+ * de "la finca se quedó sin cobertura": eso solo lo resuelve el SMS.
+ */
+export type ProveedorSms = 'simulado' | 'twilio' | 'whatsapp' | 'telegram';
+
+/** Resultado de comprobar las credenciales sin mandar ningún mensaje. */
+export interface VerificacionPasarela {
+  ok: boolean;
+  mensaje: string;
+  /** Lo que respondió el proveedor, para depurar. */
+  detalle?: string;
+}
+
+export interface EstadoPasarela {
+  proveedor: ProveedorSms;
+  /** true solo si hay credenciales y los mensajes salen de verdad. */
+  real: boolean;
+  /** Nombre para mostrar, ej. "Twilio" o "Simulada". */
+  nombre: string;
+  /** Desde dónde se manda, ej. el número de Twilio. */
+  remitente?: string;
+  /** Qué falta configurar para que salga de verdad. */
+  falta?: string;
+}
+
+export interface ConfiguracionSms {
+  activo: boolean;
+  cuando: CuandoSms;
+  /** Prioridad mínima de la alerta para que salga un SMS. */
+  prioridadMinima: PrioridadAlerta;
+  /** Estado simulado de la conexión de la finca. */
+  hayInternet: boolean;
+  destinos: DestinoSms[];
+}
+
+export interface SmsRespuesta {
+  config: ConfiguracionSms;
+  pasarela: EstadoPasarela;
+  envios: EnvioSms[];
+  /** Caracteres que caben en un mensaje. */
+  limite: number;
+  /** Cómo quedaría el mensaje de la última alerta. */
+  ejemplo: string;
+  /** Por qué una alerta alta NO saldría por SMS ahora; null si sí sale. */
+  motivoBloqueo: string | null;
+  nota: string;
+}
+
 // ── Registro de incidentes ──────────────────────────────────────────────────
 export type AccionRegistro =
   | 'confirmada'
   | 'falsa_alarma'
   | 'enviada_a_gafas'
   | 'alerta_nueva'
-  | 'equipo';
+  | 'equipo'
+  | 'sms';
 
 export interface EntradaRegistro {
   id: string;
@@ -322,12 +424,16 @@ export interface Configuracion {
   estructura: ConfiguracionEstructura;
   umbrales: ConfiguracionUmbrales;
 }
+// La configuración de los avisos por SMS va aparte (GET/PUT /api/sms): vive en
+// memoria del servidor y no en la tabla Configuracion, para no mezclar los
+// umbrales del cultivo con los datos de contacto.
 
 // ── Eventos en vivo (SSE) ───────────────────────────────────────────────────
 export type EventoVivo =
   | { tipo: 'alerta_nueva'; alerta: Alerta }
   | { tipo: 'estado_cambiado'; plantaId: string; estado: EstadoCelda }
-  | { tipo: 'equipos_actualizados'; eventos: EventoEquipo[] };
+  | { tipo: 'equipos_actualizados'; eventos: EventoEquipo[] }
+  | { tipo: 'sms_enviado'; envios: EnvioSms[] };
 
 // ── Respuesta de "enviar a las gafas" ───────────────────────────────────────
 export interface RespuestaGafas {

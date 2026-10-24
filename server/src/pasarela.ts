@@ -3,8 +3,8 @@
  * de verdad.
  *
  * Sin credenciales queda en modo `simulado` (el prototipo funciona igual y no
- * manda nada). Con credenciales en el archivo `.env` de la raíz, los mensajes
- * salen por la pasarela elegida:
+ * manda nada). Con credenciales en `server/.env`, los mensajes salen por la
+ * pasarela elegida:
  *
  *   SMS_PROVEEDOR=twilio
  *   TWILIO_ACCOUNT_SID=ACxxxxxxxx
@@ -15,48 +15,14 @@
  *   TELEGRAM_BOT_TOKEN=123456:ABC...
  *   TELEGRAM_CHAT_ID=987654321
  *
- * Ver .env.ejemplo y NOTAS.md.
+ * Ver server/.env.example y NOTAS.md.
  */
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import 'dotenv/config';
 import type { EstadoPasarela, ProveedorSms, VerificacionPasarela } from '@vigia/shared/tipos';
 
-const AQUI = path.dirname(fileURLToPath(import.meta.url));
-const RAIZ = path.resolve(AQUI, '../..');
 /** Si la pasarela no responde en este tiempo, el envío se marca como fallido. */
 const TIEMPO_LIMITE_MS = 10_000;
-
-/**
- * Lee el .env de la raíz sin depender de ningún paquete.
- * Formato: una variable por línea, `CLAVE=valor`, `#` para comentarios.
- */
-function cargarEnv(): void {
-  const ruta = path.join(RAIZ, '.env');
-  if (!fs.existsSync(ruta)) return;
-
-  for (const linea of fs.readFileSync(ruta, 'utf8').split(/\r?\n/)) {
-    const limpia = linea.trim();
-    if (!limpia || limpia.startsWith('#')) continue;
-
-    const corte = limpia.indexOf('=');
-    if (corte < 1) continue;
-
-    const clave = limpia.slice(0, corte).trim();
-    let valor = limpia.slice(corte + 1).trim();
-    if (
-      (valor.startsWith('"') && valor.endsWith('"')) ||
-      (valor.startsWith("'") && valor.endsWith("'"))
-    ) {
-      valor = valor.slice(1, -1);
-    }
-    // Lo que ya venga del entorno manda sobre el archivo.
-    if (process.env[clave] === undefined) process.env[clave] = valor;
-  }
-}
-
-cargarEnv();
 
 const env = (clave: string): string | undefined => {
   const valor = process.env[clave]?.trim();

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "PORT=3001 tsx watch src/index.ts",
+    "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
     "postinstall": "prisma generate",
     "db:migrate:deploy": "prisma migrate deploy",

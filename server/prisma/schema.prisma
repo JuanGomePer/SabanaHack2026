@@ -64,6 +64,7 @@ enum AccionRegistro {
   enviada_a_gafas
   alerta_nueva
   equipo
+  sms
 }
 
 /// Una planta del cultivo. Id en formato "B5-C14-P065".

@@ -25,6 +25,7 @@ import { emitir } from '../sse.js';
 import { aAlerta, crearHallazgo } from './hallazgos.js';
 import { responderAAlerta } from './equipos.js';
 import { configuracionActual } from './configuracion.js';
+import { avisarPorSms } from './sms.js';
 
 const CLASES_RECONOCIDAS: Record<string, TipoHallazgo> = {
   Botrytis: 'Botrytis',
@@ -166,7 +167,14 @@ export async function procesarObservacion(
       usuario: 'Módulo de visión',
       nota: `Hallazgo de ${hallazgo.tipo} con ${Math.round(hallazgo.confianza * 100)} % de confianza (observación ${observacionId}).`,
     });
-    emitir({ tipo: 'alerta_nueva', alerta: aAlerta(hallazgo) });
+    const alerta = aAlerta(hallazgo);
+    emitir({ tipo: 'alerta_nueva', alerta });
+
+    // Canal de respaldo: si toca, el aviso sale también al celular.
+    await avisarPorSms(alerta).catch((error) =>
+      console.error('[ingesta] no se pudo avisar por SMS:', error),
+    );
+
     const eventosEquipo = await responderAAlerta(hallazgo.nave, hallazgo.plantaId, hallazgo.cama);
     emitir({ tipo: 'equipos_actualizados', eventos: eventosEquipo });
   }

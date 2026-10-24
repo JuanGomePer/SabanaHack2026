@@ -158,7 +158,7 @@ ni con ningún visor**, y no se envía nada a ninguna parte.
 | `GET /api/registro.csv` | el mismo registro como CSV descargable |
 | `GET /api/registro/movimientos` | `EntradaRegistro[]`, bitácora de acciones |
 | `GET /api/configuracion` | `Configuracion` |
-| `PUT /api/configuracion` | acepta `{ estructura?, umbrales? }` parciales |
+| `PUT /api/configuracion` | acepta `{ estructura?, umbrales? }` parciales. Los avisos al celular van por `/api/sms` |
 
 ```ts
 interface Alerta {
@@ -229,6 +229,104 @@ cultivo.
 si no, genera un placeholder SVG con el `bbox` dibujado encima. El frontend pide
 siempre la misma URL, así que cambiar a fotos reales no toca el frontend.
 
+### Avisos por SMS
+
+Canal de respaldo para cuando la finca se queda sin internet: la misma alerta
+sale también como mensaje de texto al celular.
+
+La pasarela es conectable (`server/src/pasarela.ts`). **Sin credenciales en
+`server/.env` el servidor va en modo `simulado`**: crea el envío, simula el
+acuse ~1,8 s después y no manda nada. Con credenciales manda de verdad por
+`twilio` (SMS), `whatsapp` (sandbox de Twilio) o `telegram`, y el envío guarda
+la `referencia` del proveedor o el `error` si falla. El campo `pasarela` de la
+respuesta dice en qué modo está.
+
+A diferencia de los umbrales, **la configuración de avisos vive en memoria del
+proceso**, no en la tabla `Configuracion`: son datos de contacto, no estado del
+cultivo. Los envíos sí quedan en la bitácora (`accion: 'sms'`).
+
+| Ruta | Devuelve |
+| --- | --- |
+| `GET /api/sms` | `SmsRespuesta` |
+| `PUT /api/sms` | acepta `{ activo?, cuando?, prioridadMinima?, hayInternet? }` |
+| `POST /api/sms/destinos` | `{ nombre, numero }` → agrega el número · 400 si el formato no sirve |
+| `PATCH /api/sms/destinos/:id` | `{ nombre?, numero?, activo? }` |
+| `DELETE /api/sms/destinos/:id` | quita el número · 404 si no existe |
+| `POST /api/sms/verificar` | comprueba las credenciales de la pasarela **sin mandar nada** → `{ verificacion, ...SmsRespuesta }` |
+| `POST /api/sms/prueba` | manda un mensaje de prueba a los números activos (de verdad si hay pasarela) |
+
+```ts
+interface ConfiguracionSms {
+  activo: boolean;
+  cuando: 'siempre' | 'sin_internet';
+  prioridadMinima: PrioridadAlerta;   // la prioridad sale de la confianza
+  hayInternet: boolean;               // estado simulado de la conexión
+  destinos: DestinoSms[];
+}
+
+interface DestinoSms {
+  id: string;                         // "SMS-1"
+  nombre: string;
+  numero: string;                     // "+57 310 555 0142"
+  activo: boolean;
+}
+
+interface EnvioSms {
+  id: string;                         // "SMS-E-0001"
+  destinoId: string;
+  numero: string;
+  nombre: string;
+  texto: string;                      // lo que llega al celular
+  estado: 'enviado' | 'entregado' | 'fallido';
+  enviadoEn: string;                  // ISO 8601
+  entregadoEn?: string;
+  motivo: 'alerta' | 'prueba';
+  alertaId?: string;
+  plantaId?: string;
+  etiqueta?: string;                  // "C14-P65"
+  proveedor: ProveedorSms;
+  referencia?: string;                // id del mensaje en la pasarela
+  error?: string;                     // por qué falló
+}
+
+type ProveedorSms = 'simulado' | 'twilio' | 'whatsapp' | 'telegram';
+
+interface EstadoPasarela {
+  proveedor: ProveedorSms;
+  real: boolean;                      // true solo si sale de verdad
+  nombre: string;                     // "Twilio", "Simulada"
+  remitente?: string;                 // el número desde el que se manda
+  falta?: string;                     // qué configurar para que salga
+}
+
+interface VerificacionPasarela {
+  ok: boolean;
+  mensaje: string;                    // listo para mostrar en pantalla
+  detalle?: string;                   // lo que respondió el proveedor
+}
+
+interface SmsRespuesta {
+  config: ConfiguracionSms;
+  pasarela: EstadoPasarela;
+  envios: EnvioSms[];                 // los últimos 40, más reciente primero
+  limite: number;                     // 160 caracteres
+  ejemplo: string;                    // cómo queda el mensaje
+  motivoBloqueo: string | null;       // por qué NO saldría un SMS ahora
+  nota: string;                       // aviso de simulación o de cobro
+}
+```
+
+La pasarela se elige con `SMS_PROVEEDOR` en el `.env` de la raíz
+(`twilio` necesita `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` y `TWILIO_FROM`;
+`telegram` necesita `TELEGRAM_BOT_TOKEN` y `TELEGRAM_CHAT_ID`). Ver
+`.env.ejemplo`. El puerto de la API se cambia con `API_PORT` (3001 por defecto).
+
+El número se normaliza a formato internacional (sin indicativo se asume `+57`).
+Se manda un SMS cuando `activo`, la prioridad de la alerta llega a
+`prioridadMinima`, hay al menos un destino activo y —si `cuando` es
+`sin_internet`— la finca está sin conexión. El texto sale de `PLANTILLA_SMS`
+(`shared/src/config.ts`) recortado a 160 caracteres.
+
 ### Eventos en vivo
 
 `GET /api/eventos` es un stream de Server-Sent Events. Cada mensaje es un JSON:
@@ -237,7 +335,8 @@ siempre la misma URL, así que cambiar a fotos reales no toca el frontend.
 type EventoVivo =
   | { tipo: 'alerta_nueva'; alerta: Alerta }
   | { tipo: 'estado_cambiado'; plantaId: string; estado: EstadoCelda }
-  | { tipo: 'equipos_actualizados'; eventos: EventoEquipo[] };
+  | { tipo: 'equipos_actualizados'; eventos: EventoEquipo[] }
+  | { tipo: 'sms_enviado'; envios: EnvioSms[] };
 ```
 
 Abrir este canal es lo que arranca la cuenta atrás de la alerta del demo, por

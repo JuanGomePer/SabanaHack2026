@@ -10,6 +10,7 @@ import { fotosRouter } from './fotos.js';
 import { eventosRouter } from './eventos.js';
 import { demoRouter } from './demo.js';
 import { observacionesRouter } from './observaciones.js';
+import { smsRouter } from './sms.js';
 
 export const apiRouter = Router();
 
@@ -24,3 +25,4 @@ apiRouter.use(fotosRouter);
 apiRouter.use(eventosRouter);
 apiRouter.use(demoRouter);
 apiRouter.use(observacionesRouter);
+apiRouter.use(smsRouter);

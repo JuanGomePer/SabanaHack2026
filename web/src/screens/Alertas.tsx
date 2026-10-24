@@ -1,11 +1,12 @@
 /** 04 · Alertas (8:3326). */
 
 import { useMemo, useState } from 'react';
-import { ArrowRight, Camera, Search } from 'lucide-react';
+import { ArrowRight, Camera, MessageSquare, Search } from 'lucide-react';
 import type { Alerta, RevisionHallazgo, TipoHallazgo } from '@vigia/shared/tipos';
 import { Boton } from '../components/Boton';
 import { Chip } from '../components/Chip';
 import { BarraConfianza } from '../components/BarraConfianza';
+import { ResumenSms, useSms } from '../components/AvisosSms';
 import { fechaHora, haceCuanto } from '../utilidades/formato';
 
 type Filtro = 'pendiente' | 'confirmada' | 'falsa_alarma' | 'todas';
@@ -42,13 +43,21 @@ const SEGUNDOS_REFRESCO = 15;
 interface Props {
   alertas: Alerta[];
   alAbrirPlanta: (plantaId: string) => void;
+  alConfigurarAvisos: () => void;
 }
 
-export function Alertas({ alertas, alAbrirPlanta }: Props) {
+export function Alertas({ alertas, alAbrirPlanta, alConfigurarAvisos }: Props) {
   const [filtro, setFiltro] = useState<Filtro>('pendiente');
   const [busqueda, setBusqueda] = useState('');
   const [nave, setNave] = useState('Todas las naves');
   const [tipo, setTipo] = useState<string>('Todos los tipos');
+  const sms = useSms();
+
+  /** Alertas que ya salieron por mensaje de texto. */
+  const avisadasPorSms = useMemo(
+    () => new Set((sms.datos?.envios ?? []).map((envio) => envio.alertaId).filter(Boolean)),
+    [sms.datos],
+  );
 
   const naves = useMemo(
     () => ['Todas las naves', ...[...new Set(alertas.map((a) => a.nave))].sort((a, b) => a - b).map((n) => `Nave ${n}`)],
@@ -73,6 +82,8 @@ export function Alertas({ alertas, alAbrirPlanta }: Props) {
 
   return (
     <section>
+      <ResumenSms datos={sms.datos} alConfigurar={alConfigurarAvisos} />
+
       <div className="barra-filtros">
         <div className="grupo-filtros">
           {FILTROS.map(({ id, texto }) => (
@@ -151,7 +162,16 @@ export function Alertas({ alertas, alAbrirPlanta }: Props) {
                   {haceCuanto(alerta.detectadoEn)}
                 </td>
                 <td>
-                  <Chip tono={TONO_REVISION[alerta.revision]}>{TEXTO_REVISION[alerta.revision]}</Chip>
+                  <div className="columna" style={{ gap: 6, alignItems: 'flex-start' }}>
+                    <Chip tono={TONO_REVISION[alerta.revision]}>
+                      {TEXTO_REVISION[alerta.revision]}
+                    </Chip>
+                    {avisadasPorSms.has(alerta.id) && (
+                      <span className="marca-sms txt-etiqueta" title="También se avisó por mensaje de texto">
+                        <MessageSquare size={12} /> Avisada por SMS
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td>
                   <Boton

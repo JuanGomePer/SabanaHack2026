@@ -13,6 +13,7 @@ import { anotarRegistro } from '../repositories/registro.js';
 import { emitir } from '../sse.js';
 import { aAlerta, crearHallazgo } from './hallazgos.js';
 import { aplicarReglas, responderAAlerta } from './equipos.js';
+import { avisarPorSms, reiniciarSms } from './sms.js';
 
 let programada = false;
 let yaLlego = false;
@@ -44,7 +45,13 @@ export async function lanzarAlertaDemo(): Promise<void> {
     nota: `Hallazgo de ${hallazgo.tipo} con ${Math.round(hallazgo.confianza * 100)} % de confianza.`,
   });
 
-  emitir({ tipo: 'alerta_nueva', alerta: aAlerta(hallazgo) });
+  const alerta = aAlerta(hallazgo);
+  emitir({ tipo: 'alerta_nueva', alerta });
+
+  // Canal de respaldo: si toca, el aviso sale también al celular.
+  await avisarPorSms(alerta).catch((error) =>
+    console.error('[demo] no se pudo avisar por SMS:', error),
+  );
 
   const nuevos = await responderAAlerta(hallazgo.nave, hallazgo.plantaId, hallazgo.cama);
   emitir({ tipo: 'equipos_actualizados', eventos: nuevos });
@@ -56,6 +63,7 @@ export async function reiniciarDemo(): Promise<void> {
   temporizador = undefined;
   programada = false;
   yaLlego = false;
+  reiniciarSms();
 
   const plantaIds = await hallazgosRepo.eliminarHallazgosDeDemo(ALERTA_DEMO.cama, ALERTA_DEMO.planta);
   for (const plantaId of plantaIds) {
