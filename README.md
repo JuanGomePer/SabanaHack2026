@@ -63,6 +63,47 @@ la API (`vigia-api`) + el sitio estático del frontend (`vigia-web`).
    `render.yaml` o desde el dashboard — Render no resuelve esas referencias
    cruzadas solo.
 
+## Desplegar en Railway
+
+Railway no tiene un blueprint declarativo único como Render (no provisiona
+Postgres ni resuelve variables cruzadas entre servicios solo desde un
+archivo), así que esta parte sí es manual desde el dashboard — el repo trae
+`railway.api.json` y `railway.web.json` con el build/start/healthcheck de
+cada servicio, pero hay que crear los servicios y las variables a mano:
+
+1. **New Project → Deploy from GitHub repo** → selecciona este repositorio.
+   Railway va a crear un primer servicio; bórralo o reusalo para la API
+   (el paso 3 lo configura).
+2. **+ New → Database → Add PostgreSQL** en el mismo proyecto.
+3. Para la API: en el servicio, **Settings → Config-as-code** → pon la ruta
+   `/railway.api.json` (con la barra inicial — Railway no sigue el Root
+   Directory para este archivo, pide la ruta absoluta desde la raíz del
+   repo). Deja el **Root Directory** vacío (es un monorepo con npm
+   workspaces, los comandos ya corren desde la raíz).
+4. En **Variables** del servicio de la API, agrega:
+   - `DATABASE_URL` → `${{Postgres.DATABASE_URL}}` (la referencia a la base
+     que creaste en el paso 2; Railway te autocompleta el nombre).
+   - `ROBOT_API_KEY` → genera un valor random (lo vas a necesitar para
+     `POST /api/observaciones`).
+   - `NODE_ENV` → `production`.
+   - `CORS_ORIGIN` → la URL pública del servicio web (puedes dejarla
+     pendiente y volver a este paso después de crear el servicio del web en
+     el paso 6, cuando ya sepas la URL).
+5. En **Settings → Networking** de la API, genera un dominio público
+   (`Generate Domain`) — esa URL es la que necesitas para `VITE_API_URL` más
+   abajo.
+6. Para el frontend: **+ New → GitHub repo** otra vez, mismo repositorio, para
+   crear un SEGUNDO servicio en el mismo proyecto. **Settings →
+   Config-as-code** → `/railway.web.json`. En **Variables**:
+   `VITE_API_URL` → `https://<dominio-de-la-api>/api`. Genera también su
+   dominio público en **Networking**.
+7. Vuelve al paso 4 y completa `CORS_ORIGIN` con el dominio del web que
+   acabas de generar — si no, el navegador bloquea las peticiones por CORS.
+8. Cada deploy de la API corre `preDeployCommand` (migraciones + siembra)
+   antes de servir tráfico, igual que en Render — no hay que correrlo a
+   mano. El seed es idempotente, así que repetirlo en cada deploy no
+   duplica nada.
+
 ## Estructura
 
 ```
