@@ -58,3 +58,19 @@ Reglas: `prepare` descarga a `.part`, verifica tamaño, MD5 y SHA-256, extrae a 
 1. `ROBOFLOW_API_KEY` (variable de entorno) → preparar, auditar y congelar DrBerry → experimento base E1.
 2. Decidir, con el equipo de la app, un volumen o almacenamiento de objetos para las fotos reales de `server/fotos/`.
 3. Imagen L4T para PC2.
+
+## F. Respaldo en Hugging Face (repo de datasets PRIVADO) — D-049
+
+Para que los datasets y los modelos no dependan de un solo equipo, sin publicarlos en GitHub (repo público):
+
+1. Una persona del equipo crea una organización o cuenta en Hugging Face y un token con permiso de escritura.
+2. Iniciar sesión con `.venv/Scripts/hf auth login` (guarda el token en la caché del usuario, fuera del repo) o definir `HF_TOKEN` en la sesión, y definir `BERRYVISION_HF_REPO=<cuenta>/berryvision-data` (cuenta del equipo: `sofnun1109`).
+3. `pip install -e ".[hub]"` y `python scripts/sync_hub.py status` (licencia, bloqueo y estado de cada dataset).
+4. `python scripts/sync_hub.py push-data <id> --create` (la primera vez crea el repo **privado**); después `push-data <id>` para el resto y `push-model E4c_04_originals_ce`.
+5. Otro integrante recupera con `pull-data <id>` / `pull-model <id>`: se descarga a un directorio temporal, se verifica contra `manifests/data_lock/<id>.csv` y solo entonces se mueve a su sitio.
+
+Garantías: se niega a subir a un repo público; rechaza licencias sin derivadas, solo académicas o desconocidas; compara tamaños y SHA-256 remotos tras subir; nunca sobrescribe copias locales. Los bloqueos de hashes nuevos que cree `push-data` deben versionarse en Git.
+
+**Estado (2026-10-24):** repo privado `sofnun1109/berryvision-data` con los 5 datasets (13.324 archivos bloqueados en `manifests/data_lock/`) y el modelo `E4c_04_originals_ce`. Para acceder, otro integrante necesita que lo inviten (o un token con lectura) y `hf auth login`.
+
+Las cinco colecciones locales tienen licencias aptas para un repo privado del equipo (CC BY, CC BY-SA, CC BY-NC); las CC BY-NC no deben usarse con fines comerciales.

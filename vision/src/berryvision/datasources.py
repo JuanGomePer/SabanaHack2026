@@ -53,10 +53,10 @@ def lock_path(cfg: dict) -> Path:
 
 # ── Bloqueo por hashes ───────────────────────────────────────────────────────
 
-def tree_rows(root: Path) -> list[dict]:
+def tree_rows(root: Path, exclude: frozenset[str] = frozenset()) -> list[dict]:
     rows = []
     for p in sorted(root.rglob("*")):
-        if p.is_file():
+        if p.is_file() and p.relative_to(root).as_posix() not in exclude:
             rows.append({"path": p.relative_to(root).as_posix(), "bytes": p.stat().st_size,
                          "sha256": sha256_path(p)})
     return rows
@@ -88,11 +88,13 @@ class TreeStatus:
         return self.status == "complete"
 
 
-def verify_tree(root: Path, lock: list[dict] | None, full_hash: bool = True) -> TreeStatus:
+def verify_tree(root: Path, lock: list[dict] | None, full_hash: bool = True,
+                exclude: frozenset[str] = frozenset()) -> TreeStatus:
     """Compara el árbol local con el bloqueo. `full_hash=False` solo compara tamaños (rápido)."""
     if not root.is_dir() or not any(root.iterdir()):
         return TreeStatus("missing")
-    present = {p.relative_to(root).as_posix(): p for p in root.rglob("*") if p.is_file()}
+    present = {p.relative_to(root).as_posix(): p for p in root.rglob("*")
+               if p.is_file() and p.relative_to(root).as_posix() not in exclude}
     if lock is None:
         return TreeStatus("unlocked", n_files=len(present))
     expected = {r["path"]: r for r in lock}

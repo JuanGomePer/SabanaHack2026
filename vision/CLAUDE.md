@@ -58,6 +58,7 @@ Lee esto y `docs/00_resumen_ejecutivo.md` antes de proponer cambios relevantes.
 - Zhang: usar `manifests/splits/blueberry_yolo_zhang_groups.csv` (la partición del autor tiene fuga).
 - Inferencia: `scripts/export_model_artifact.py` → `artifacts/models/<id>/` (no versionado) → `scripts/predict.py`. Docker: `vision/Dockerfile`, solo inferencia; el modelo se monta.
 - Los datos nunca van a Git ni a la imagen. No modificar la configuración de despliegue de `main`.
+- Respaldo: repo de datasets PRIVADO de Hugging Face con `scripts/sync_hub.py` (`BERRYVISION_HF_REPO`, `HF_TOKEN` solo en el entorno).
 
 ## Comandos
 
