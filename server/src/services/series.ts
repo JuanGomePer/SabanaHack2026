@@ -14,7 +14,7 @@
  *   invernadero: fresco y húmedo de madrugada, cálido y seco a media tarde.
  *   Es una reconstrucción, no una medición, y la pantalla lo dice.
  */
-import { ESTRUCTURA, camasDeNave, naveDeCama } from '@vigia/shared/config';
+import { ESTRUCTURA, camasVecinasDe, naveDeCama } from '@vigia/shared/config';
 import type {
   ClimaDeNave,
   Hallazgo,
@@ -78,10 +78,11 @@ const HORAS_PROPAGACION = 72;
  * Si hoy hay una cama en riesgo, lo probable es que mañana haya más.
  *
  * Regla de vecindad, no modelo epidemiológico: Botrytis y Alternaria se
- * propagan por salpique de agua, roce de follaje y aire de la misma nave, así
- * que cada cama en riesgo expone a las camas contiguas de SU nave (las camas
- * de otra nave no se tocan). La proyección son las camas de hoy más las
- * vecinas que todavía están limpias.
+ * propagan por salpique de agua, roce de follaje y aire del pasillo, así que
+ * cada cama en riesgo expone a las camas contiguas de la numeración — que es
+ * lo que de verdad tiene al lado, aunque la de al lado sea la primera de la
+ * nave siguiente. La proyección son las camas de hoy más las vecinas que
+ * todavía están limpias.
  */
 function propagacionDesde(
   plantas: Planta[],
@@ -95,8 +96,8 @@ function propagacionDesde(
   const enRiesgo = new Set(camasHoy);
   const expuestas = new Set<number>();
   for (const cama of camasHoy) {
-    for (const vecina of camasDeNave(naveDeCama(cama))) {
-      if (Math.abs(vecina - cama) === 1 && !enRiesgo.has(vecina)) expuestas.add(vecina);
+    for (const vecina of camasVecinasDe(cama)) {
+      if (!enRiesgo.has(vecina)) expuestas.add(vecina);
     }
   }
 
@@ -110,6 +111,7 @@ function propagacionDesde(
     horas: HORAS_PROPAGACION,
     plantasExpuestas,
     naves: [...new Set(camasHoy.map((c) => naveDeCama(c)))].sort((a, b) => a - b),
+    navesExpuestas: [...new Set(camasExpuestas.map((c) => naveDeCama(c)))].sort((a, b) => a - b),
     confirmados: hallazgos.filter((h) => h.revision === 'confirmada' && enRiesgo.has(h.cama)).length,
   };
 }

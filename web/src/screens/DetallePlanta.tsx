@@ -384,7 +384,7 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
                     <span className="txt-pequeno">
                       {decision.revision === 'confirmada'
                         ? `Nave ${planta.nave}, cama ${planta.cama}, planta ${detalle.etiqueta}. ` +
-                          `Revisa también ${textoCamas(decision.camasVigilar, planta.cama)} de la misma nave.`
+                          `Revisa también ${textoCamas(decision.camasVigilar, planta.cama)}, que son las de al lado.`
                         : `Nada por hacer en la cama ${planta.cama} de la nave ${planta.nave}.`}
                     </span>
                     <span className="apagado txt-etiqueta fila" style={{ gap: 6, marginTop: 2 }}>

@@ -157,6 +157,33 @@ function historicoReconstruido(
   return historico;
 }
 
+/**
+ * La zona húmeda de hoy: los tramos que ya están por encima del umbral.
+ *
+ * Es lo que hay que proyectar para decidir si un día es de cuidado. El
+ * promedio del bloque casi nunca pasa el umbral —2.400 plantas y la humedad
+ * se concentra en un par de camas—, pero el hongo arranca justo ahí. Si hoy no
+ * hay ninguna planta sobre el umbral, se toma el 5 % más húmedo para tener
+ * algo que vigilar.
+ */
+function zonaCalienteDe(
+  plantas: Array<{ cama: number; humedad: number }>,
+  umbral: number,
+): { camas: number[]; humedad: number; plantas: number } {
+  let calientes = plantas.filter((p) => p.humedad >= umbral);
+
+  if (calientes.length === 0) {
+    const ordenadas = [...plantas].sort((a, b) => b.humedad - a.humedad);
+    calientes = ordenadas.slice(0, Math.max(1, Math.round(ordenadas.length * 0.05)));
+  }
+
+  return {
+    camas: [...new Set(calientes.map((p) => p.cama))].sort((a, b) => a - b),
+    humedad: redondear(calientes.reduce((a, p) => a + p.humedad, 0) / calientes.length),
+    plantas: calientes.length,
+  };
+}
+
 export async function construirPrediccion(
   diasAdelante = DIAS_PREDICCION,
 ): Promise<PrediccionRespuesta> {
@@ -170,6 +197,8 @@ export async function construirPrediccion(
   const temperaturaActual = conDato.length
     ? conDato.reduce((a, p) => a + p.temperatura, 0) / conDato.length
     : 0;
+
+  const zonaCaliente = zonaCalienteDe(conDato, umbral);
 
   const historico = historicoReconstruido(
     humedadActual,
@@ -214,14 +243,23 @@ export async function construirPrediccion(
     const margen = rectaHumedad.error * (1 + k * 0.06) * 1.96;
     const sigma = Math.max(0.5, rectaHumedad.error * (1 + k * 0.06));
 
+    /**
+     * La zona húmeda se mueve con el bloque: se le aplica el mismo cambio que
+     * el modelo le da al promedio. Si el bloque sube 2 puntos, la zona que hoy
+     * va en 89 % se va a 91 %.
+     */
+    const humedadZona = zonaCaliente.humedad + (humedad - humedadActual);
+    const probabilidad = normalAcumulada((humedadZona - umbral) / sigma);
+
     prediccion.push({
       dia: dia.toISOString(),
       etiqueta: etiquetaDia(dia),
       humedad: redondear(humedad),
+      humedadZona: redondear(humedadZona),
       temperatura: redondear(temperatura),
       margen: redondear(margen),
-      probabilidad: redondear(normalAcumulada((humedad - umbral) / sigma), 2),
-      cuidado: normalAcumulada((humedad - umbral) / sigma) >= 0.5,
+      probabilidad: redondear(probabilidad, 2),
+      cuidado: probabilidad >= 0.5,
     });
   }
 
@@ -273,6 +311,7 @@ export async function construirPrediccion(
     dias: historico.length,
     pesoClima: PESO_CLIMA_SABANA,
     desviacionRegional: redondear(desviacionRegional),
+    zonaCaliente,
   };
 
   return {

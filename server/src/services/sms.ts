@@ -209,7 +209,8 @@ export function textoDeDecision(
   return plantilla
     .replace('{etiqueta}', etiquetaPlanta(alerta.cama, alerta.planta))
     .replace('{tipo}', alerta.tipo)
-    .replace('{usuario}', usuario)
+    // La firma ya trae su punto ("Samuel R."), y la plantilla pone el suyo.
+    .replace('{usuario}', usuario.replace(/\.$/, ''))
     .replace('{nave}', String(alerta.nave))
     .replace('{cama}', String(alerta.cama))
     .replace('{vecinas}', listaDeCamas(camasVigilar, alerta.cama))

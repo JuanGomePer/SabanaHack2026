@@ -7,7 +7,7 @@ import {
   DISPOSITIVO_GAFAS,
   RECOMENDACIONES,
   USUARIO,
-  camasDeNave,
+  camasVecinasDe,
   etiquetaPlanta,
   idPlanta,
   naveDeCama,
@@ -135,14 +135,13 @@ export interface ResultadoRevision {
 }
 
 /**
- * Camas vecinas de la misma nave: las de al lado en la numeración.
- *
- * Es por donde se propaga un hongo de hoja o de fruto (salpique, roce de
- * follaje y aire de la misma nave), así que son las que hay que mirar primero
- * cuando se confirma un hallazgo.
+ * Camas de al lado: por ahí sigue un hongo de hoja o de fruto (salpique, roce
+ * de follaje y aire del pasillo), así que son las que hay que mirar primero
+ * cuando se confirma un hallazgo. La vecindad es la del bloque, no la de la
+ * nave: ver `camasVecinasDe` en @vigia/shared/config.
  */
 export function camasVecinas(cama: number): number[] {
-  return camasDeNave(naveDeCama(cama)).filter((otra) => Math.abs(otra - cama) === 1);
+  return camasVecinasDe(cama);
 }
 
 export async function revisarHallazgo(

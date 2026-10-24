@@ -89,6 +89,19 @@ export function camasDeNave(nave: number): number[] {
   return Array.from({ length: ESTRUCTURA.camasPorNave }, (_, i) => primera + i);
 }
 
+/**
+ * Camas físicamente pegadas a una: la anterior y la siguiente de la
+ * numeración, sin salirse del bloque.
+ *
+ * Con la numeración seguida, la cama de al lado puede caer en la nave vecina
+ * (la 15 es la última de la nave 5 y la 16 la primera de la nave 6). Se
+ * incluyen igual: están separadas por un pasillo, y el salpique de agua, el
+ * roce de follaje y el aire que corre entre naves no saben de esa frontera.
+ */
+export function camasVecinasDe(cama: number): number[] {
+  return [cama - 1, cama + 1].filter((otra) => otra >= 1 && otra <= TOTAL_CAMAS);
+}
+
 /** Celda del mapa en la que cae una planta. floor((p - 1) / 2,5). */
 export function celdaDePlanta(planta: number): number {
   return Math.floor((planta - 1) / ESTRUCTURA.plantasPorCelda);

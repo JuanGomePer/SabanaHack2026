@@ -28,14 +28,20 @@ const MARGEN = { arriba: 16, derecha: 10, abajo: 30, izquierda: 40 };
  * pasó, línea punteada y banda de confianza para lo que viene.
  */
 function GraficoPrediccion({ datos }: { datos: PrediccionRespuesta }) {
-  const { historico, prediccion, umbral } = datos;
+  const { historico, prediccion, umbral, modelo } = datos;
   const serie = [
     ...historico.map((d) => ({ ...d, margen: 0, futuro: false })),
     ...prediccion.map((d) => ({ ...d, futuro: true })),
   ];
   if (serie.length < 2) return null;
 
-  const valores = serie.flatMap((p) => [p.humedad - p.margen, p.humedad + p.margen]);
+  /** La zona húmeda arranca en su valor de hoy y sigue la misma proyección. */
+  const zona = [modelo.zonaCaliente.humedad, ...prediccion.map((d) => d.humedadZona)];
+
+  const valores = [
+    ...serie.flatMap((p) => [p.humedad - p.margen, p.humedad + p.margen]),
+    ...zona,
+  ];
   const min = Math.min(...valores, umbral) - 2;
   const max = Math.max(...valores, umbral) + 2;
 
@@ -144,13 +150,26 @@ function GraficoPrediccion({ datos }: { datos: PrediccionRespuesta }) {
         strokeLinecap="round"
       />
 
+      {/* La zona húmeda: la que de verdad decide si el día es de cuidado */}
+      <path
+        d={zona
+          .map((v, i) => `${i === 0 ? 'M' : 'L'}${x(corte + i).toFixed(1)},${y(v).toFixed(1)}`)
+          .join(' ')}
+        fill="none"
+        stroke="var(--color-status-alert)"
+        strokeWidth="2.2"
+        strokeDasharray="7 5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+
       {/* Los días de cuidado quedan marcados con un punto */}
-      {serie.map((p, i) =>
-        p.futuro && 'cuidado' in p && p.cuidado ? (
+      {prediccion.map((p, i) =>
+        p.cuidado ? (
           <circle
             key={p.dia}
-            cx={x(i)}
-            cy={y(p.humedad)}
+            cx={x(corte + 1 + i)}
+            cy={y(p.humedadZona)}
             r="4"
             fill="var(--color-status-alert)"
             stroke="var(--color-bg-surface)"
@@ -192,7 +211,12 @@ export function Aprendizaje() {
 
   const { modelo, prediccion, diaCritico, camasPrioritarias, climaReferencia, umbral } = datos;
   const diasDeCuidado = prediccion.filter((d) => d.cuidado);
-  const maxima = prediccion.reduce((peor, d) => (d.humedad > peor.humedad ? d : peor), prediccion[0]);
+  const maxima = prediccion.reduce(
+    (peor, d) => (d.humedadZona > peor.humedadZona ? d : peor),
+    prediccion[0],
+  );
+  const zona = modelo.zonaCaliente;
+  const camasZona = zona.camas.length === 1 ? `la cama ${zona.camas[0]}` : `las camas ${zona.camas.join(', ')}`;
 
   return (
     <section>
@@ -209,15 +233,15 @@ export function Aprendizaje() {
           valor={diaCritico ? diaCritico.etiqueta : 'Ninguno'}
           detalle={
             diaCritico
-              ? `${Math.round(diaCritico.probabilidad * 100)} % de probabilidad de pasar ${umbral} %`
-              : `Ningún día de los ${prediccion.length} proyectados pasa ${umbral} %`
+              ? `${Math.round(diaCritico.probabilidad * 100)} % de probabilidad de que la zona húmeda pase ${umbral} %`
+              : `La zona húmeda no pasa ${umbral} % en los ${prediccion.length} días proyectados`
           }
         />
         <TarjetaKpi
           tono="neutro"
-          etiqueta="Humedad máxima prevista"
-          valor={`${maxima.humedad.toString().replace('.', ',')} %`}
-          detalle={`${maxima.etiqueta} · ± ${maxima.margen.toString().replace('.', ',')} puntos`}
+          etiqueta="Pico en la zona húmeda"
+          valor={`${maxima.humedadZona.toString().replace('.', ',')} %`}
+          detalle={`${maxima.etiqueta} · ± ${maxima.margen.toString().replace('.', ',')} puntos · hoy va en ${zona.humedad.toString().replace('.', ',')} %`}
         />
         <TarjetaKpi
           tono={diasDeCuidado.length > 0 ? 'riesgo' : 'ok'}
@@ -237,10 +261,10 @@ export function Aprendizaje() {
               <i style={{ background: 'var(--color-data-humidity)' }} /> Histórico
             </span>
             <span className="gr-clave txt-etiqueta">
-              <i style={{ background: 'var(--color-status-risk-fg)' }} /> Predicción
+              <i style={{ background: 'var(--color-status-risk-fg)' }} /> Predicción del bloque
             </span>
             <span className="gr-clave txt-etiqueta">
-              <i style={{ background: 'var(--color-status-alert)' }} /> Día de cuidado
+              <i style={{ background: 'var(--color-status-alert)' }} /> Zona húmeda
             </span>
           </div>
         </div>
@@ -248,8 +272,11 @@ export function Aprendizaje() {
         <GraficoPrediccion datos={datos} />
 
         <p className="secundario txt-pequeno" style={{ margin: '4px 0 0' }}>
-          La banda es el intervalo de confianza del ajuste (± {(1.96).toFixed(2).replace('.', ',')} errores
-          típicos) y se ensancha con los días: el día {prediccion.length} es mucho menos seguro que mañana.
+          La línea azul es el promedio del bloque y la morada, la zona húmeda de hoy ({camasZona}
+          {zona.camas.length > 0 ? `, ${zona.plantas} plantas a ${zona.humedad.toString().replace('.', ',')} %` : ''}),
+          que es la que decide si el día es de cuidado: el promedio de 2.400 plantas casi nunca pasa el umbral,
+          pero el hongo arranca donde ya está húmedo. La banda es el intervalo de confianza del ajuste
+          (± {(1.96).toFixed(2).replace('.', ',')} errores típicos) y se ensancha con los días.
         </p>
       </div>
 
@@ -278,8 +305,9 @@ export function Aprendizaje() {
               desviación se mantiene al proyectar.
             </li>
             <li>
-              <strong>Día de cuidado:</strong> un día queda marcado cuando la probabilidad de pasar el umbral de{' '}
-              {umbral} % llega a la mitad, con la incertidumbre del propio ajuste.
+              <strong>Día de cuidado:</strong> el cambio diario se le aplica a la zona húmeda de hoy (
+              {camasZona}, a {zona.humedad.toString().replace('.', ',')} %) y el día queda marcado cuando su
+              probabilidad de pasar {umbral} % llega a la mitad, con la incertidumbre del propio ajuste.
             </li>
           </ul>
         </div>
@@ -294,11 +322,11 @@ export function Aprendizaje() {
               <div className="prediccion-aviso">
                 <CalendarClock size={16} />
                 <span className="txt-pequeno">
-                  El <strong>{diaCritico.etiqueta}</strong> la humedad prevista es{' '}
-                  <strong>{diaCritico.humedad.toString().replace('.', ',')} %</strong> (±
-                  {diaCritico.margen.toString().replace('.', ',')}), por encima del umbral de {umbral} %. Ese día
-                  la ronda del robot entra en modo de revisión detallada en las camas de abajo, en vez de pasar
-                  de largo.
+                  El <strong>{diaCritico.etiqueta}</strong> la zona húmeda llega a{' '}
+                  <strong>{diaCritico.humedadZona.toString().replace('.', ',')} %</strong> (±
+                  {diaCritico.margen.toString().replace('.', ',')}), por encima del umbral de {umbral} %, con el
+                  bloque en {diaCritico.humedad.toString().replace('.', ',')} % de promedio. Ese día la ronda del
+                  robot entra en modo de revisión detallada en las camas de abajo, en vez de pasar de largo.
                 </span>
               </div>
 
@@ -322,8 +350,8 @@ export function Aprendizaje() {
             </>
           ) : (
             <p className="secundario txt-pequeno" style={{ margin: '8px 0 0' }}>
-              Ninguno de los {prediccion.length} días proyectados pasa el umbral de {umbral} %. El robot sigue su
-              ronda normal; si la tendencia cambia, este aviso aparece solo.
+              La zona húmeda ({camasZona}) no pasa el umbral de {umbral} % en los {prediccion.length} días
+              proyectados. El robot sigue su ronda normal; si la tendencia cambia, este aviso aparece solo.
             </p>
           )}
         </div>

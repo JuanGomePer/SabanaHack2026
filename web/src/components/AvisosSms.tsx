@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { MessageSquare, PlugZap, Plus, Send, Smartphone, Trash2, WifiOff } from 'lucide-react';
 import { PAIS_TELEFONO_DEFECTO } from '@vigia/shared/config';
 import type { PaisTelefono, PrioridadAlerta, SmsRespuesta, VerificacionPasarela } from '@vigia/shared/tipos';
-import { api } from '../api/cliente';
+import { api, escucharEventos } from '../api/cliente';
 import { Boton } from './Boton';
 import { Chip } from './Chip';
 import { Interruptor } from './Interruptor';
@@ -46,6 +46,17 @@ export function useSms() {
 
   useEffect(() => {
     void recargar();
+  }, [recargar]);
+
+  /**
+   * Los envíos llegan por el canal en vivo: cuando sale un SMS (el de la
+   * alerta o el de la decisión) se vuelve a leer /api/sms, para que la marca
+   * aparezca en la lista de alertas sin recargar la página.
+   */
+  useEffect(() => {
+    return escucharEventos((evento) => {
+      if (evento.tipo === 'sms_enviado') void recargar();
+    });
   }, [recargar]);
 
   return { datos, error, setDatos, recargar };

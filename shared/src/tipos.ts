@@ -482,6 +482,8 @@ export interface PropagacionRiesgo {
   plantasExpuestas: number;
   /** Naves donde está pasando. */
   naves: number[];
+  /** Naves en las que caen las camas expuestas (puede ser la de al lado). */
+  navesExpuestas: number[];
   /** Hallazgos ya confirmados en campo en las camas de hoy. */
   confirmados: number;
 }
@@ -528,8 +530,14 @@ export interface DiaHistorico {
 export interface DiaPredicho {
   dia: string;
   etiqueta: string;
-  /** Humedad relativa prevista, en %. */
+  /** Humedad relativa prevista para el promedio del bloque, en %. */
   humedad: number;
+  /**
+   * Humedad prevista en la zona húmeda del bloque (los tramos que hoy están
+   * por encima del umbral). Es la que decide si el día es de cuidado: el hongo
+   * arranca ahí, no en el promedio.
+   */
+  humedadZona: number;
   /** Temperatura prevista, en °C. */
   temperatura: number;
   /** Media banda de confianza, en puntos de humedad (± sobre `humedad`). */
@@ -559,6 +567,15 @@ export interface ModeloPrediccion {
    * este mes, en puntos. Positiva = el invernadero va más húmedo que afuera.
    */
   desviacionRegional: number;
+  /** La zona húmeda de hoy: dónde está y a cuánto va. */
+  zonaCaliente: {
+    /** Camas que tienen tramos por encima del umbral (o los más húmedos). */
+    camas: number[];
+    /** Humedad media de esos tramos, en %. */
+    humedad: number;
+    /** Cuántas plantas son. */
+    plantas: number;
+  };
 }
 
 /** Cama que el robot debería revisar con más detalle el día de cuidado. */

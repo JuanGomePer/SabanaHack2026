@@ -266,7 +266,10 @@ export function Analisis() {
                   <span className="txt-pequeno-fuerte">camas en {propagacion.horas} h</span>
                   <span className="apagado txt-etiqueta">
                     {propagacion.camasExpuestas.length > 0
-                      ? `Se suman las camas ${listaCorta(propagacion.camasExpuestas)}`
+                      ? `Se suman las camas ${listaCorta(propagacion.camasExpuestas)}` +
+                        (propagacion.navesExpuestas.some((n) => !propagacion.naves.includes(n))
+                          ? `, nave${propagacion.navesExpuestas.length === 1 ? '' : 's'} ${propagacion.navesExpuestas.join(', ')}`
+                          : '')
                       : 'No queda cama vecina limpia'}
                   </span>
                 </div>
@@ -286,15 +289,30 @@ export function Analisis() {
                 {propagacion.confirmados > 0
                   ? `, y ${propagacion.confirmados} hallazgo${propagacion.confirmados === 1 ? '' : 's'} ya confirmado${propagacion.confirmados === 1 ? '' : 's'} en campo`
                   : ''}
-                . Si la humedad sigue igual, lo siguiente en caer son las camas de al lado de la
-                misma nave: por ahí pasa el salpique de agua, el roce de follaje y el aire.
+                . Si la humedad sigue igual, lo siguiente en caer son las camas pegadas a esas —
+                las de al lado en la numeración, aunque alguna caiga ya en la nave siguiente: por
+                ahí pasa el salpique de agua, el roce de follaje y el aire del pasillo.
               </p>
 
               <div className="aviso-ambar txt-pequeno">
-                Baja la humedad de la nave{propagacion.naves.length === 1 ? '' : 's'}{' '}
-                {propagacion.naves.join(', ')} antes de la noche y revisa las camas{' '}
-                {listaCorta(propagacion.camasExpuestas)} en la próxima ronda, aunque todavía no
-                tengan alerta.
+                {propagacion.camasExpuestas.length > 0 ? (
+                  <>
+                    Baja la humedad de la nave{propagacion.naves.length === 1 ? '' : 's'}{' '}
+                    {propagacion.naves.join(', ')} antes de la noche y revisa las camas{' '}
+                    {listaCorta(propagacion.camasExpuestas)}
+                    {propagacion.navesExpuestas.some((n) => !propagacion.naves.includes(n))
+                      ? ` (nave${propagacion.navesExpuestas.length === 1 ? '' : 's'} ${propagacion.navesExpuestas.join(', ')})`
+                      : ''}{' '}
+                    en la próxima ronda, aunque todavía no tengan alerta.
+                  </>
+                ) : (
+                  <>
+                    Ya no queda cama vecina limpia: todas las camas de alrededor están en riesgo.
+                    Baja la humedad de la nave{propagacion.naves.length === 1 ? '' : 's'}{' '}
+                    {propagacion.naves.join(', ')} hoy mismo y revisa cama por cama en la próxima
+                    ronda.
+                  </>
+                )}
               </div>
             </>
           )}

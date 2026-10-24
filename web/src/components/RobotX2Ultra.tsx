@@ -111,8 +111,8 @@ function Cuerpo({ atras }: { atras: boolean }) {
         </>
       )}
 
-      <Brazo x={60} hacia={-1} />
-      <Brazo x={180} hacia={1} />
+      <Brazo x={67} hacia={-1} />
+      <Brazo x={173} hacia={1} />
 
       {/* Cuello (1 GDL) */}
       <rect x="110" y="130" width="20" height="20" rx="4" fill={GRIS} />

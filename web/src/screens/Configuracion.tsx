@@ -157,9 +157,10 @@ export function Configuracion({ alVerComoLlega, alGuardarPerfil }: Props) {
 
   const agregarRobot = () => {
     // El número sigue al mayor que ya existe, para no repetir ids al quitar y
-    // volver a añadir.
+    // volver a añadir. Se toma el número FINAL del id ("X2-01" → 1): quitar
+    // todo lo que no sea dígito daría 201, por el 2 de "X2".
     const usados = estructura.robots
-      .map((robot) => Number(robot.id.replace(/\D/g, '')))
+      .map((robot) => Number(robot.id.match(/(\d+)$/)?.[1]))
       .filter((n) => Number.isFinite(n));
     const siguiente = (usados.length ? Math.max(...usados) : 0) + 1;
     cambiarEstructura('robots', [
