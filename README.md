@@ -14,12 +14,17 @@ registro de incidencias y estado de los equipos de clima.
 
 ## Arrancar
 
+Necesitas Postgres corriendo (local o en la nube) antes del primer `npm run dev`.
+
 ```bash
-npm install
+npm install                          # instala las tres piezas del monorepo
+cp server/.env.example server/.env   # pon tu DATABASE_URL ahí
+npm run db:migrate:dev --workspace server
+npm run db:seed --workspace server   # siembra el cultivo de ejemplo (una sola vez)
 npm run dev
 ```
 
-Un solo comando levanta las dos piezas:
+Un solo comando (`npm run dev`) levanta las dos piezas:
 
 - API en <http://localhost:3001>
 - Aplicación en <http://localhost:5173>
@@ -27,12 +32,44 @@ Un solo comando levanta las dos piezas:
 El frontend habla con la API a través del proxy de Vite (`/api` → `:3001`), así
 que basta con abrir la aplicación.
 
+## Base de datos
+
+Postgres vía Prisma (`server/prisma/schema.prisma`). El estado del cultivo ya
+no se regenera en cada arranque del servidor — se siembra una vez
+(`npm run db:seed --workspace server`) y a partir de ahí sobrevive a
+reinicios y despliegues. Comandos útiles, todos desde la raíz:
+
+| Comando | Para qué |
+| --- | --- |
+| `npm run db:migrate:dev --workspace server` | Nueva migración en desarrollo (compara el schema con la base y aplica el cambio) |
+| `npm run db:migrate:deploy --workspace server` | Aplica las migraciones pendientes sin generar una nueva (lo usa Render) |
+| `npm run db:seed --workspace server` | Siembra los datos de ejemplo — no hace nada si ya hay datos |
+| `npm run db:studio --workspace server` | Abre Prisma Studio para mirar/editar las tablas a mano |
+
+## Desplegar en Render
+
+El repo trae un blueprint (`render.yaml`) con los tres recursos: Postgres +
+la API (`vigia-api`) + el sitio estático del frontend (`vigia-web`).
+
+1. En el dashboard de Render: **New → Blueprint** → selecciona este repositorio.
+2. Render crea la base de datos, migra el esquema y siembra los datos antes
+   de servir tráfico (`preDeployCommand` en `render.yaml`) — no hay que
+   correr nada a mano.
+3. Copia la `ROBOT_API_KEY` que Render genera para `vigia-api` (Settings →
+   Environment) y pásasela a quien vaya a mandar observaciones del módulo de
+   visión a `POST /api/observaciones`.
+4. Si renombras `vigia-api` o `vigia-web` al crear el blueprint, actualiza a
+   mano `CORS_ORIGIN` (en `vigia-api`) y `VITE_API_URL` (en `vigia-web`) en
+   `render.yaml` o desde el dashboard — Render no resuelve esas referencias
+   cruzadas solo.
+
 ## Estructura
 
 ```
 /shared    Tipos del contrato de datos + supuestos editables (config.ts)
-/server    API en Node.js + Express, datos en memoria y simulador
+/server    API en Node.js + Express, persistida en Postgres con Prisma
 /web       Frontend React + TypeScript con Vite
+/vision    Módulo de visión por computador (Python) — investigación aparte, sin API desplegada todavía
 ```
 
 - `shared/src/tipos.ts` — la interfaz entre frontend y backend.
@@ -40,6 +77,23 @@ que basta con abrir la aplicación.
   del bloque, umbrales, datos semilla y catálogo de equipos. Cambiar un número
   aquí cambia el backend y el frontend.
 - `web/src/estilos/tokens.css` — los tokens del sistema de diseño de Figma.
+
+### Arquitectura de `server/`
+
+Tres capas, cada una habla solo con la de al lado:
+
+```
+routes/        Capa HTTP: parsea el request, llama al servicio, responde. Sin lógica de negocio.
+services/      Reglas del negocio y efectos (SSE, bitácora del registro, reacción de los equipos).
+repositories/  Lo único que toca Prisma. Traduce entre las filas de la base y los tipos del contrato.
+```
+
+`db.ts` (el cliente de Prisma), `sse.ts` (los eventos en vivo) y `fotos.ts`
+(las fotos placeholder) son infraestructura compartida entre capas.
+`prisma/schema.prisma` es el modelo de datos; `prisma/seed.ts` siembra el
+cultivo de ejemplo una sola vez (es idempotente: si ya hay plantas, no hace
+nada). Ver `src/mappers.ts` para la traducción entre los enums de Prisma
+(sin tildes ni espacios, por Postgres) y los valores exactos del contrato.
 
 ## Flujo de la demo
 
@@ -80,6 +134,42 @@ Para repetir el pitch sin reiniciar el servidor: `POST /api/demo/reiniciar`.
 | `GET /api/fotos/:id.svg` | Foto del hallazgo (placeholder o la real, si existe). |
 | `GET /api/eventos` | Canal de eventos en vivo (SSE). |
 | `POST /api/demo/reiniciar` | Reinicia la alerta de la demo. |
+| `GET /api/salud` | Chequeo de salud (lo usa Render). |
+| `POST /api/observaciones` | Ingesta del módulo de visión — ver abajo. |
+
+## Ingesta del módulo de visión
+
+`POST /api/observaciones`, protegida con el header `x-api-key` (variable
+`ROBOT_API_KEY`). Es el puente entre `vision/` (que a la fecha no tiene un
+modelo entrenado para arándano ni un servicio de inferencia corriendo — ver
+`vision/CLAUDE.md`) y el resto de la app: el día que haya un clasificador
+desplegado, manda sus detecciones aquí y se convierten en hallazgos con las
+mismas reglas que usa el resto del sistema (recomendación, prioridad, alerta,
+registro, SSE).
+
+La forma del payload está inspirada en la propuesta de contrato de visión
+(`vision/contracts/observation.schema.json`, todavía una propuesta, no una
+API implementada), simplificada a lo mínimo que este backend necesita —
+sobre todo, pide `location.plant_number` explícito porque ese contrato
+todavía no baja a nivel de planta individual:
+
+```jsonc
+// POST /api/observaciones  (header: x-api-key: <ROBOT_API_KEY>)
+{
+  "location": { "bed_id": 14, "plant_number": 65 },
+  "visual_findings": [
+    { "class_name": "Botrytis", "confidence": 0.91, "bbox_xyxy": [0.3, 0.28, 0.6, 0.58] }
+  ],
+  "environmental_context": [{ "variable": "humidity", "value": 93 }]
+}
+```
+
+`class_name` solo reconoce `Botrytis`, `Alternaria` y `Oídio` (y variantes de
+mayúsculas/español/inglés) — cualquier otra clase se audita pero no abre un
+hallazgo, justamente para no confundir, por ejemplo, el `gray_mold` de fresa
+del experimento auxiliar de `vision/` con Botrytis de arándano. La
+observación completa se guarda igual, se haya podido mapear o no, en la
+tabla `Observacion`, para trazabilidad.
 
 ## Fotos reales
 
