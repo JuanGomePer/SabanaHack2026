@@ -1,0 +1,4 @@
+extends: _base.yaml
+id: E4c_07_imgsz384
+model: {imgsz: 384}
+train: {batch_size: 32}

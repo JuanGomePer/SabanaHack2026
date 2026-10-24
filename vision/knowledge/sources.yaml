@@ -1,0 +1,379 @@
+# Registro de fuentes. Fecha de consulta común: 2026-10-23.
+# confidence: alta = fuente primaria verificada | media = secundaria o parcial | baja = no verificada
+# verification: verificado | parcial | no_accesible | pendiente
+sources:
+  - id: S01
+    title: "Manejo de humedad para el control de Botrytis en cultivos bajo cubierta"
+    url: https://agrar.com.co/blog/manejo-humedad-control-botrytis-cultivos-bajo-cubierta.html
+    type: blog_empresa
+    author: AGRAR Ingeniería (autor individual no indicado)
+    published: 2026-09-09
+    evidence: >
+      Botrytis favorecida por ~6 h de agua libre sobre hojas/flores/frutos y por 12-24 °C.
+      Sabana de Bogotá: 5-18 °C, HR 70-85 % de día y hasta 90 % noche/madrugada.
+      Productos: extractores, cortinas motorizadas, controladores. Distribuidor autorizado
+      de Vostermans Ventilation. Menciona berries de forma genérica; no menciona arándano,
+      sensores, nube, Azure ni Power BI.
+    license: contenido web con derechos reservados; solo se cita
+    confidence: alta
+    verification: verificado
+    used_for: [contexto_agrar, riesgo_ambiental]
+    open_questions: ["¿Qué sensores y controladores tiene instalados el cliente piloto?"]
+
+  - id: S02
+    title: "Agrar Ingenieria Sas - perfil EMIS"
+    url: https://www.emis.com/php/company-profile/CO/Agrar_Ingenieria_Sas_es_4931660.html
+    type: perfil_empresarial
+    author: EMIS
+    evidence: "Zipaquirá (Parque Industrial Zuma), fundada 2013-02-23, ~15 empleados (2026), sector mayorista."
+    license: perfil público parcial; detalle de pago
+    confidence: media
+    verification: verificado
+    used_for: [contexto_agrar]
+
+  - id: S03
+    title: "Notas del equipo (Azure, Power BI, 'Trips', geometría de finca, sensores)"
+    url: null
+    type: notas_internas
+    evidence: >
+      Bloques de ~0.5 ha, ~8 naves, ~3 camas por nave, ~2500 plantas por 0.5 ha; sensores
+      según cliente; ventiladores conectados a controladores; Azure y Power BI. "Trips" puede
+      ser el insecto (thrips) y no un sistema: ambigüedad sin resolver.
+    confidence: baja
+    verification: pendiente
+    used_for: [contexto_agrar, arquitectura]
+
+  # S10-S15: Booster K1. HISTÓRICO, plataforma descartada el 2026-10-23 (D-010).
+  - id: S10
+    title: "Booster K1 - página oficial"
+    url: https://www.booster.tech/booster-k1/
+    type: fabricante
+    evidence: "Cámara binocular/estéreo de profundidad, IMU 9 ejes; Geek 48 TOPS, Education 117, Professional 200; Wi-Fi 6, GbE; SDK Python y C++."
+    confidence: alta
+    verification: verificado
+    used_for: [robot]
+
+  - id: S11
+    title: "Booster K1 - especificaciones (docs.booster.tech)"
+    url: https://docs.booster.tech/docs/product-manual/k1/getting-started/specifications/
+    type: fabricante
+    evidence: >
+      Geek: procesador ARM 48 TOPS, 8 GB, 128 GB, 2 Ah, 20 min a 1.1 m/s.
+      Education: Jetson Orin NX 8GB, 117 TOPS, 512 GB, 5 Ah, 1 h 10 min.
+      Professional: Jetson AGX Orin 32GB, 200 TOPS. Cámara listada solo como "Depth Camera".
+      Operación -10 a 45 °C, HR 5-90 % sin condensación. Sin IP declarado.
+    confidence: alta
+    verification: verificado (tabla con maquetación irregular)
+    used_for: [robot]
+
+  - id: S12
+    title: "Booster Robotics K1 Datenblatt (RBTX by igus)"
+    url: https://a.storyblok.com/f/298593/x/b1cf8e0cc4/booster-k1_englisch.pdf
+    type: distribuidor
+    evidence: "Stereo depth camera; tres variantes con 5 Ah / 80 min a 0.4 m/s (contradice S11 para Geek)."
+    confidence: media
+    verification: verificado
+    used_for: [robot]
+
+  - id: S13
+    title: "Hardware Specification Booster K1 - Ruhrbot Devils (RoboCup HSL 2026)"
+    url: https://hsl.robocup.org/wp-content/uploads/2026/03/mid_Ruhrbot_Devils-specs-697e834b1f8bd.pdf
+    type: tercero_equipo_robocup
+    published: 2026-01-31
+    evidence: "Wide Angle Stereo Camera Module D-Robotics, 544x488, FOV 105x94; IMU HiPNUC HI13R4N; Orin AGX 32GB o Orin NX 8GB; 512 GB NVMe."
+    confidence: media
+    verification: verificado (documento leído); no confirmado en nuestro robot
+    used_for: [robot, optica]
+
+  - id: S14
+    title: "BoosterRobotics/robocup_demo"
+    url: https://github.com/BoosterRobotics/robocup_demo
+    type: codigo_fabricante
+    license: Apache-2.0
+    evidence: >
+      ROS 2 Humble, JetPack 6.2, YOLOv8 exportado a TensorRT (.engine, sufijo 10.3).
+      vision.yaml: color /StereoNetNode/rectified_image, profundidad /StereoNetNode/stereonet_depth,
+      camera_info /StereoNetNode/stereonet_depth/camera_info; fx=fy=206.445511, cx=224.958, cy=242.717,
+      sin distorsión (imagen rectificada). Topics alternativos comentados: Orbbec, RealSense, ZED.
+    confidence: alta (para la demo); media (para nuestro robot)
+    verification: verificado
+    used_for: [robot, despliegue]
+
+  - id: S15
+    title: "Booster Agent Developer Guide"
+    url: https://docs.booster.tech/docs/developer-guide/agent-development/intro/
+    type: fabricante
+    evidence: "Framework de agentes en Python; Booster Studio; firmware >= 1.7.0. No documenta acceso a cámara."
+    confidence: alta
+    verification: verificado
+    used_for: [robot]
+
+  - id: S16
+    title: "Documentación AgiBot X2 compartida por el equipo (ficha ES/EN, SDK, ejemplos Python/C++)"
+    url: https://drive.google.com/file/d/1zfsXXqDkYGDxgdnVp4fGqhxicUni93AV/view
+    type: documento_equipo
+    evidence: >
+      X2 Ultra: PC2 Jetson Orin NX 16GB (157 TOPS), Ubuntu 22.04, ROS 2 Humble, AimDK_X2 en Docker.
+      Cámaras: RGB-D Orbbec Gemini335 (color 1920x1080, 94x68°), estéreo SenYun SDS23NNS1
+      (2064x1552, 156x120°), interacción SenYun SM5M12NJ (2608x1960, 110x80°), trasera SM3S23NS.
+      Topics /aima/hal/sensor/... (Image y CompressedImage, QoS best effort). Calibración de fábrica
+      en /agibot/data/param/protected/factory_calib/factory_calibration_params.yml (PINHOLE o
+      KANNALA_BRANDT). X2 EDU: SIN sensores de percepción ni Orin.
+    confidence: media (documento consolidado; contrastado con S20-S26, discrepa en QoS)
+    verification: verificado (contenido leído en esta sesión)
+    used_for: [robot, optica]
+
+  # ---- AgiBot X2 Ultra: documentación oficial AimDK X2 (plataforma vigente) ----
+  - id: S20
+    title: "AimDK X2 - Onboard computer"
+    url: https://x2-aimdk.agibot.com/en/latest/about_agibot_X2/onboard_computer.html
+    type: fabricante
+    evidence: "PC1 RK3588 10.0.1.40 (prohibido para desarrollo secundario); PC2 Jetson Orin NX: 157 TOPS, GPU Ampere 1024 núcleos y 32 Tensor Cores, CPU 8x A78AE, 16 GB, 512 GB; PC3 interacción. X2 EDU solo PC1."
+    confidence: alta
+    verification: verificado
+    used_for: [robot, seguridad, despliegue]
+  - id: S21
+    title: "AimDK X2 - Prerequisites"
+    url: https://x2-aimdk.agibot.com/en/dev/quick_start/prerequisites.html
+    type: fabricante
+    evidence: "Ubuntu 22.04, ROS 2 Humble, Python>=3.8, C++17; SDK v1.1.0 debe coincidir con el firmware; red: host 10.0.1.2/24, PC2 10.0.1.41, PC1 10.0.1.40, Wi-Fi AP 192.168.88.88; contenedor obligatorio desde v1.2.0; no guardar en $HOME/aimdk*; el firmware formatea los discos."
+    confidence: alta
+    verification: verificado (página 'dev')
+    used_for: [robot, seguridad]
+  - id: S22
+    title: "AimDK X2 - Container development"
+    url: https://x2-aimdk.agibot.com/en/latest/quick_start/container_dev.html
+    type: fabricante
+    evidence: "Podman rootless en PC2; base l4t-base:r36.2.0; ROS 2 Humble; OpenCV 4.8.0; CUDA/cuDNN/TensorRT NO incluidos, montados desde el host (libnvinfer...); --device nvidia.com/gpu=all; apt/pip solo en contenedor."
+    confidence: alta
+    verification: verificado
+    used_for: [despliegue]
+  - id: S23
+    title: "AimDK X2 - Sensor FOV / specifications"
+    url: https://x2-aimdk.agibot.com/en/latest/about_agibot_X2/sensor_fov.html
+    type: fabricante
+    evidence: "Gemini 335: color hasta 1920x1080 (94x68 grados), profundidad hasta 1280x800 (90x65), hasta 60 fps. Estéreo 2064x1552 (156x120), interacción 2608x1960 (110x80), trasera 2064x1552."
+    confidence: alta
+    verification: verificado
+    used_for: [robot, optica]
+  - id: S24
+    title: "AimDK X2 - HAL sensor interface"
+    url: https://x2-aimdk.agibot.com/en/latest/Interface/hal/sensor.html
+    type: fabricante
+    evidence: "RGB-D: rgb_image (Image rgb8 1280x720), rgb_image/compressed (MJPEG de la cámara), rgb_camera_info, depth_image (16UC1 mm 1280x720), depth_camera_info; 30 Hz; RELIABLE+VOLATILE; ~80 MB/s por flujo crudo; suscribir solo desde PC2; RGB y profundidad no sincronizados; TF estática rgbd_head_front -> rgbd_depth_head_front."
+    confidence: alta
+    verification: verificado
+    used_for: [robot, preprocesamiento, captura]
+  - id: S25
+    title: "AimDK X2 - Coordinate system and factory calibration"
+    url: https://x2-aimdk.agibot.com/en/latest/about_agibot_X2/coordinate_system.html
+    type: fabricante
+    evidence: "factory_calibration_params.yml en PC2; secciones waist_imu, chest_imu, head_rear_rgb, stereo_left, stereo_right, head_rgbd_rgb, chest_lidar; campos model_type (PINHOLE/KANNALA_BRANDT), image_width/height, K, D, R/t_baselink_sensor, head_yaw/pitch; no modificar."
+    confidence: alta
+    verification: verificado
+    used_for: [calibracion, localizacion_3d]
+  - id: S26
+    title: "AimDK X2 - Changelog"
+    url: https://x2-aimdk.agibot.com/en/latest/changelog.html
+    type: fabricante
+    evidence: "v1.1.0 (2026-05-11): profundidad ya no alineada con RGB, depth_registration desactivado, contenedores; v1.0.0 (2026-03-02): se elimina depth_pointcloud; v0.8.2: restricción de PC1; v0.8.1: se eliminan las interfaces de la cámara de interacción; v0.8.0: camera_info de RGB y profundidad."
+    confidence: alta
+    verification: verificado
+    used_for: [robot, localizacion_3d]
+
+  - id: D01
+    title: "DrBerry-Original-Data (Roboflow Universe)"
+    url: https://universe.roboflow.com/drberry/drberry-original-data
+    type: dataset
+    license: CC BY 4.0 (declarada en Roboflow)
+    evidence: "Object Detection, 410 imágenes, 1 versión, clases Alternaria, Heliothis, Oidio, Sana; sin descripción publicada; 'Updated 3 years ago'."
+    confidence: alta (metadatos); calidad de etiquetas no evaluada
+    verification: parcial
+    used_for: [dataset_alternaria]
+
+  - id: D02
+    title: "drberry-gen-3 / drberry-gen-3-20 / drberry-gen-1 / drberry-gen-2 (Roboflow Universe)"
+    url: https://universe.roboflow.com/drberry/drberry-gen-3
+    type: dataset_variantes
+    license: CC BY 4.0
+    evidence: "gen-3: 2671 imágenes, 4 clases; gen-3-20: 585 imágenes; gen-1 y gen-2 son páginas de modelo (1683 y 2753 imágenes). Relación con la versión original no documentada."
+    confidence: media
+    verification: parcial
+    used_for: [dataset_alternaria]
+
+  - id: D03
+    title: "DrBerry: Detection of Diseases in Blueberry Bush Leaves (KDIR 2023)"
+    url: https://doi.org/10.5220/0012207100003598
+    type: articulo
+    author: Morales, Cavero, Ugarte (UPC, Perú)
+    evidence: "YOLOv5, app móvil; oidio, heliothis, alternaria; Fundo San Roberto, Huaral; reporta 84 % accuracy y 91 % recall; dataset 'will be available' (futuro)."
+    confidence: alta
+    verification: parcial (resumen)
+    used_for: [dataset_alternaria]
+
+  - id: D04
+    title: "Strawberry Disease Detection (Afzaal et al., 2021)"
+    url: https://datasetninja.com/strawberry-disease-detection
+    type: dataset
+    license: CC BY 4.0 (según Dataset Ninja; Kaggle no verificable en esta sesión)
+    evidence: >
+      2500 imágenes 419x419, 5707 objetos, 7 clases (gray_mold 476 img/598 obj), train 1450 /
+      val 307 / test 743, polígonos de instancia (Supervisely), invernaderos de Corea, celular,
+      ~20 % de imágenes de fuentes en línea, verificación por expertos. 343.62 MB.
+      Artículo DOI 10.3390/s21196565.
+    confidence: alta
+    verification: verificado (ficha)
+    used_for: [dataset_moho_gris]
+
+  - id: D05
+    title: "Strawberry Disease Detection Dataset with Hybrid Data Augmentation"
+    url: https://data.mendeley.com/datasets/k2ptxmfjhj/1
+    type: dataset
+    license: CC BY-NC 4.0
+    published: 2025-09-23
+    evidence: "5610 imágenes 640x640, 8 clases (~700 c/u), 80/10/10; base 2459, aumentadas 1559, sintéticas DALL-E 3 1018 (suma 5036 ≠ 5610: inconsistencia de la ficha); sintéticas solo en train; COCO polígonos."
+    confidence: alta
+    verification: verificado (ficha)
+    used_for: [dataset_moho_gris]
+
+  - id: D06
+    title: "Thrip_Leaf_Dataset (ZZL0897)"
+    url: https://github.com/ZZL0897/thrip_leaf_dataset
+    type: dataset
+    license: "GPL-3.0 en el repositorio + README: solo investigación académica, sin uso comercial, sin modificación no académica, sin redistribución (conflicto)"
+    evidence: "5618 imágenes, 47726 anotaciones, LabelMe/COCO/YOLO; Spathiphyllum floribundum 'Clevelandii'; Megalurothrips usitatus; cámara de crecimiento 25 °C, 50-70 % HR, 10000 lux; descarga Quark Netdisk con contraseña por correo; publicación asociada no identificada."
+    confidence: alta
+    verification: verificado (README)
+    used_for: [dataset_trips]
+
+  - id: D07
+    title: "PlantVillage (spMohanty) y TFDS plant_village"
+    url: https://github.com/spMohanty/PlantVillage-Dataset
+    type: dataset
+    license: "No indicada en el README; TFDS no declara licencia de imágenes"
+    evidence: "54306 imágenes (TFDS: 54303), 14 cultivos, 38 clases; Hughes & Salathé 2015 (arXiv 1511.08060). Arándano: solo Blueberry___healthy (conteo no verificado en esta sesión)."
+    confidence: alta
+    verification: parcial
+    used_for: [dataset_sanas]
+
+  - id: D08
+    title: "Plant_Village_Blueberry (ai-agriculture-circuits-and-systems)"
+    url: https://github.com/ai-agriculture-circuits-and-systems/Plant_Village_Blueberry
+    type: dataset_derivado
+    license: CC BY 4.0
+    evidence: "5290 imágenes 256x256: healthy 3004 y background_without_leaves 2286; 6676 cajas; CSV por imagen + COCO; requiere descargar originales de Kaggle. 3004 sanas no coincide con conteos habituales del original: revisar duplicados/aumentadas."
+    confidence: media
+    verification: parcial
+    used_for: [dataset_sanas]
+
+  - id: D09
+    title: "PlantVillage aumentado (Mendeley tywbtsjrjv)"
+    url: https://data.mendeley.com/datasets/tywbtsjrjv/1
+    type: dataset_derivado
+    license: CC0 1.0
+    evidence: "61486 imágenes, 39 clases, con 6 técnicas de aumentación. No usar para evaluación."
+    confidence: alta
+    verification: verificado (ficha)
+    used_for: [dataset_sanas]
+
+  - id: D10
+    title: "PlantDoc (clasificación) y PlantDoc-Object-Detection"
+    url: https://github.com/pratikkayal/PlantDoc-Object-Detection-Dataset
+    type: dataset
+    license: CC BY 4.0 (LICENSE.txt); imágenes obtenidas de internet
+    evidence: >
+      Verificado con la API de GitHub y los CSV: 28 carpetas de clase en clasificación;
+      'Blueberry leaf' 106 train / 11 test. Detección: 2345 imágenes train (8469 cajas) y
+      236 test (452 cajas); 'Blueberry leaf' 827 cajas/106 imágenes train y 22/11 test.
+      No hay ninguna clase de enfermedad de arándano. Artículo arXiv 1911.10317.
+    confidence: alta
+    verification: verificado
+    used_for: [dataset_sanas]
+
+  - id: D11
+    title: "HyperspectralBlueberries (Zenodo 11200576)"
+    url: https://zenodo.org/records/11200576
+    type: dataset
+    license: CC BY 4.0
+    published: 2024-05-15
+    evidence: "420 frutos (210 normales/210 defectuosos), sistema hiperespectral de barrido de línea de laboratorio, .bil/.hdr, 22 archivos, 27.8 GB listados (la descripción dice ~25 GB). Artículo Deng, Lu, Stafne 2024 (dos DOI distintos en la ficha)."
+    confidence: alta
+    verification: verificado (ficha)
+    used_for: [descartado_rgb]
+
+  - id: R01
+    title: "Búsqueda de datasets de Botrytis en arándano"
+    url: null
+    type: busqueda
+    evidence: "No se encontró ningún dataset público de imágenes de Botrytis en arándano. Lo más cercano: pepino multiespectral (Giakoumoglou et al. 2023/2024) y fresa."
+    confidence: media (ausencia de evidencia en una búsqueda, no prueba de inexistencia)
+    verification: parcial
+    used_for: [vacio_botrytis]
+
+  # ---- Fase de selección de datasets (2026-10-23) ----
+  - id: D12
+    title: "Roboflow Universe - versiones de DrBerry (original v1, gen-3-20 v1, gen-3 v1)"
+    url: https://universe.roboflow.com/drberry/drberry-original-data/dataset/1
+    type: dataset
+    evidence: "original v1 'data_original' (2023-05-26): 410 img, 327/40/43, Auto-Orient + Stretch to 1024x1024. gen-3-20 v1 (2023-04-26): 585 img, 408/116/61, sin preprocesamiento. gen-3 v1 (2023-04-09): 2671 img, 2134/263/274, sin preprocesamiento. La API exige key. Muestra pública: hoja suelta sobre sustrato, Samsung SM-A307G 2992x2992, caja ≈ hoja."
+    license: CC BY 4.0
+    confidence: alta (metadatos); la interpretación de la caja se basa en 1 muestra
+    verification: parcial
+    used_for: [dataset_alternaria]
+  - id: D13
+    title: "dataset-tools 0.2.6 - released_datasets.json (Dataset Ninja)"
+    url: https://pypi.org/project/dataset-tools/
+    type: registro_de_descarga
+    evidence: "URL oficial de Dropbox para Strawberry Disease Detection; el 2026-10-23 respondió 'Link Temporarily Disabled'."
+    confidence: alta
+    verification: verificado
+    used_for: [dataset_moho_gris]
+  - id: D14
+    title: "Hugging Face - mohanty/PlantVillage (ficha)"
+    url: https://huggingface.co/datasets/mohanty/PlantVillage
+    type: dataset
+    evidence: "licencia declarada cc-by-sa-3.0. El repo GitHub spMohanty no tiene LICENSE. raw/color/Blueberry___healthy = 1502 JPG (API de GitHub y descarga local)."
+    confidence: alta
+    verification: verificado
+    used_for: [dataset_sanas]
+  - id: D15
+    title: "HyperspectralBlueberries - cabecera ENVI 'Good Blueberry 1-42.bil.hdr'"
+    url: https://zenodo.org/records/11200576
+    type: dataset
+    evidence: "1600 samples x 1800 lines x 462 bands, BIL, 393.8-1010.6 nm; 22 archivos, 27.79 GB; código vicdxxx sin licencia."
+    confidence: alta
+    verification: verificado
+    used_for: [descartado_rgb]
+  - id: R02
+    title: "Búsqueda: cifras de pérdidas por Botrytis en arándano (Perú/Latinoamérica)"
+    url: https://repositorio.lamolina.edu.pe/items/186fb99d-f56c-41d6-a578-1d2fb79f4416
+    type: busqueda
+    evidence: "Sin cifras colombianas. Perú: hasta 30 % de pérdidas poscosecha (estudio académico); 'hasta 65 %' en prensa a partir de fuente comercial. No confirma las cifras del equipo (C-01, C-02)."
+    confidence: media
+    verification: parcial
+    used_for: [claims]
+  - id: D16
+    title: "Strawberry Disease Detection Dataset with Hybrid Data Augmentation - descarga y estructura"
+    url: https://data.mendeley.com/public-api/zip/k2ptxmfjhj/download/1
+    type: dataset
+    evidence: "Zip de 544.680.130 bytes (sha256 cc1311b9...). Variantes hybrid (train 4690, con 1018 sintéticas '_synthetic_') y traditional (train 3672, valid 456, test 463). Valid/test del autor contienen aumentadas 'aug_' y comparten imágenes base con train (fuga). 'Asymptomatic Strawberry' (traditional) = 'Healthy Strawberry' (hybrid); errata 'Powderly'. Las asintomáticas tienen nombres numéricos (Pérez-Borrero 2020) y las enfermedades nombres por clase (Afzaal 2021)."
+    license: CC BY-NC 4.0
+    confidence: alta
+    verification: verificado (local)
+    used_for: [experimento_auxiliar]
+  - id: D17
+    title: "Candidatos adicionales investigados (2026-10-23)"
+    url: null
+    type: busqueda
+    evidence: "GreenHouse Annotations (Roboflow, 504 img, Thrips/Fungus_Gnats/Pea_Aphids/Spider_Mite/Insects, CC BY 4.0, API key). 64mp_thrip_bb (Cloudflare, no verificado). CT PestNet (HF, IP102, 75.222 img, 102 clases con varias de trips, CC BY 4.0, 3,19 GB). Tomato Disease (Mendeley c2x8rynybg, 1.026 img, gray mold en tomate, VOC, CC BY 4.0, 3,14 GB). Strawberry-MM-Straw5 (HF, 1.170 img YOLO, gray_mold + temperatura/HR/humedad del suelo, CC BY-NC-SA 4.0). Mummy berry (Frontiers 2024, doi 10.3389/fpls.2024.1340884, 927 img de arándano, datos 'disponibles por los autores'). UPTC Colombia (doi 10.19053/uptc.24223719.18515, bloqueado por anti-bot). PRJNA984325 = genómica de B. cinerea, sin imágenes."
+    confidence: media
+    verification: parcial
+    used_for: [seleccion_datos]
+  - id: R03
+    title: "Rivera, Zoffoli & Latorre (2013). Infection Risk and Critical Period for the Postharvest Control of Gray Mold (Botrytis cinerea) on Blueberry in Chile. Plant Disease"
+    url: https://pubmed.ncbi.nlm.nih.gov/30722487/
+    type: articulo
+    evidence: "Algoritmo de riesgo: >6 h de humectación entre 14 y 25 °C; r=0,96 con la incidencia en fruta almacenada; validación de campo pendiente según los autores. doi:10.1094/PDIS-12-12-1112-RE (resumen vía Europe PMC)."
+    confidence: alta
+    verification: verificado (resumen)
+    used_for: [riesgo_ambiental]

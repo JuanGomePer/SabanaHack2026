@@ -1,0 +1,4 @@
+extends: _base.yaml
+id: E4c_00_smallcnn_scratch
+model: {name: smallcnn, pretrained: false, dropout: 0.2}
+train: {lr: 0.001, epochs: 25, patience: 8}

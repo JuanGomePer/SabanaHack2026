@@ -1,0 +1,157 @@
+{
+  "manifest_version": "1.0.0",
+  "seed": 0,
+  "built_at": "2026-10-24T00:37:48+00:00",
+  "sources": {
+    "plantdoc_blueberry": {
+      "n_rows": 117,
+      "splits": {
+        "train": 81,
+        "val": 21,
+        "test": 15
+      },
+      "n_groups": 116,
+      "groups_crossing_splits": 0,
+      "labels_by_split": {
+        "train": {
+          "blueberry_leaf_unspecified_condition": 81
+        },
+        "val": {
+          "blueberry_leaf_unspecified_condition": 21
+        },
+        "test": {
+          "blueberry_leaf_unspecified_condition": 15
+        }
+      },
+      "augmented_in_val_test": 0,
+      "synthetic_rows": 0,
+      "exclusions": {}
+    },
+    "plantvillage_blueberry_healthy": {
+      "n_rows": 1502,
+      "splits": {
+        "val": 197,
+        "train": 1071,
+        "test": 234
+      },
+      "n_groups": 1502,
+      "groups_crossing_splits": 0,
+      "labels_by_split": {
+        "train": {
+          "blueberry_leaf_healthy_lab": 1071
+        },
+        "val": {
+          "blueberry_leaf_healthy_lab": 197
+        },
+        "test": {
+          "blueberry_leaf_healthy_lab": 234
+        }
+      },
+      "augmented_in_val_test": 0,
+      "synthetic_rows": 0,
+      "exclusions": {}
+    },
+    "strawberry_hybrid_synthetic": {
+      "n_rows": 1018,
+      "splits": {
+        "excluded": 1018
+      },
+      "n_groups": 0,
+      "groups_crossing_splits": 0,
+      "labels_by_split": {
+        "train": {},
+        "val": {},
+        "test": {}
+      },
+      "augmented_in_val_test": 0,
+      "synthetic_rows": 1018,
+      "exclusions": {
+        "sintética (DALL·E 3)": 1018
+      }
+    },
+    "strawberry_traditional": {
+      "n_rows": 4591,
+      "splits": {
+        "train": 3197,
+        "excluded": 488,
+        "test": 453,
+        "val": 453
+      },
+      "n_groups": 2688,
+      "groups_crossing_splits": 0,
+      "labels_by_split": {
+        "train": {
+          "strawberry_asymptomatic": 402,
+          "strawberry_flower_blossom_blight": 402,
+          "strawberry_fruit_anthracnose_rot": 383,
+          "strawberry_fruit_powdery_mildew": 408,
+          "strawberry_gray_mold": 399,
+          "strawberry_leaf_angular_leafspot": 407,
+          "strawberry_leaf_powdery_mildew": 397,
+          "strawberry_leaf_spot": 399
+        },
+        "val": {
+          "strawberry_asymptomatic": 86,
+          "strawberry_flower_blossom_blight": 31,
+          "strawberry_fruit_anthracnose_rot": 15,
+          "strawberry_fruit_powdery_mildew": 20,
+          "strawberry_gray_mold": 71,
+          "strawberry_leaf_angular_leafspot": 65,
+          "strawberry_leaf_powdery_mildew": 80,
+          "strawberry_leaf_spot": 85
+        },
+        "test": {
+          "strawberry_asymptomatic": 86,
+          "strawberry_flower_blossom_blight": 31,
+          "strawberry_fruit_anthracnose_rot": 15,
+          "strawberry_fruit_powdery_mildew": 20,
+          "strawberry_gray_mold": 71,
+          "strawberry_leaf_angular_leafspot": 65,
+          "strawberry_leaf_powdery_mildew": 80,
+          "strawberry_leaf_spot": 85
+        }
+      },
+      "augmented_in_val_test": 0,
+      "synthetic_rows": 0,
+      "exclusions": {
+        "aumentada de una imagen original asignada a val/test": 482,
+        "imagen multiclase ['Leaf Spot', 'Powderly Mildew Fruit']": 4,
+        "imagen multiclase ['Anthracnose Fruit Rot', 'Leaf Spot']": 2
+      }
+    }
+  },
+  "pending_sources": {
+    "drberry": "bloqueado: ROBOFLOW_API_KEY no definida (D-020)",
+    "afzaal_original": "Dropbox deshabilitado; sus bases están dentro de strawberry_hybrid"
+  },
+  "checks": {
+    "strawberry_original_split_groups_crossing": 360,
+    "strawberry_original_eval_augmented": 314,
+    "strawberry_largest_groups": [
+      [
+        "strawberry_traditional:data/external/strawberry_hybrid/extracted/Strawberry Disease Detection Dataset with Hybrid D/Strawberry-segmentation-traditional-augmentation/test/blossom_blight180_jpg.rf.0d913bf2547a8fae93aeb416a312e509.jpg",
+        29
+      ],
+      [
+        "strawberry_traditional:data/external/strawberry_hybrid/extracted/Strawberry Disease Detection Dataset with Hybrid D/Strawberry-segmentation-traditional-augmentation/test/aug_172_blossom_blight117_jpg.rf.726cc3c9d998973915c685ec950b7759.jpg",
+        27
+      ],
+      [
+        "strawberry_traditional:data/external/strawberry_hybrid/extracted/Strawberry Disease Detection Dataset with Hybrid D/Strawberry-segmentation-traditional-augmentation/test/aug_190_blossom_blight153_jpg.rf.b2d200b883393b72a9c41e9a97eedb30.jpg",
+        24
+      ],
+      [
+        "strawberry_traditional:data/external/strawberry_hybrid/extracted/Strawberry Disease Detection Dataset with Hybrid D/Strawberry-segmentation-traditional-augmentation/test/aug_253_blossom_blight67_jpg.rf.833679dd324a16ec12f69b8f958a957d.jpg",
+        16
+      ],
+      [
+        "strawberry_traditional:data/external/strawberry_hybrid/extracted/Strawberry Disease Detection Dataset with Hybrid D/Strawberry-segmentation-traditional-augmentation/test/blossom_blight192_jpg.rf.840ade219a667d52a65a62365ec8a388.jpg",
+        16
+      ]
+    ],
+    "cross_source_exact_duplicates": 0
+  },
+  "manifest_sha256": "71f6055289b4e2b62ce96642ae1c2733144b65fec23506de06e928381d9d7f99",
+  "manifest_full_path": "data/processed/manifest_v1.csv (no versionado)",
+  "manifest_splits_sha256": "e21b1eee800689da2416ad5fd94a6a9baa67b95423b112f3af7634bef53b0880"
+}

@@ -1,0 +1,3 @@
+extends: _base.yaml
+id: E4c_03_resnet18_sgd_ce
+train: {optimizer: sgd, lr: 0.01, momentum: 0.9}

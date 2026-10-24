@@ -1,0 +1,18 @@
+[E4c_08_freeze_bn] device=cuda train=3197 val=453 params=11180616 entrenables=11171016
+[E4c_08_freeze_bn] muestras por clase (train): {'strawberry_leaf_powdery_mildew': 397, 'strawberry_gray_mold': 399, 'strawberry_fruit_anthracnose_rot': 383, 'strawberry_fruit_powdery_mildew': 408, 'strawberry_leaf_angular_leafspot': 407, 'strawberry_flower_blossom_blight': 402, 'strawberry_asymptomatic': 402, 'strawberry_leaf_spot': 399}
+[E4c_08_freeze_bn] ep 01 tr_loss 0.864 val_loss 0.188 val_acc 0.938 dis_rec 0.871 alertFN@.5 0 (126s)
+[E4c_08_freeze_bn] ep 02 tr_loss 0.266 val_loss 0.153 val_acc 0.954 dis_rec 0.924 alertFN@.5 5 (21s)
+[E4c_08_freeze_bn] ep 03 tr_loss 0.223 val_loss 0.106 val_acc 0.962 dis_rec 0.952 alertFN@.5 0 (21s)
+[E4c_08_freeze_bn] ep 04 tr_loss 0.175 val_loss 0.114 val_acc 0.958 dis_rec 0.934 alertFN@.5 0 (22s)
+[E4c_08_freeze_bn] ep 05 tr_loss 0.107 val_loss 0.119 val_acc 0.945 dis_rec 0.943 alertFN@.5 0 (21s)
+[E4c_08_freeze_bn] ep 06 tr_loss 0.073 val_loss 0.085 val_acc 0.969 dis_rec 0.954 alertFN@.5 0 (21s)
+[E4c_08_freeze_bn] ep 07 tr_loss 0.045 val_loss 0.087 val_acc 0.965 dis_rec 0.955 alertFN@.5 0 (21s)
+[E4c_08_freeze_bn] ep 08 tr_loss 0.025 val_loss 0.076 val_acc 0.976 dis_rec 0.971 alertFN@.5 1 (21s)
+[E4c_08_freeze_bn] ep 09 tr_loss 0.019 val_loss 0.062 val_acc 0.985 dis_rec 0.971 alertFN@.5 0 (48s)
+[E4c_08_freeze_bn] ep 10 tr_loss 0.012 val_loss 0.074 val_acc 0.976 dis_rec 0.958 alertFN@.5 0 (56s)
+[E4c_08_freeze_bn] ep 11 tr_loss 0.009 val_loss 0.055 val_acc 0.989 dis_rec 0.965 alertFN@.5 0 (32s)
+[E4c_08_freeze_bn] ep 12 tr_loss 0.006 val_loss 0.046 val_acc 0.989 dis_rec 0.977 alertFN@.5 0 (35s)
+[E4c_08_freeze_bn] ep 13 tr_loss 0.004 val_loss 0.051 val_acc 0.985 dis_rec 0.973 alertFN@.5 0 (40s)
+[E4c_08_freeze_bn] ep 14 tr_loss 0.004 val_loss 0.051 val_acc 0.987 dis_rec 0.975 alertFN@.5 0 (19s)
+[E4c_08_freeze_bn] ep 15 tr_loss 0.003 val_loss 0.051 val_acc 0.987 dis_rec 0.975 alertFN@.5 0 (29s)
+[E4c_08_freeze_bn] mejor época 12 | val macro-recall enfermedad 0.977 | umbral (max_f2) 0.86 | FN alerta 0 FP alerta 0

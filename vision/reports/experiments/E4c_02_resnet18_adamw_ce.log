@@ -1,0 +1,18 @@
+[E4c_02_resnet18_adamw_ce] device=cuda train=3197 val=453 params=11180616 entrenables=11180616
+[E4c_02_resnet18_adamw_ce] muestras por clase (train): {'strawberry_leaf_powdery_mildew': 397, 'strawberry_gray_mold': 399, 'strawberry_fruit_anthracnose_rot': 383, 'strawberry_fruit_powdery_mildew': 408, 'strawberry_leaf_angular_leafspot': 407, 'strawberry_flower_blossom_blight': 402, 'strawberry_asymptomatic': 402, 'strawberry_leaf_spot': 399}
+[E4c_02_resnet18_adamw_ce] ep 01 tr_loss 0.801 val_loss 0.142 val_acc 0.943 dis_rec 0.897 alertFN@.5 0 (105s)
+[E4c_02_resnet18_adamw_ce] ep 02 tr_loss 0.119 val_loss 0.094 val_acc 0.960 dis_rec 0.939 alertFN@.5 0 (19s)
+[E4c_02_resnet18_adamw_ce] ep 03 tr_loss 0.070 val_loss 0.075 val_acc 0.974 dis_rec 0.932 alertFN@.5 0 (19s)
+[E4c_02_resnet18_adamw_ce] ep 04 tr_loss 0.040 val_loss 0.095 val_acc 0.962 dis_rec 0.880 alertFN@.5 0 (18s)
+[E4c_02_resnet18_adamw_ce] ep 05 tr_loss 0.033 val_loss 0.074 val_acc 0.982 dis_rec 0.969 alertFN@.5 0 (18s)
+[E4c_02_resnet18_adamw_ce] ep 06 tr_loss 0.031 val_loss 0.096 val_acc 0.967 dis_rec 0.940 alertFN@.5 0 (18s)
+[E4c_02_resnet18_adamw_ce] ep 07 tr_loss 0.020 val_loss 0.079 val_acc 0.980 dis_rec 0.974 alertFN@.5 1 (19s)
+[E4c_02_resnet18_adamw_ce] ep 08 tr_loss 0.012 val_loss 0.035 val_acc 0.989 dis_rec 0.977 alertFN@.5 0 (18s)
+[E4c_02_resnet18_adamw_ce] ep 09 tr_loss 0.006 val_loss 0.039 val_acc 0.987 dis_rec 0.975 alertFN@.5 0 (19s)
+[E4c_02_resnet18_adamw_ce] ep 10 tr_loss 0.005 val_loss 0.037 val_acc 0.987 dis_rec 0.975 alertFN@.5 0 (19s)
+[E4c_02_resnet18_adamw_ce] ep 11 tr_loss 0.004 val_loss 0.035 val_acc 0.987 dis_rec 0.963 alertFN@.5 0 (18s)
+[E4c_02_resnet18_adamw_ce] ep 12 tr_loss 0.003 val_loss 0.033 val_acc 0.989 dis_rec 0.977 alertFN@.5 0 (19s)
+[E4c_02_resnet18_adamw_ce] ep 13 tr_loss 0.005 val_loss 0.035 val_acc 0.989 dis_rec 0.977 alertFN@.5 0 (22s)
+[E4c_02_resnet18_adamw_ce] ep 14 tr_loss 0.004 val_loss 0.037 val_acc 0.989 dis_rec 0.982 alertFN@.5 0 (20s)
+[E4c_02_resnet18_adamw_ce] ep 15 tr_loss 0.004 val_loss 0.037 val_acc 0.989 dis_rec 0.977 alertFN@.5 0 (19s)
+[E4c_02_resnet18_adamw_ce] mejor época 14 | val macro-recall enfermedad 0.982 | umbral (max_f2) 0.78 | FN alerta 0 FP alerta 0

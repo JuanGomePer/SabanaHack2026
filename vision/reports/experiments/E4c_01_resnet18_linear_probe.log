@@ -1,0 +1,18 @@
+[E4c_01_resnet18_linear_probe] device=cuda train=3197 val=453 params=11180616 entrenables=4104
+[E4c_01_resnet18_linear_probe] muestras por clase (train): {'strawberry_leaf_powdery_mildew': 397, 'strawberry_gray_mold': 399, 'strawberry_fruit_anthracnose_rot': 383, 'strawberry_fruit_powdery_mildew': 408, 'strawberry_leaf_angular_leafspot': 407, 'strawberry_flower_blossom_blight': 402, 'strawberry_asymptomatic': 402, 'strawberry_leaf_spot': 399}
+[E4c_01_resnet18_linear_probe] ep 01 tr_loss 1.875 val_loss 1.089 val_acc 0.781 dis_rec 0.712 alertFN@.5 0 (97s)
+[E4c_01_resnet18_linear_probe] ep 02 tr_loss 0.908 val_loss 0.518 val_acc 0.881 dis_rec 0.805 alertFN@.5 2 (20s)
+[E4c_01_resnet18_linear_probe] ep 03 tr_loss 0.613 val_loss 0.338 val_acc 0.903 dis_rec 0.797 alertFN@.5 2 (21s)
+[E4c_01_resnet18_linear_probe] ep 04 tr_loss 0.503 val_loss 0.301 val_acc 0.905 dis_rec 0.836 alertFN@.5 2 (20s)
+[E4c_01_resnet18_linear_probe] ep 05 tr_loss 0.442 val_loss 0.257 val_acc 0.921 dis_rec 0.843 alertFN@.5 2 (21s)
+[E4c_01_resnet18_linear_probe] ep 06 tr_loss 0.420 val_loss 0.286 val_acc 0.907 dis_rec 0.863 alertFN@.5 2 (21s)
+[E4c_01_resnet18_linear_probe] ep 07 tr_loss 0.388 val_loss 0.226 val_acc 0.921 dis_rec 0.845 alertFN@.5 2 (19s)
+[E4c_01_resnet18_linear_probe] ep 08 tr_loss 0.365 val_loss 0.233 val_acc 0.921 dis_rec 0.873 alertFN@.5 2 (22s)
+[E4c_01_resnet18_linear_probe] ep 09 tr_loss 0.364 val_loss 0.246 val_acc 0.916 dis_rec 0.860 alertFN@.5 0 (21s)
+[E4c_01_resnet18_linear_probe] ep 10 tr_loss 0.352 val_loss 0.215 val_acc 0.921 dis_rec 0.865 alertFN@.5 2 (20s)
+[E4c_01_resnet18_linear_probe] ep 11 tr_loss 0.333 val_loss 0.216 val_acc 0.923 dis_rec 0.864 alertFN@.5 2 (20s)
+[E4c_01_resnet18_linear_probe] ep 12 tr_loss 0.324 val_loss 0.213 val_acc 0.925 dis_rec 0.874 alertFN@.5 2 (20s)
+[E4c_01_resnet18_linear_probe] ep 13 tr_loss 0.329 val_loss 0.218 val_acc 0.918 dis_rec 0.876 alertFN@.5 2 (20s)
+[E4c_01_resnet18_linear_probe] ep 14 tr_loss 0.326 val_loss 0.217 val_acc 0.921 dis_rec 0.862 alertFN@.5 2 (21s)
+[E4c_01_resnet18_linear_probe] ep 15 tr_loss 0.341 val_loss 0.215 val_acc 0.921 dis_rec 0.867 alertFN@.5 2 (20s)
+[E4c_01_resnet18_linear_probe] mejor época 13 | val macro-recall enfermedad 0.876 | umbral (max_f2) 0.39 | FN alerta 0 FP alerta 0

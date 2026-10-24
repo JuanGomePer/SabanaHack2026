@@ -1,0 +1,3 @@
+extends: _base.yaml
+id: E4c_08_freeze_bn
+train: {freeze_bn: true}

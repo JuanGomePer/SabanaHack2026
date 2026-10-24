@@ -1,0 +1,17 @@
+[E4c_05_originals_weighted_ce] device=cuda train=2122 val=453 params=11180616 entrenables=11180616
+[E4c_05_originals_weighted_ce] muestras por clase (train): {'strawberry_gray_mold': 334, 'strawberry_asymptomatic': 402, 'strawberry_leaf_spot': 399, 'strawberry_flower_blossom_blight': 147, 'strawberry_fruit_powdery_mildew': 95, 'strawberry_leaf_angular_leafspot': 305, 'strawberry_fruit_anthracnose_rot': 67, 'strawberry_leaf_powdery_mildew': 373}
+[E4c_05_originals_weighted_ce] ep 01 tr_loss 1.025 val_loss 0.420 val_acc 0.854 dis_rec 0.846 alertFN@.5 0 (104s)
+[E4c_05_originals_weighted_ce] ep 02 tr_loss 0.246 val_loss 0.170 val_acc 0.938 dis_rec 0.862 alertFN@.5 0 (14s)
+[E4c_05_originals_weighted_ce] ep 03 tr_loss 0.122 val_loss 0.186 val_acc 0.943 dis_rec 0.905 alertFN@.5 0 (14s)
+[E4c_05_originals_weighted_ce] ep 04 tr_loss 0.130 val_loss 0.095 val_acc 0.962 dis_rec 0.931 alertFN@.5 0 (34s)
+[E4c_05_originals_weighted_ce] ep 05 tr_loss 0.067 val_loss 0.090 val_acc 0.971 dis_rec 0.933 alertFN@.5 0 (16s)
+[E4c_05_originals_weighted_ce] ep 06 tr_loss 0.053 val_loss 0.269 val_acc 0.934 dis_rec 0.876 alertFN@.5 1 (28s)
+[E4c_05_originals_weighted_ce] ep 07 tr_loss 0.070 val_loss 0.148 val_acc 0.951 dis_rec 0.941 alertFN@.5 0 (39s)
+[E4c_05_originals_weighted_ce] ep 08 tr_loss 0.041 val_loss 0.070 val_acc 0.982 dis_rec 0.971 alertFN@.5 0 (39s)
+[E4c_05_originals_weighted_ce] ep 09 tr_loss 0.029 val_loss 0.071 val_acc 0.978 dis_rec 0.962 alertFN@.5 0 (32s)
+[E4c_05_originals_weighted_ce] ep 10 tr_loss 0.021 val_loss 0.062 val_acc 0.982 dis_rec 0.961 alertFN@.5 0 (40s)
+[E4c_05_originals_weighted_ce] ep 11 tr_loss 0.012 val_loss 0.078 val_acc 0.974 dis_rec 0.953 alertFN@.5 0 (39s)
+[E4c_05_originals_weighted_ce] ep 12 tr_loss 0.013 val_loss 0.068 val_acc 0.976 dis_rec 0.955 alertFN@.5 0 (33s)
+[E4c_05_originals_weighted_ce] ep 13 tr_loss 0.010 val_loss 0.064 val_acc 0.976 dis_rec 0.955 alertFN@.5 0 (45s)
+[E4c_05_originals_weighted_ce] early stopping en la época 13 (mejor 8)
+[E4c_05_originals_weighted_ce] mejor época 8 | val macro-recall enfermedad 0.971 | umbral (max_f2) 0.86 | FN alerta 0 FP alerta 0

@@ -1,0 +1,16 @@
+[E4c_03_resnet18_sgd_ce] device=cuda train=3197 val=453 params=11180616 entrenables=11180616
+[E4c_03_resnet18_sgd_ce] muestras por clase (train): {'strawberry_leaf_powdery_mildew': 397, 'strawberry_gray_mold': 399, 'strawberry_fruit_anthracnose_rot': 383, 'strawberry_fruit_powdery_mildew': 408, 'strawberry_leaf_angular_leafspot': 407, 'strawberry_flower_blossom_blight': 402, 'strawberry_asymptomatic': 402, 'strawberry_leaf_spot': 399}
+[E4c_03_resnet18_sgd_ce] ep 01 tr_loss 0.862 val_loss 0.207 val_acc 0.929 dis_rec 0.892 alertFN@.5 0 (103s)
+[E4c_03_resnet18_sgd_ce] ep 02 tr_loss 0.118 val_loss 0.221 val_acc 0.929 dis_rec 0.923 alertFN@.5 0 (21s)
+[E4c_03_resnet18_sgd_ce] ep 03 tr_loss 0.062 val_loss 0.119 val_acc 0.967 dis_rec 0.921 alertFN@.5 0 (18s)
+[E4c_03_resnet18_sgd_ce] ep 04 tr_loss 0.039 val_loss 0.056 val_acc 0.980 dis_rec 0.957 alertFN@.5 0 (18s)
+[E4c_03_resnet18_sgd_ce] ep 05 tr_loss 0.031 val_loss 0.068 val_acc 0.982 dis_rec 0.969 alertFN@.5 0 (18s)
+[E4c_03_resnet18_sgd_ce] ep 06 tr_loss 0.027 val_loss 0.148 val_acc 0.958 dis_rec 0.949 alertFN@.5 0 (18s)
+[E4c_03_resnet18_sgd_ce] ep 07 tr_loss 0.018 val_loss 0.078 val_acc 0.980 dis_rec 0.970 alertFN@.5 0 (18s)
+[E4c_03_resnet18_sgd_ce] ep 08 tr_loss 0.012 val_loss 0.061 val_acc 0.980 dis_rec 0.967 alertFN@.5 0 (19s)
+[E4c_03_resnet18_sgd_ce] ep 09 tr_loss 0.007 val_loss 0.069 val_acc 0.982 dis_rec 0.969 alertFN@.5 0 (18s)
+[E4c_03_resnet18_sgd_ce] ep 10 tr_loss 0.008 val_loss 0.054 val_acc 0.982 dis_rec 0.964 alertFN@.5 0 (21s)
+[E4c_03_resnet18_sgd_ce] ep 11 tr_loss 0.007 val_loss 0.050 val_acc 0.985 dis_rec 0.966 alertFN@.5 0 (19s)
+[E4c_03_resnet18_sgd_ce] ep 12 tr_loss 0.004 val_loss 0.053 val_acc 0.978 dis_rec 0.960 alertFN@.5 0 (18s)
+[E4c_03_resnet18_sgd_ce] early stopping en la época 12 (mejor 7)
+[E4c_03_resnet18_sgd_ce] mejor época 7 | val macro-recall enfermedad 0.970 | umbral (max_f2) 0.86 | FN alerta 0 FP alerta 0

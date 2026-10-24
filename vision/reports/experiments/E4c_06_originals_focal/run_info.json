@@ -1,0 +1,120 @@
+{
+  "id": "E4c_06_originals_focal",
+  "config_path": "configs/experiments/aux_strawberry/E4c_06_originals_focal.yaml",
+  "config": {
+    "id": "E4c_06_originals_focal",
+    "seed": 0,
+    "data": {
+      "source_id": "strawberry_traditional",
+      "include_augmented": false,
+      "healthy_class": "strawberry_asymptomatic",
+      "classes": [
+        "strawberry_asymptomatic",
+        "strawberry_gray_mold",
+        "strawberry_flower_blossom_blight",
+        "strawberry_fruit_anthracnose_rot",
+        "strawberry_fruit_powdery_mildew",
+        "strawberry_leaf_angular_leafspot",
+        "strawberry_leaf_powdery_mildew",
+        "strawberry_leaf_spot"
+      ]
+    },
+    "model": {
+      "name": "resnet18",
+      "pretrained": true,
+      "freeze_backbone": false,
+      "dropout": 0.2,
+      "imgsz": 224
+    },
+    "augmentation": {
+      "hflip": true,
+      "vflip": true,
+      "rotation": 15,
+      "color_jitter": [
+        0.2,
+        0.2,
+        0.15,
+        0.02
+      ],
+      "jpeg_quality": [
+        60,
+        95
+      ],
+      "blur_p": 0.15
+    },
+    "loss": {
+      "name": "focal",
+      "gamma": 2.0
+    },
+    "train": {
+      "optimizer": "adamw",
+      "lr": 0.0003,
+      "backbone_lr_mult": 1.0,
+      "weight_decay": 0.0001,
+      "scheduler": "cosine",
+      "warmup_epochs": 1,
+      "epochs": 15,
+      "patience": 5,
+      "batch_size": 64,
+      "num_workers": 4,
+      "amp": true,
+      "freeze_bn": false
+    },
+    "threshold_rule": "max_f2",
+    "recall_targets": [
+      0.95,
+      0.98
+    ]
+  },
+  "code_tree_sha256": "93dac9fd03a796201060ba8a9333f2190d1061ddf17e5efc89bd79429dec46d6",
+  "git": {
+    "branch": "Sofinu",
+    "head": "3a8d83b",
+    "dirty": true
+  },
+  "manifest_sha256": "71f6055289b4e2b62ce96642ae1c2733144b65fec23506de06e928381d9d7f99",
+  "manifest_splits_sha256": "e21b1eee800689da2416ad5fd94a6a9baa67b95423b112f3af7634bef53b0880",
+  "data": {
+    "source_id": "strawberry_traditional",
+    "n_train": 2122,
+    "n_val": 453,
+    "train_counts": {
+      "strawberry_gray_mold": 334,
+      "strawberry_asymptomatic": 402,
+      "strawberry_leaf_spot": 399,
+      "strawberry_flower_blossom_blight": 147,
+      "strawberry_fruit_powdery_mildew": 95,
+      "strawberry_leaf_angular_leafspot": 305,
+      "strawberry_fruit_anthracnose_rot": 67,
+      "strawberry_leaf_powdery_mildew": 373
+    },
+    "class_weights": null
+  },
+  "model": {
+    "name": "resnet18",
+    "params_total": 11180616,
+    "params_trainable": 11180616,
+    "init": "ImageNet"
+  },
+  "env": {
+    "python": "3.11.9",
+    "torch": "2.14.1+cu126",
+    "cuda": "12.6",
+    "gpu": "NVIDIA GeForce RTX 4050 Laptop GPU"
+  },
+  "fit": {
+    "best_epoch": 15,
+    "best_val_disease_macro_recall": 0.9736043713259953,
+    "best_val_loss": 0.06877465067517678,
+    "epochs_run": 15,
+    "train_seconds": 432.54492592811584
+  },
+  "best_checkpoint": "runs/E4c_06_originals_focal/best.pt",
+  "latency_dev_machine": {
+    "latency_ms_per_batch": 3.401,
+    "batch": 1,
+    "imgsz": 224,
+    "peak_mem_mib": 245.486328125
+  },
+  "test_evaluated": false
+}

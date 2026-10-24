@@ -1,0 +1,66 @@
+# Configuración del módulo de visión para el AgiBot X2 Ultra.
+# PUNTO DE PARTIDA, NO VALIDADO EN EL ROBOT. Fuente de cada valor en
+# docs/02_robot_agibot_x2_ultra.md. Validar con: python scripts/validate_config.py
+#
+# Deliberadamente NO hay width/height de la cámara: se leen de CameraInfo y se
+# comprueban contra cada imagen recibida (berryvision.preprocess).
+# La calibración de fábrica del robot NO va aquí (ver calibration.path).
+
+schema_version: 1
+
+robot:
+  model: agibot_x2_ultra
+  variant: null            # "x2_ultra" | "x2_ultra_new_version": pendiente de confirmar en la unidad
+  sdk_version: null        # p. ej. "1.1.0"; debe coincidir con el firmware (pendiente)
+  compute_unit: PC2        # único destino permitido para ejecutar en el robot; PC1 prohibido
+  forbidden_hosts: ["10.0.1.40", "192.168.88.88"]   # PC1 por cable y por AP Wi-Fi
+  container_required: true  # obligatorio desde SDK v1.2.0; recomendado en v1.1.0
+
+camera:
+  type: rgbd
+  name: rgbd_head_front    # Orbbec Gemini 335
+  rgb_topic: /aima/hal/sensor/rgbd_head_front/rgb_image/compressed   # CompressedImage, MJPEG
+  rgb_raw_topic: /aima/hal/sensor/rgbd_head_front/rgb_image           # Image rgb8; ~80 MB/s, solo en PC2
+  rgb_info_topic: /aima/hal/sensor/rgbd_head_front/rgb_camera_info
+  depth_topic: /aima/hal/sensor/rgbd_head_front/depth_image           # Image 16UC1 (mm)
+  depth_info_topic: /aima/hal/sensor/rgbd_head_front/depth_camera_info
+  frame_id: rgbd_head_front
+  depth_frame_id: rgbd_depth_head_front   # TF estática publicada en /tf_static
+  qos:
+    reliability: reliable   # documentado: RELIABLE + VOLATILE (history/depth no documentados)
+    durability: volatile
+    depth: 5                # elección propia, no documentada por el fabricante
+  subscribe_from: PC2       # el fabricante desaconseja suscribirse desde otra unidad
+  expected_rate_hz: 30      # documentado; verificar con `ros2 topic hz`
+
+model:
+  task: detect
+  taxonomy: blueberry_leaf/drberry-v1
+  imgsz: 640                # entrada de la red; independiente de la resolución de la cámara
+  letterbox: true
+  color_order: rgb
+  confidence_threshold: 0.35   # provisional; se fija con el conjunto de validación
+  nms_iou_threshold: 0.5
+  weights_path: null        # no existe todavía ningún modelo entrenado
+  engine_path: null         # el engine TensorRT se construye EN PC2; no existe todavía
+
+preprocessing:
+  rectify: false            # Gemini 335 color = PINHOLE; decidir tras leer D de la calibración
+  decode: pil               # PIL -> RGB; cv2.imdecode -> BGR (convertir)
+
+inference:
+  where: offline            # offline | pc2_online
+  max_rate_hz: 2.0          # no se necesita inferir a 30 Hz para inspección de camas
+  use_depth: false
+  enable_3d_projection: false
+
+calibration:
+  path: /agibot/data/param/protected/factory_calib/factory_calibration_params.yml
+  section: head_rgbd_rgb
+  read_only: true
+
+observations:
+  output_dir: data/robot_captures/observations   # fuera de Git
+  schema_version: "0.2.0"
+  save_evidence_image: true
+  camera_id: x2_rgbd_head_front_rgb
