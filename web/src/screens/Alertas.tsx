@@ -8,6 +8,7 @@ import { Chip, type TonoChip } from '../components/Chip';
 import { BarraConfianza } from '../components/BarraConfianza';
 import { ResumenSms, useSms } from '../components/AvisosSms';
 import { fechaHora, haceCuanto } from '../utilidades/formato';
+import { urlDeApi } from '../api/cliente';
 
 type Filtro = 'pendiente' | 'confirmada' | 'falsa_alarma' | 'todas';
 
@@ -149,7 +150,7 @@ export function Alertas({ alertas, alAbrirPlanta, alConfigurarAvisos, alRecargar
             {visibles.map((alerta) => (
               <tr key={alerta.id}>
                 <td>
-                  <img className="miniatura" src={alerta.fotoUrl} alt="" />
+                  <img className="miniatura" src={urlDeApi(alerta.fotoUrl)} alt="" />
                 </td>
                 <td>
                   <div className="columna">

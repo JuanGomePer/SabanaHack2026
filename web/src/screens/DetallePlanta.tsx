@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { DISPOSITIVO_GAFAS, UMBRALES } from '@vigia/shared/config';
 import type { DetallePlanta as Detalle, EstadoCelda } from '@vigia/shared/tipos';
-import { api } from '../api/cliente';
+import { api, urlDeApi } from '../api/cliente';
 import { Boton } from '../components/Boton';
 import { Chip, type TonoChip } from '../components/Chip';
 import { Segmentado } from '../components/Segmentado';
@@ -167,7 +167,7 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
                 />
                 <div style={{ flex: 1 }} />
                 {vista === 'Foto' ? (
-                  <Boton icono={<Expand size={17} />} onClick={() => window.open(hallazgo?.fotoUrl, '_blank')} disabled={!hallazgo}>
+                  <Boton icono={<Expand size={17} />} onClick={() => window.open(hallazgo ? urlDeApi(hallazgo.fotoUrl) : undefined, '_blank')} disabled={!hallazgo}>
                     Ver foto ampliada
                   </Boton>
                 ) : gafas === 'no_enviado' ? (
@@ -186,7 +186,7 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
                 <div className="foto-hallazgo">
                   {hallazgo ? (
                     <>
-                      <img src={hallazgo.fotoUrl} alt={`Hallazgo de ${hallazgo.tipo} en ${detalle.etiqueta}`} />
+                      <img src={urlDeApi(hallazgo.fotoUrl)} alt={`Hallazgo de ${hallazgo.tipo} en ${detalle.etiqueta}`} />
                       <span className="foto-chip txt-etiqueta">
                         {hallazgo.tipo} · {Math.round(hallazgo.confianza * 100)} %
                       </span>
@@ -200,7 +200,7 @@ export function DetallePlanta({ plantaId, alCerrar, alCambiarPlanta, alRevisar }
                           no hay fotos en server/fotos/sana/, el servidor
                           responde 404 y la imagen se oculta sola. */}
                       <img
-                        src={`/api/fotos/planta/${planta.id}`}
+                        src={urlDeApi(`/fotos/planta/${planta.id}`)}
                         alt={`Última foto del robot en ${detalle.etiqueta}`}
                         onError={(evento) => {
                           evento.currentTarget.style.display = 'none';

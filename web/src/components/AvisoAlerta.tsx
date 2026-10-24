@@ -7,6 +7,7 @@ import { AlertTriangle, X } from 'lucide-react';
 import type { Alerta } from '@vigia/shared/tipos';
 import { Boton } from './Boton';
 import { haceCuanto } from '../utilidades/formato';
+import { urlDeApi } from '../api/cliente';
 
 interface Props {
   alerta: Alerta;
@@ -41,7 +42,7 @@ export function AvisoAlerta({ alerta, atras = 0, alVerPlanta, alCerrar }: Props)
           </span>
         </div>
 
-        <img className="miniatura" src={alerta.fotoUrl} alt="" />
+        <img className="miniatura" src={urlDeApi(alerta.fotoUrl)} alt="" />
       </div>
 
       <div className="aviso-acciones">

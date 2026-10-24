@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowRight, Bell, Bot, Camera, Check } from 'lucide-reac
 import { UMBRALES } from '@vigia/shared/config';
 import { Chip } from '../components/Chip';
 import { Boton } from '../components/Boton';
+import { urlDeApi } from '../api/cliente';
 
 const PASOS = [
   {
@@ -115,7 +116,7 @@ export function ComoLlegaUnaAlerta() {
               Vigía · Alerta nueva
             </span>
             <div className="canal-foto">
-              <img src="/api/fotos/H-0001.svg" alt="Foto del robot del hallazgo" />
+              <img src={urlDeApi('/fotos/H-0001.svg')} alt="Foto del robot del hallazgo" />
             </div>
             <p className="txt-pequeno" style={{ margin: 0 }}>
               Posible Botrytis (84 %) en cama 14, planta 65. Nave 5 · humedad 91 %.

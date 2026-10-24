@@ -38,6 +38,22 @@ import type {
   VigiaRespuestaAcciones,
 } from '@vigia/shared/tipos';
 
+/**
+ * URL absoluta de una imagen de la API.
+ *
+ * Las fotos no pasan por `fetch`: van directas en `<img src>`, así que hay que
+ * resolverlas contra la misma base que el resto de la API. En desarrollo
+ * `BASE_URL` es "/api" y el proxy de Vite se encarga; en producción el sitio
+ * estático no tiene ningún `/api`, y sin esto el navegador le pide la foto a
+ * su propio dominio y recibe el index.html — imagen rota.
+ *
+ * Acepta lo que manda el servidor ("/api/fotos/H-0001.svg") y también una
+ * ruta ya relativa a la API ("/fotos/planta/B5-C1-P001").
+ */
+export function urlDeApi(ruta: string): string {
+  return `${BASE_URL}${ruta.replace(/^\/api/, '')}`;
+}
+
 async function pedir<T>(ruta: string, opciones?: RequestInit): Promise<T> {
   const respuesta = await fetch(`${BASE_URL}${ruta}`, {
     headers: { 'Content-Type': 'application/json' },

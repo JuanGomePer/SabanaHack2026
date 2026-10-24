@@ -10,6 +10,7 @@ import { Segmentado } from '../components/Segmentado';
 import { LeyendaCalor, MapaArandanos, type CapaMapa } from '../components/MapaArandanos';
 import { Mapa3D } from '../components/Mapa3D';
 import { etiquetaDesdeId, hora, haceCuanto, numero, porcentaje } from '../utilidades/formato';
+import { urlDeApi } from '../api/cliente';
 
 const CAPAS = ['Estado', 'Humedad', 'Temperatura'] as const;
 const VISTAS_MAPA = ['2D', '3D'] as const;
@@ -148,7 +149,7 @@ export function Mapa({ mapa, alertas, plantaResaltada, alAbrirPlanta, alVerAlert
                   className="alerta-fila"
                   onClick={() => alAbrirPlanta(alerta.plantaId)}
                 >
-                  <img className="miniatura" src={alerta.fotoUrl} alt="" />
+                  <img className="miniatura" src={urlDeApi(alerta.fotoUrl)} alt="" />
                   <span className="columna" style={{ minWidth: 0 }}>
                     <span className="txt-cuerpo-fuerte">
                       {alerta.tipo} · {etiquetaDesdeId(alerta.plantaId)}
