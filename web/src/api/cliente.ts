@@ -1,7 +1,13 @@
 /**
  * Único punto de contacto con la API.
  * Los componentes no traen datos de ningún otro sitio.
+ *
+ * En desarrollo, `/api` lo resuelve el proxy de Vite (vite.config.ts) contra
+ * el server local. En producción (el sitio estático desplegado en Render)
+ * no hay proxy, así que `VITE_API_URL` — fijada en build time — apunta
+ * directo a la URL pública del servicio de la API.
  */
+const BASE_URL = (import.meta.env.VITE_API_URL ?? '/api').replace(/\/$/, '');
 
 import type {
   Alerta,
@@ -21,7 +27,7 @@ import type {
 } from '@vigia/shared/tipos';
 
 async function pedir<T>(ruta: string, opciones?: RequestInit): Promise<T> {
-  const respuesta = await fetch(`/api${ruta}`, {
+  const respuesta = await fetch(`${BASE_URL}${ruta}`, {
     headers: { 'Content-Type': 'application/json' },
     ...opciones,
   });
@@ -75,7 +81,7 @@ export const api = {
 
 /** Suscripción a los eventos en vivo (SSE). Devuelve la función para cerrar. */
 export function escucharEventos(alRecibir: (evento: EventoVivo) => void): () => void {
-  const fuente = new EventSource('/api/eventos');
+  const fuente = new EventSource(`${BASE_URL}/eventos`);
   fuente.onmessage = (mensaje) => {
     try {
       alRecibir(JSON.parse(mensaje.data) as EventoVivo);

@@ -250,6 +250,14 @@ eso el frontend solo se conecta cuando el mapa está en pantalla.
 | `POST /api/demo/reiniciar` | quita la alerta de C14-P65 para repetir el pitch |
 | `GET /api/salud` | comprobación rápida del servidor |
 
+### Ingesta de visión
+
+`POST /api/observaciones`, protegida con `x-api-key`. No es parte del
+contrato original (ese describe lo que consume `/web`); es el punto de
+entrada para que un productor externo — el módulo `vision/`, el día que
+tenga un modelo desplegado — publique hallazgos reales. Detalle del payload
+y de qué pasa con clases no reconocidas: [README.md](README.md#ingesta-del-módulo-de-visión).
+
 ## 5. Datos semilla
 
 - 7 plantas en alerta: `[cama, planta]` = `[14,60] [14,63] [13,62] [15,66]

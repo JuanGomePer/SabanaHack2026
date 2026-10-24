@@ -1,0 +1,195 @@
+// Esquema de datos de Vigía.
+// Modela el mismo contrato que shared/src/tipos.ts, pero persistido.
+// Cambiar un campo aquí casi siempre implica cambiar también tipos.ts.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EstadoCelda {
+  ok
+  riesgo
+  alerta
+  sin_dato
+}
+
+enum TipoHallazgo {
+  Botrytis
+  Alternaria
+  Oidio // "Oídio" en el contrato — Prisma no acepta tildes en nombres de enum.
+}
+
+enum RevisionHallazgo {
+  pendiente
+  confirmada
+  falsa_alarma
+}
+
+enum EstadoGafas {
+  no_enviado
+  enviado
+  recibido
+}
+
+enum OrigenHallazgo {
+  simulador
+  vision
+  manual
+}
+
+enum EstadoEquipo {
+  En_marcha
+  En_espera
+  Aviso
+  Activo
+}
+
+enum IconoEquipo {
+  fan
+  rotate
+  wind
+  extract
+  droplet
+  cpu
+}
+
+enum AccionRegistro {
+  confirmada
+  falsa_alarma
+  enviada_a_gafas
+  alerta_nueva
+  equipo
+}
+
+/// Una planta del cultivo. Id en formato "B5-C14-P065".
+///
+/// `hallazgoId` apunta al hallazgo que la tiene en alerta ahora mismo, pero es
+/// un campo suelto (no una relación de Prisma): evita una FK circular con
+/// Hallazgo.plantaId y el código ya lo trata como un simple lookup por id.
+model Planta {
+  id            String      @id
+  cama          Int
+  planta        Int
+  nave          Int
+  estado        EstadoCelda @default(ok)
+  humedad       Float
+  temperatura   Float
+  hallazgoId    String?
+  ultimaLectura DateTime    @default(now())
+
+  hallazgos     Hallazgo[]
+
+  @@index([cama])
+  @@index([nave])
+  @@index([estado])
+}
+
+/// Un hallazgo del robot (o, más adelante, del clasificador de visión) sobre una planta.
+///
+/// `id` es un autoincrement interno: el contrato expone "H-0007", formateado
+/// a partir de este número (ver src/ids.ts). Así el identificador visible
+/// sigue siendo correlativo y nunca se repite, aunque se borren filas (lo
+/// que un `count()` manual no garantiza).
+model Hallazgo {
+  id            Int               @id @default(autoincrement())
+  plantaId      String
+  cama          Int
+  planta        Int
+  nave          Int
+  tipo          TipoHallazgo
+  confianza     Float
+  bboxX         Float
+  bboxY         Float
+  bboxW         Float
+  bboxH         Float
+  revision      RevisionHallazgo  @default(pendiente)
+  detectadoEn   DateTime          @default(now())
+  humedad       Float
+  fotoUrl       String
+  gafas         EstadoGafas       @default(no_enviado)
+  recomendacion String
+  reviso        String?
+  origen        OrigenHallazgo    @default(simulador)
+  /// Observación cruda de la que salió este hallazgo, si vino del módulo de visión.
+  /// Una observación puede traer varios `visual_findings` → varios hallazgos.
+  observacionId String?
+
+  plantaRef     Planta            @relation(fields: [plantaId], references: [id])
+  observacion   Observacion?      @relation(fields: [observacionId], references: [id])
+
+  @@index([observacionId])
+
+  @@index([plantaId])
+  @@index([detectadoEn])
+  @@index([revision])
+}
+
+/// Observación cruda tal como la entrega el módulo de visión (ingesta), para trazabilidad.
+/// Ver vision/contracts/observation.schema.json — se guarda el payload completo porque el
+/// contrato de vision todavía es una propuesta y puede cambiar de forma.
+model Observacion {
+  id          String     @id
+  fuente      String     @default("vision")
+  payload     Json
+  recibidaEn  DateTime   @default(now())
+
+  hallazgos   Hallazgo[]
+}
+
+/// Bitácora de acciones: confirmaciones, falsas alarmas, envíos a gafas, alertas nuevas, equipos.
+/// `id` autoincrement interno; el contrato expone "R-0001" (ver src/ids.ts).
+model EntradaRegistro {
+  id       Int            @id @default(autoincrement())
+  fecha    DateTime       @default(now())
+  plantaId String?
+  cama     Int?
+  accion   AccionRegistro
+  tipo     TipoHallazgo?
+  usuario  String
+  nota     String
+
+  @@index([fecha])
+}
+
+/// Catálogo de equipos de clima (ventiladores, brazos mecánicos, etc.).
+model Equipo {
+  id              String       @id
+  tipo            String
+  nombreCorto     String?
+  modelo          String
+  nave            Int
+  ubicacion       String
+  estado          EstadoEquipo @default(En_espera)
+  potencia        Int          @default(0)
+  ultimoDato      DateTime     @default(now())
+  queEstaPasando  String
+  icono           IconoEquipo
+  conBarra        Boolean      @default(true)
+}
+
+/// Lista "Qué está pasando" de la pantalla de equipos.
+/// `id` autoincrement interno; el contrato expone "E-0001" (ver src/ids.ts).
+model EventoEquipo {
+  id        Int      @id @default(autoincrement())
+  fecha     DateTime @default(now())
+  texto     String
+  nave      Int?
+  equipoId  String?
+  plantaId  String?
+
+  @@index([fecha])
+}
+
+/// Fila única (singleton, id fijo = 1) con los supuestos editables del prototipo.
+/// Se guarda como JSON porque se lee y se escribe siempre como un solo objeto
+/// (GET/PUT /api/configuracion), igual que shared/src/config.ts.
+model Configuracion {
+  id         Int   @id @default(1)
+  estructura Json
+  umbrales   Json
+}

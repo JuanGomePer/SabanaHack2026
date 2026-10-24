@@ -5,3 +5,6 @@ dist/
 .env
 .env.local
 *.bundle
+
+# Prisma Client generado — se regenera con `npx prisma generate` (postinstall).
+server/src/generated/

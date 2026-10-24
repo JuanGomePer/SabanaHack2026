@@ -134,3 +134,56 @@ sigue del archivo de Figma.
   alerta" de 8 a 7, devuelve la planta a "en riesgo" y sube "falsas alarmas" de
   5 a 6. El registro queda firmado por "Samuel R.".
 - Sin errores en la consola del navegador en ninguna pantalla.
+
+## Backend persistente + despliegue (seguimiento)
+
+Sobre el prototipo en memoria de arriba: se reemplazó `server/src/datos.ts` +
+`equipos.ts` + `simulador.ts` (todo en un `Map` del proceso, se perdía al
+reiniciar) por un backend en capas (`routes/` → `services/` → `repositories/`)
+sobre Postgres con Prisma, más un endpoint nuevo para que el módulo de visión
+pueda publicar hallazgos reales (`POST /api/observaciones`) y un blueprint de
+Render (`render.yaml`) para desplegar los tres recursos de una vez. El
+contrato (`shared/src/tipos.ts`, `CONTRATO_DATOS.md`) no cambió — el frontend
+sigue sin tocarse.
+
+| Herramienta | Para qué |
+| --- | --- |
+| **Claude Code (modelo Sonnet 5), de Anthropic** | Diseño del esquema de Prisma, las tres capas del backend, el mapeo de ingesta de visión, el blueprint de Render y la verificación de punta a punta. |
+| **PostgreSQL 16 (Homebrew, local)** | Base de datos de desarrollo — se instaló en esta máquina para probar contra Postgres real, no contra un mock. |
+| **Prisma 7.10.1** (`prisma` + `@prisma/client` + `@prisma/adapter-pg`) | ORM, migraciones y el cliente de la app (vía driver adapter — Prisma 7 ya no conecta solo desde el schema). |
+
+Dependencias agregadas en `/server`: `prisma`, `@prisma/client`, `@prisma/adapter-pg`,
+`pg`, `dotenv` (más `@types/pg` de desarrollo). `express` subió de 4.21.2 a
+5.3.0 — Express 4 no manda un `async`/`await` que rechaza al manejador de
+errores por sí solo; Express 5 sí, y con rutas `async` por todas partes como
+quedó el backend, hacía falta.
+
+Decisiones que conviene saber:
+
+- **Los ids visibles ("H-0007", "R-0001", "E-0001") salen de una columna
+  autoincrement de Postgres**, no de un contador en memoria ni de `count()`:
+  así no se repiten aunque se borren filas (como hace `POST /api/demo/reiniciar`
+  con la alerta de la demo).
+- **La siembra (`prisma/seed.ts`) corre una sola vez**, no en cada arranque
+  del servidor como el `sembrar()` original: es idempotente (si ya hay
+  plantas, no hace nada), así que `npm run db:seed` puede ir tranquilo en el
+  `preDeployCommand` de Render en cada deploy.
+- **`POST /api/observaciones` no llama a ningún modelo.** `vision/` (ver su
+  propio `CLAUDE.md`) todavía no tiene pesos entrenados para arándano ni un
+  servicio de inferencia corriendo — esta ruta solo queda lista para recibir
+  lo que ese servicio publique el día que exista, con la misma clase de
+  validación que ya tiene en cuenta ese módulo (no confundir `gray_mold` de
+  fresa con Botrytis de arándano).
+- **La estructura del cultivo (naves, camas, celdas) se sigue calculando
+  desde `ESTRUCTURA`, la constante estática de `shared/src/config.ts`**, no
+  desde la fila mutable de `Configuracion` — igual que en el prototipo
+  original, `PUT /api/configuracion` con un cambio de estructura queda
+  guardado pero no regenera el mapa. No se tocó ese comportamiento.
+
+Cómo se verificó: `npm run typecheck` en los cuatro paquetes sin errores;
+`curl` contra cada ruta del API (incluida la ingesta, con y sin `x-api-key`,
+con una clase reconocida y una rechazada a propósito); reinicio real del
+proceso del servidor para confirmar que los datos y la configuración
+sobreviven; y el flujo completo en el navegador (login → bienvenida → mapa →
+alerta nueva por SSE a los 3 s → detalle de planta → confirmar), igual que
+describe la sección de arriba, ahora contra Postgres en vez de memoria.
