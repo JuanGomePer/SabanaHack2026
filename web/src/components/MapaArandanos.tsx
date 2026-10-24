@@ -1,6 +1,11 @@
 /**
  * Mapa de arándanos · componente 20:702 del sistema de diseño.
- * 8 naves × 3 camas × 40 celdas. Una celda = 2,5 plantas.
+ *
+ * La forma (naves, camas y cuadros por cama) sale de los datos, que a su vez
+ * siguen la estructura guardada en Configuración: aquí no hay ningún número
+ * fijo. Entre cama y cama —y contra los dos muros de la nave— va el pasillo
+ * por donde camina el robot: una nave sin pasillos no se puede recorrer, así
+ * que el mapa los dibuja siempre.
  *
  * El mapa se dibuja siempre con la fruta, nítida. Lo que cambia entre capas es
  * de dónde sale el color del arándano: del estado de la planta, o de la escala
@@ -11,7 +16,7 @@
  * del teléfono. No tapa el cultivo: deja ver la fruta a través.
  */
 
-import { useRef, useState } from 'react';
+import { Fragment, useRef, useState, type CSSProperties } from 'react';
 import type { Cama, Celda, EstadoCelda, Nave } from '@vigia/shared/tipos';
 import { Arandano } from './Arandano';
 
@@ -208,15 +213,26 @@ export function MapaArandanos({ camas, naves, capa, plantaResaltada, alElegirCel
           <div className="mapa-nave" key={nave.numero}>
             <span className="mapa-nave-etiqueta txt-pequeno secundario">Nave {nave.numero}</span>
 
+            {/* Los números siguen el mismo ritmo que el panel: un hueco por
+                cada pasillo, para que cada número quede frente a su cama. */}
             <div className="mapa-numeros txt-etiqueta apagado">
-              {nave.camas.map((numero) => (
-                <span key={numero}>{numero}</span>
+              <span className="mapa-numeros-pasillo" aria-hidden="true" />
+              {camasDeLaNave.map((cama) => (
+                <Fragment key={cama.numero}>
+                  <span>{cama.numero}</span>
+                  <span className="mapa-numeros-pasillo" aria-hidden="true" />
+                </Fragment>
               ))}
             </div>
 
             <div className="mapa-panel">
+              <span className="mapa-pasillo" title="Pasillo: por aquí camina el robot" />
               {camasDeLaNave.map((cama) => (
-                <div className="mapa-cama" key={cama.numero}>
+                <Fragment key={cama.numero}>
+                <div
+                  className="mapa-cama"
+                  style={{ '--celdas': cama.celdas.length } as CSSProperties}
+                >
                   {cama.celdas.map((celda) => {
                     const resaltada =
                       plantaResaltada !== undefined && celda.plantaId === plantaResaltada;
@@ -236,6 +252,8 @@ export function MapaArandanos({ camas, naves, capa, plantaResaltada, alElegirCel
                     );
                   })}
                 </div>
+                <span className="mapa-pasillo" title="Pasillo: por aquí camina el robot" />
+                </Fragment>
               ))}
             </div>
           </div>

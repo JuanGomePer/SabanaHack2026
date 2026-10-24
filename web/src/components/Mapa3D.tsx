@@ -44,6 +44,13 @@ const ALTURA_ALERO = 4.6;
 const ALTURA_CUMBRERA = 6.8;
 /** Qué tan lejos camina el robot del centro de la cama, hacia el pasillo (no encima de las matas). */
 const DESPLAZAMIENTO_PASILLO = 0.62;
+/**
+ * Ancho del pasillo que queda entre dos camas. La cama ocupa 0,72 m de los
+ * 2,4 m de separación: el resto es pasillo, por donde camina el robot. Va
+ * dibujado en el piso porque la estructura siempre lo tiene — sin pasillo no
+ * hay forma de recorrer la nave.
+ */
+const ANCHO_PASILLO = 1.4;
 
 function anchoTotal(): number {
   return (CELDAS_POR_CAMA - 1) * ESPACIO_CELDA;
@@ -57,6 +64,28 @@ function zDeFila(indice: number, total: number): number {
 /** Variación determinista (sin azar real) para que los arbustos no se vean clonados. */
 function variacion(i: number): number {
   return 0.82 + ((i * 37) % 11) / 11 * 0.36;
+}
+
+/**
+ * Los pasillos del bloque: uno entre cada par de camas y uno contra cada muro.
+ * Son franjas de tierra pisada sobre el piso del invernadero.
+ */
+function Pasillos({ camas }: { camas: number }) {
+  const franjas: number[] = [];
+  for (let i = 0; i <= camas; i++) {
+    franjas.push(zDeFila(i, camas) - ESPACIO_CAMA / 2);
+  }
+
+  return (
+    <>
+      {franjas.map((z, i) => (
+        <mesh key={i} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.004, z]} receiveShadow>
+          <planeGeometry args={[anchoTotal() + ESPACIO_CELDA, ANCHO_PASILLO]} />
+          <meshStandardMaterial color="#cfc8b6" roughness={1} />
+        </mesh>
+      ))}
+    </>
+  );
 }
 
 /** Una cama: fila de arbustos de arándano (follaje + fruto coloreado por el estado de su celda). */
@@ -637,6 +666,8 @@ function Escena({
       </mesh>
 
       <Invernadero ancho={anchoInvernadero} profundo={profundoInvernadero} />
+
+      <Pasillos camas={mapa.camas.length} />
 
       {mapa.camas.map((cama, i) => (
         <FilaCama key={cama.numero} cama={cama} z={zDeFila(i, mapa.camas.length)} alElegirPlanta={alElegirPlanta} />

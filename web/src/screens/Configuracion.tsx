@@ -6,7 +6,7 @@
  * shared/src/config.ts.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { Bot, Check, Minus, Plus, RotateCcw, Trash2, UserPlus } from 'lucide-react';
 import type {
   Configuracion as Config,
@@ -14,7 +14,13 @@ import type {
   EtapaCultivo,
   RobotConfigurado,
 } from '@vigia/shared/tipos';
-import { esMediaHectarea, hectareasDe, metrosCuadradosDe } from '@vigia/shared/config';
+import {
+  celdasPorCamaEn,
+  esMediaHectarea,
+  hectareasDe,
+  metrosCuadradosDe,
+  pasillosDeNave,
+} from '@vigia/shared/config';
 import { api } from '../api/cliente';
 import { Boton } from '../components/Boton';
 import { Chip } from '../components/Chip';
@@ -67,9 +73,13 @@ function Contador({
   );
 }
 
-/** Vista previa del bloque: una columna por nave. */
+/**
+ * Vista previa del bloque: una columna por nave, y dentro de cada nave una
+ * columna por cama con su pasillo a cada lado — así es siempre la estructura,
+ * porque por el pasillo es por donde entra el robot a revisar.
+ */
 function VistaPrevia({ estructura }: { estructura: ConfiguracionEstructura }) {
-  const celdas = Math.max(1, Math.round(estructura.plantasPorCama / estructura.plantasPorCelda));
+  const celdas = celdasPorCamaEn(estructura);
   // La vista previa resume cada cama en 12 bloques para que quepa.
   const bloques = Math.min(12, celdas);
 
@@ -80,15 +90,19 @@ function VistaPrevia({ estructura }: { estructura: ConfiguracionEstructura }) {
         return (
           <div className="previa-nave" key={nave}>
             <div className="previa-camas">
+              <span className="previa-pasillo" />
               {Array.from({ length: estructura.camasPorNave }, (_, c) => (
-                <div className="previa-cama" key={c}>
-                  {Array.from({ length: bloques }, (_, b) => {
-                    // La nave 5 es la que tiene humedad alta y hallazgos.
-                    const estado =
-                      nave === 5 && b > 6 ? (b > 8 ? 'alerta' : 'riesgo') : nave === 2 && b === 2 ? 'riesgo' : 'ok';
-                    return <span className={`previa-celda ${estado}`} key={b} />;
-                  })}
-                </div>
+                <Fragment key={c}>
+                  <div className="previa-cama">
+                    {Array.from({ length: bloques }, (_, b) => {
+                      // La nave 5 es la que tiene humedad alta y hallazgos.
+                      const estado =
+                        nave === 5 && b > 6 ? (b > 8 ? 'alerta' : 'riesgo') : nave === 2 && b === 2 ? 'riesgo' : 'ok';
+                      return <span className={`previa-celda ${estado}`} key={b} />;
+                    })}
+                  </div>
+                  <span className="previa-pasillo" />
+                </Fragment>
               ))}
             </div>
             <span className="apagado txt-etiqueta">N{nave}</span>
@@ -103,9 +117,15 @@ interface Props {
   alVerComoLlega: () => void;
   /** Para que la barra superior refleje el nombre/rol apenas se guardan. */
   alGuardarPerfil?: (perfil: Config['perfil']) => void;
+  /**
+   * El mapa del tablero se dibuja con la estructura guardada, así que al
+   * guardar hay que volver a pedirlo: si no, el tablero se queda con la
+   * estructura anterior hasta que alguien recargue la página.
+   */
+  alGuardarEstructura?: () => void | Promise<void>;
 }
 
-export function Configuracion({ alVerComoLlega, alGuardarPerfil }: Props) {
+export function Configuracion({ alVerComoLlega, alGuardarPerfil, alGuardarEstructura }: Props) {
   const [pestana, setPestana] = useState<Pestana>('Estructura del cultivo');
   const [config, setConfig] = useState<Config>();
   const [original, setOriginal] = useState<Config>();
@@ -128,10 +148,12 @@ export function Configuracion({ alVerComoLlega, alGuardarPerfil }: Props) {
       perfil: config.perfil,
     });
     setConfig(actualizada);
+    setOriginal(actualizada);
     setGuardado(true);
     alGuardarPerfil?.(actualizada.perfil);
+    await alGuardarEstructura?.();
     window.setTimeout(() => setGuardado(false), 2500);
-  }, [config, alGuardarPerfil]);
+  }, [config, alGuardarPerfil, alGuardarEstructura]);
 
   if (!config) return <p className="cargando">Cargando la configuración…</p>;
 
@@ -292,7 +314,12 @@ export function Configuracion({ alVerComoLlega, alGuardarPerfil }: Props) {
               <div className="campo">
                 <div className="columna">
                   <span className="txt-cuerpo-fuerte">Camas por nave</span>
-                  <span className="apagado txt-pequeno">Se numeran seguidas: 1 a {camas}</span>
+                  <span className="apagado txt-pequeno">
+                    Se numeran seguidas: 1 a {camas}. Cada nave lleva{' '}
+                    {pasillosDeNave(estructura.camasPorNave)} pasillos —uno entre cada par de camas
+                    y uno contra cada muro— por donde camina el robot; ya van dentro de los{' '}
+                    {estructura.anchoNave.toString().replace('.', ',')} m de ancho.
+                  </span>
                 </div>
                 <Contador
                   valor={estructura.camasPorNave}

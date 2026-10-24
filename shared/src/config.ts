@@ -55,6 +55,19 @@ export function esMediaHectarea(estructura: ConfiguracionEstructura): boolean {
   return ha >= 0.4 && ha <= 0.6;
 }
 
+/**
+ * Entre cama y cama va un pasillo, y también contra los dos muros de la nave:
+ * así es siempre la estructura, porque por ahí camina el robot (y la persona)
+ * para llegar a cada planta. No es un dato configurable — una nave sin pasillo
+ * no se puede recorrer —, así que el mapa lo dibuja siempre.
+ *
+ * Una nave con N camas tiene N + 1 pasillos, y los metros de ancho de la nave
+ * (`anchoNave`) ya los incluyen.
+ */
+export function pasillosDeNave(camasPorNave: number): number {
+  return camasPorNave + 1;
+}
+
 export const CELDAS_POR_CAMA = Math.round(
   ESTRUCTURA.plantasPorCama / ESTRUCTURA.plantasPorCelda,
 );
@@ -78,15 +91,46 @@ export const UMBRALES: ConfiguracionUmbrales = {
 };
 
 // ── Helpers de estructura ───────────────────────────────────────────────────
+/**
+ * Los helpers vienen en dos versiones: la que termina en `En` recibe la
+ * estructura con la que se quiere calcular (la que el encargado tenga
+ * guardada en Configuración), y la corta usa ESTRUCTURA, el supuesto de
+ * arranque. El mapa del tablero usa las primeras, para que lo que se guarda en
+ * Configuración se vea en el tablero.
+ */
+
 /** Nave a la que pertenece una cama. Cama 14 → nave 5 (camas 13–15). */
+export function naveDeCamaEn(cama: number, estructura: ConfiguracionEstructura): number {
+  return Math.floor((cama - 1) / estructura.camasPorNave) + 1;
+}
+
 export function naveDeCama(cama: number): number {
-  return Math.floor((cama - 1) / ESTRUCTURA.camasPorNave) + 1;
+  return naveDeCamaEn(cama, ESTRUCTURA);
 }
 
 /** Camas que contiene una nave. Nave 5 → [13, 14, 15]. */
+export function camasDeNaveEn(nave: number, estructura: ConfiguracionEstructura): number[] {
+  const primera = (nave - 1) * estructura.camasPorNave + 1;
+  return Array.from({ length: estructura.camasPorNave }, (_, i) => primera + i);
+}
+
 export function camasDeNave(nave: number): number[] {
-  const primera = (nave - 1) * ESTRUCTURA.camasPorNave + 1;
-  return Array.from({ length: ESTRUCTURA.camasPorNave }, (_, i) => primera + i);
+  return camasDeNaveEn(nave, ESTRUCTURA);
+}
+
+/** Camas del bloque, con la estructura que se le pase. */
+export function totalCamasEn(estructura: ConfiguracionEstructura): number {
+  return estructura.naves * estructura.camasPorNave;
+}
+
+/** Plantas del bloque, con la estructura que se le pase. */
+export function totalPlantasEn(estructura: ConfiguracionEstructura): number {
+  return totalCamasEn(estructura) * estructura.plantasPorCama;
+}
+
+/** Cuántos cuadros tiene una cama en el mapa. */
+export function celdasPorCamaEn(estructura: ConfiguracionEstructura): number {
+  return Math.max(1, Math.round(estructura.plantasPorCama / estructura.plantasPorCelda));
 }
 
 /**
@@ -108,12 +152,19 @@ export function celdaDePlanta(planta: number): number {
 }
 
 /** Números de planta que caen en una celda del mapa. */
-export function plantasDeCelda(indice: number): number[] {
-  const desde = Math.ceil(indice * ESTRUCTURA.plantasPorCelda) + 1;
-  const hasta = Math.ceil((indice + 1) * ESTRUCTURA.plantasPorCelda);
+export function plantasDeCeldaEn(indice: number, estructura: ConfiguracionEstructura): number[] {
+  const desde = Math.ceil(indice * estructura.plantasPorCelda) + 1;
+  const hasta = Math.min(
+    estructura.plantasPorCama,
+    Math.ceil((indice + 1) * estructura.plantasPorCelda),
+  );
   const plantas: number[] = [];
   for (let p = desde; p <= hasta; p++) plantas.push(p);
   return plantas;
+}
+
+export function plantasDeCelda(indice: number): number[] {
+  return plantasDeCeldaEn(indice, ESTRUCTURA);
 }
 
 /** ID de planta en el formato del contrato: "B5-C14-P065". */

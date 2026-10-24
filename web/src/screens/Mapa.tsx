@@ -40,6 +40,24 @@ export function Mapa({ mapa, alertas, plantaResaltada, alAbrirPlanta, alVerAlert
 
   const pendientes = alertas.filter((a) => a.revision === 'pendiente');
 
+  /**
+   * El eje y el texto de la tarjeta salen del propio mapa, que ya viene con la
+   * estructura guardada en Configuración: si cambian las plantas por cama o la
+   * agrupación, esto cambia solo.
+   */
+  const celdas = mapa.camas[0]?.celdas ?? [];
+  const plantasPorCama = celdas[celdas.length - 1]?.plantas.at(-1) ?? 0;
+  const tamanos = celdas.map((celda) => celda.plantas.length);
+  const porCelda = tamanos.length
+    ? { min: Math.min(...tamanos), max: Math.max(...tamanos) }
+    : { min: 1, max: 1 };
+  const agrupacion =
+    porCelda.min === porCelda.max
+      ? porCelda.min === 1
+        ? 'una planta'
+        : `${porCelda.min} plantas`
+      : `${porCelda.min}–${porCelda.max} plantas`;
+
   return (
     <>
       <section className="kpis">
@@ -73,11 +91,12 @@ export function Mapa({ mapa, alertas, plantaResaltada, alAbrirPlanta, alVerAlert
           <div className="fila-entre mapa-cabecera" style={{ alignItems: 'flex-start' }}>
             <div className="columna">
               <h2 className="tarjeta-titulo">
-                Bloque {mapa.bloque} · {mapa.camas.length} camas
+                {mapa.nombre} · {mapa.naves.length} naves · {mapa.camas.length} camas
               </h2>
               <p className="secundario txt-pequeno" style={{ margin: '2px 0 0' }}>
-                Cada arándano agrupa 2–3 plantas. El color muestra su estado: toca uno rojo para
-                abrir la planta.
+                Cada arándano agrupa {agrupacion} y entre cama y cama va el pasillo por
+                donde camina el robot. El color muestra el estado: toca uno morado para abrir la
+                planta.
               </p>
             </div>
             <div className="fila" style={{ gap: 10 }}>
@@ -102,8 +121,8 @@ export function Mapa({ mapa, alertas, plantaResaltada, alAbrirPlanta, alVerAlert
             <>
               <div className="mapa-eje txt-etiqueta apagado">
                 <span>Planta 1</span>
-                <span>Planta 50</span>
-                <span>Planta 100</span>
+                <span>Planta {Math.round(plantasPorCama / 2)}</span>
+                <span>Planta {plantasPorCama}</span>
               </div>
 
               <MapaArandanos

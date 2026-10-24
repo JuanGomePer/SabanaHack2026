@@ -224,6 +224,7 @@ export function App() {
             <Configuracion
               alVerComoLlega={() => setPantalla('como-llega')}
               alGuardarPerfil={setPerfil}
+              alGuardarEstructura={recargar}
             />
           )}
 

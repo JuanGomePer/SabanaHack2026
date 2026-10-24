@@ -146,7 +146,10 @@ export interface Resumen {
 }
 
 export interface MapaRespuesta {
+  /** Código del bloque, el de los ids de planta: "B5". */
   bloque: string;
+  /** Nombre que se muestra, tal como está guardado en Configuración. */
+  nombre: string;
   camas: Cama[];
   naves: Nave[];
   resumen: Resumen;

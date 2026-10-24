@@ -5,26 +5,26 @@
  * prototipo en memoria, ahora alimentados por una consulta a la base de
  * datos en vez de por un `Map` del proceso.
  *
- * La estructura del cultivo (naves, camas por nave, celdas por cama) sigue
- * saliendo de `ESTRUCTURA`, la constante estática de `@vigia/shared/config`
- * — igual que en el prototipo original, `PUT /api/configuracion` con un
- * cambio de estructura no recalcula el mapa, solo queda guardado para que lo
- * lea quien consulte `/api/configuracion`. Ampliarlo (generar el cultivo a
- * partir de la estructura configurada) es trabajo aparte.
+ * La forma del mapa (naves, camas por nave, cuadros por cama, nombre del
+ * bloque) sale de la estructura GUARDADA en Configuración, no de la constante
+ * de `@vigia/shared/config`: lo que el encargado guarda ahí se ve aquí. Las
+ * plantas siguen siendo las que hay en la base, así que si la estructura
+ * crece, los cuadros nuevos salen "sin dato" hasta que el robot pase por
+ * ellos; si se encoge, las plantas que quedan fuera dejan de contarse.
  */
 import {
-  CELDAS_POR_CAMA,
-  ESTRUCTURA,
-  TOTAL_CAMAS,
-  TOTAL_PLANTAS,
-  camasDeNave,
-  naveDeCama,
-  plantasDeCelda,
+  camasDeNaveEn,
+  celdasPorCamaEn,
+  naveDeCamaEn,
+  plantasDeCeldaEn,
+  totalCamasEn,
+  totalPlantasEn,
 } from '@vigia/shared/config';
 import { ROBOT } from '@vigia/shared/config';
 import type {
   Cama,
   Celda,
+  ConfiguracionEstructura,
   EstadoCelda,
   MapaRespuesta,
   Nave,
@@ -50,6 +50,21 @@ const PESO_ESTADO: Record<EstadoCelda, number> = {
   ok: 0,
 };
 
+/** La estructura que el encargado tiene guardada en Configuración. */
+function estructuraActual(): ConfiguracionEstructura {
+  return configuracionActual().estructura;
+}
+
+/**
+ * Plantas que caen dentro de la estructura guardada. Si alguien reduce el
+ * bloque, las plantas que quedan fuera no se dibujan ni se cuentan — pero
+ * siguen en la base, así que volver a ampliarlo las recupera.
+ */
+function dentroDeLaEstructura(plantas: Planta[], estructura: ConfiguracionEstructura): Planta[] {
+  const camas = totalCamasEn(estructura);
+  return plantas.filter((p) => p.cama <= camas && p.planta <= estructura.plantasPorCama);
+}
+
 function indexarPorCama(plantas: Planta[]): Map<number, Map<number, Planta>> {
   const porCama = new Map<number, Map<number, Planta>>();
   for (const p of plantas) {
@@ -63,8 +78,13 @@ function indexarPorCama(plantas: Planta[]): Map<number, Map<number, Planta>> {
   return porCama;
 }
 
-function construirCelda(cama: number, indice: number, porPlanta: Map<number, Planta> | undefined): Celda {
-  const numeros = plantasDeCelda(indice);
+function construirCelda(
+  cama: number,
+  indice: number,
+  porPlanta: Map<number, Planta> | undefined,
+  estructura: ConfiguracionEstructura,
+): Celda {
+  const numeros = plantasDeCeldaEn(indice, estructura);
   const agrupadas = numeros
     .map((n) => porPlanta?.get(n))
     .filter((p): p is Planta => Boolean(p));
@@ -92,28 +112,43 @@ function construirCelda(cama: number, indice: number, porPlanta: Map<number, Pla
     ? Math.round((agrupadas.reduce((s, p) => s + p.temperatura, 0) / agrupadas.length) * 10) / 10
     : 0;
 
-  return { indice, cama, nave: naveDeCama(cama), estado, humedad, temperatura, plantas: numeros, hallazgoId, plantaId };
+  return {
+    indice,
+    cama,
+    nave: naveDeCamaEn(cama, estructura),
+    estado,
+    humedad,
+    temperatura,
+    plantas: numeros,
+    hallazgoId,
+    plantaId,
+  };
 }
 
-function construirCamasDesde(plantas: Planta[]): Cama[] {
+function construirCamasDesde(plantas: Planta[], estructura = estructuraActual()): Cama[] {
   const porCama = indexarPorCama(plantas);
+  const celdas = celdasPorCamaEn(estructura);
   const camas: Cama[] = [];
-  for (let numero = 1; numero <= TOTAL_CAMAS; numero++) {
+  for (let numero = 1; numero <= totalCamasEn(estructura); numero++) {
     const porPlanta = porCama.get(numero);
     camas.push({
       numero,
-      nave: naveDeCama(numero),
-      celdas: Array.from({ length: CELDAS_POR_CAMA }, (_, i) => construirCelda(numero, i, porPlanta)),
+      nave: naveDeCamaEn(numero, estructura),
+      celdas: Array.from({ length: celdas }, (_, i) =>
+        construirCelda(numero, i, porPlanta, estructura),
+      ),
     });
   }
   return camas;
 }
 
-function construirNavesDesde(plantas: Planta[]): Nave[] {
-  return Array.from({ length: ESTRUCTURA.naves }, (_, i) => {
+function construirNavesDesde(plantas: Planta[], estructura = estructuraActual()): Nave[] {
+  return Array.from({ length: estructura.naves }, (_, i) => {
     const numero = i + 1;
-    const camas = camasDeNave(numero);
-    const dePlantas = plantas.filter((p) => p.nave === numero && p.estado !== 'sin_dato');
+    const camas = camasDeNaveEn(numero, estructura);
+    const dePlantas = plantas.filter(
+      (p) => naveDeCamaEn(p.cama, estructura) === numero && p.estado !== 'sin_dato',
+    );
     const humedad = dePlantas.length
       ? Math.round((dePlantas.reduce((s, p) => s + p.humedad, 0) / dePlantas.length) * 10) / 10
       : 0;
@@ -123,6 +158,7 @@ function construirNavesDesde(plantas: Planta[]): Nave[] {
 
 export function zonasHumedasDesde(plantas: Planta[]): ZonaHumeda[] {
   const umbral = configuracionActual().umbrales.humedadRiesgo;
+  const estructura = estructuraActual();
   const porCama = new Map<number, Planta[]>();
   for (const p of plantas) {
     if (p.humedad < umbral) continue;
@@ -136,7 +172,7 @@ export function zonasHumedasDesde(plantas: Planta[]): ZonaHumeda[] {
       const numeros = lista.map((p) => p.planta).sort((a, b) => a - b);
       return {
         cama,
-        nave: naveDeCama(cama),
+        nave: naveDeCamaEn(cama, estructura),
         desde: numeros[0],
         hasta: numeros[numeros.length - 1],
         humedad: Math.round((lista.reduce((s, p) => s + p.humedad, 0) / lista.length) * 10) / 10,
@@ -168,7 +204,9 @@ function sugerenciaDesde(plantas: Planta[]): { texto: string; nota: string } {
 }
 
 export async function construirResumen(plantasPrecargadas?: Planta[]): Promise<Resumen> {
-  const plantas = plantasPrecargadas ?? (await listarPlantas());
+  const estructura = estructuraActual();
+  const plantas = dentroDeLaEstructura(plantasPrecargadas ?? (await listarPlantas()), estructura);
+  const totalPlantas = totalPlantasEn(estructura);
   let sanas = 0;
   let riesgo = 0;
   let alerta = 0;
@@ -184,20 +222,21 @@ export async function construirResumen(plantasPrecargadas?: Planta[]): Promise<R
   for (const id of pendientes) if (enAlertaIds.has(id)) porRevisar += 1;
 
   return {
-    bloque: ESTRUCTURA.bloque,
-    totalPlantas: TOTAL_PLANTAS,
+    bloque: estructura.bloque,
+    totalPlantas,
     sanas,
     riesgo,
     alerta,
     porRevisar,
-    porcentajeSanas: Math.round((sanas / TOTAL_PLANTAS) * 1000) / 10,
+    porcentajeSanas: totalPlantas === 0 ? 0 : Math.round((sanas / totalPlantas) * 1000) / 10,
     robot: { ...ROBOT, ultimaRonda: new Date(Date.now() - 41 * 60_000).toISOString() },
     actualizado: new Date().toISOString(),
   };
 }
 
 export async function construirCamas(): Promise<Cama[]> {
-  return construirCamasDesde(await listarPlantas());
+  const estructura = estructuraActual();
+  return construirCamasDesde(dentroDeLaEstructura(await listarPlantas(), estructura), estructura);
 }
 
 export async function obtenerCama(numero: number): Promise<Cama | undefined> {
@@ -205,11 +244,13 @@ export async function obtenerCama(numero: number): Promise<Cama | undefined> {
 }
 
 export async function construirMapa(): Promise<MapaRespuesta> {
-  const plantas = await listarPlantas();
+  const estructura = estructuraActual();
+  const plantas = dentroDeLaEstructura(await listarPlantas(), estructura);
   return {
-    bloque: ESTRUCTURA.bloque,
-    camas: construirCamasDesde(plantas),
-    naves: construirNavesDesde(plantas),
+    bloque: estructura.bloque,
+    nombre: estructura.nombre,
+    camas: construirCamasDesde(plantas, estructura),
+    naves: construirNavesDesde(plantas, estructura),
     resumen: await construirResumen(plantas),
     zonasHumedas: zonasHumedasDesde(plantas).slice(0, 2),
     sugerencia: sugerenciaDesde(plantas),
@@ -218,7 +259,7 @@ export async function construirMapa(): Promise<MapaRespuesta> {
 
 /** Humedad promedio de una nave, usada por la pantalla de equipos. */
 export async function humedadDeNave(nave: number): Promise<number> {
-  const naves = construirNavesDesde(await listarPlantas());
+  const naves = construirNavesDesde(dentroDeLaEstructura(await listarPlantas(), estructuraActual()));
   return naves.find((n) => n.numero === nave)?.humedad ?? 0;
 }
 

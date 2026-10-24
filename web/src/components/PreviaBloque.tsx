@@ -5,8 +5,10 @@
  * No es el mapa de verdad (no se puede tocar y no dibuja cada arándano): cada
  * cama se resume en TRAMOS franjas y cada franja toma el peor estado de las
  * celdas que agrupa — el mismo criterio que usa el mapa cuando una celda junta
- * varias plantas. Los datos son los reales de /api/mapa.
+ * varias plantas. Entre cama y cama va su pasillo, igual que en el mapa. Los
+ * datos son los reales de /api/mapa.
  */
+import { Fragment } from 'react';
 import type { Cama, EstadoCelda } from '@vigia/shared/tipos';
 
 /** Franjas en las que se resume cada cama. 20 entran bien en una tarjeta. */
@@ -45,14 +47,18 @@ export function PreviaBloque({ camas }: { camas: Cama[] }) {
         <div className="previa-bloque-nave" key={nave}>
           <span className="previa-bloque-nombre txt-etiqueta">N{nave}</span>
           <div className="previa-bloque-camas">
+            <span className="previa-bloque-pasillo" />
             {camas
               .filter((c) => c.nave === nave)
               .map((cama) => (
-                <div className="previa-bloque-cama" key={cama.numero}>
-                  {tramosDeCama(cama).map((estado, i) => (
-                    <span className={`previa-bloque-tramo ${estado}`} key={i} />
-                  ))}
-                </div>
+                <Fragment key={cama.numero}>
+                  <div className="previa-bloque-cama">
+                    {tramosDeCama(cama).map((estado, i) => (
+                      <span className={`previa-bloque-tramo ${estado}`} key={i} />
+                    ))}
+                  </div>
+                  <span className="previa-bloque-pasillo" />
+                </Fragment>
               ))}
           </div>
         </div>
