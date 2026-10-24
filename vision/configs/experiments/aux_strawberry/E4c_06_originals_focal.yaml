@@ -1,0 +1,4 @@
+extends: _base.yaml
+id: E4c_06_originals_focal
+data: {include_augmented: false}
+loss: {name: focal, gamma: 2.0}

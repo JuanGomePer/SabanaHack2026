@@ -1,0 +1,185 @@
+# Catálogo de datasets v2. Consulta: 2026-10-23.
+# Fuentes en ../sources.yaml; matriz en ../../reports/dataset_selection_matrix.csv;
+# taxonomía en taxonomy.yaml. Estados: VERIFICADO | PARCIALMENTE_VERIFICADO |
+# NO_VERIFICADO | BLOQUEADO_POR_LICENCIA | NO_DISPONIBLE | DESCARTADO_PARA_FASE_INICIAL
+# Papeles: Núcleo inicial | Auxiliar | Investigación complementaria | Bloqueado | Fuera de alcance inicial
+# Evidencia: [H] fuente primaria · [S] secundaria · [L] observación local · [I] hipótesis
+datasets:
+  - id: drberry_original_v1
+    name: DrBerry-Original-Data
+    version: "v1 'data_original', generada 2023-05-26"
+    url: https://universe.roboflow.com/drberry/drberry-original-data/dataset/1
+    consulted: 2026-10-23
+    source_type: dataset en Roboflow Universe + artículo KDIR 2023 (doi:10.5220/0012207100003598)
+    crop: arándano
+    organ: "hoja (la única muestra pública es una hoja desprendida sobre el sustrato) [L]"
+    classes: [Alternaria, Heliothis, Oidio, Sana]   # [H]
+    counts: {total: 410, train: 327, valid: 40, test: 43, per_class: NO_VERIFICADO}   # [H]
+    annotation: "cajas (Object Detection) [H]; la caja de la muestra cubre casi toda la hoja [L, 1 muestra]"
+    preprocessing: "Auto-Orient + Resize: Stretch to 1024x1024 (relación de aspecto alterada)"   # [H]
+    capture: "campo, Fundo San Roberto, Huaral, Perú [H artículo]; Samsung SM-A307G, 2992x2992 (EXIF de 1 muestra) [L]"
+    synthetic: "ninguna declarada; sin aumentación en la versión [H]"
+    license: "CC BY 4.0 (Roboflow) + citar el artículo [H]"
+    access: "requiere ROBOFLOW_API_KEY (cuenta gratuita); la API responde \"This method requires your API key\" [L]"
+    status: PARCIALMENTE_VERIFICADO
+    role: Núcleo inicial
+    audit: pendiente (no descargado)
+    limitations: [410 imágenes, imágenes estiradas, caja ≈ hoja (no lesión), hojas sueltas ≠ planta vista por el robot, split de procedencia desconocida]
+    next_action: definir ROBOFLOW_API_KEY en la sesión → scripts/acquire/fetch_roboflow.py drberry drberry-original-data 1 yolov8
+
+  - id: drberry_gen3_20_v1
+    name: drberry-gen-3-20
+    version: "v1, generada 2023-04-26"
+    url: https://universe.roboflow.com/drberry/drberry-gen-3-20/dataset/1
+    consulted: 2026-10-23
+    crop: arándano
+    organ: hoja
+    classes: [Alternaria, Heliothis, Oidio, Sana]
+    counts: {total: 585, train: 408, valid: 116, test: 61, per_class: NO_VERIFICADO}
+    annotation: cajas
+    preprocessing: "ninguno declarado (conserva relación de aspecto) [H]"
+    license: CC BY 4.0
+    access: API key
+    status: PARCIALMENTE_VERIFICADO
+    role: Núcleo inicial (alternativo)
+    relation_to_original: DESCONOCIDA. No asumir que es idéntico; comparar con cross_dataset_duplicates tras descargar ambos
+    audit: pendiente
+
+  - id: drberry_gen3_v1
+    name: drberry-gen-3
+    version: "v1, generada 2023-04-09"
+    url: https://universe.roboflow.com/drberry/drberry-gen-3/dataset/1
+    consulted: 2026-10-23
+    crop: arándano
+    organ: hoja
+    classes: [Alternaria, Heliothis, Oidio, Sana]
+    counts: {total: 2671, train: 2134, valid: 263, test: 274}
+    annotation: cajas
+    preprocessing: ninguno declarado
+    synthetic: "posible aumentación no declarada [I]"
+    license: CC BY 4.0
+    access: API key
+    status: PARCIALMENTE_VERIFICADO
+    role: Auxiliar
+    audit: pendiente
+    other_pages: {drberry-gen-1: "página de modelo, 1683 imágenes", drberry-gen-2: "página de modelo, 2753 imágenes"}
+
+  - id: afzaal_strawberry
+    name: Strawberry Disease Detection (Afzaal et al. 2021)
+    version: export Dataset Ninja (Supervisely)
+    url: https://datasetninja.com/strawberry-disease-detection
+    consulted: 2026-10-23
+    crop: fresa
+    organ: hoja, fruto y flor
+    classes: {gray_mold: [476, 598], leaf_spot: [615, 2100], powdery_mildew_leaf: [533, 1708], angular_leafspot: [435, 539], blossom_blight: [209, 300], powdery_mildew_fruit: [141, 298], anthracnose_fruit_rot: [100, 164]}   # [imágenes, objetos], ficha [H]
+    counts: {total: 2500, train: 1450, val: 307, test: 743}
+    annotation: polígonos de instancia (Supervisely), convertibles a cajas con audit.parse_json_annotations
+    resolution: 419x419 (ficha)
+    capture: invernaderos de Corea del Sur, celular, luz natural; ~20 % de fuentes en línea (Bugwood, OMAFRA...)
+    license: "CC BY 4.0 [H]"
+    access: "NO_DISPONIBLE temporalmente: el enlace oficial de Dropbox (registro de dataset-tools 0.2.6) devolvió 'Link Temporarily Disabled' el 2026-10-23 [L]; Kaggle requiere credenciales"
+    status: PARCIALMENTE_VERIFICADO
+    role: Investigación complementaria
+    audit: pendiente
+    next_action: reintentar scripts/acquire/fetch_archive.py afzaal_strawberry o Kaggle con credenciales propias
+
+  - id: plantdoc_blueberry
+    name: PlantDoc-Object-Detection, subconjunto 'Blueberry leaf'
+    version: "commit 4730a233a5 (master)"
+    url: https://github.com/pratikkayal/PlantDoc-Object-Detection-Dataset
+    consulted: 2026-10-23
+    crop: arándano (el dataset completo tiene 13 especies y 28 carpetas de clase)
+    organ: hoja
+    classes: ["Blueberry leaf"]   # no es un diagnóstico de salud
+    counts: {images: 117, train: 106, test: 11, boxes: 849}   # [L] auditado
+    annotation: cajas por hoja, CSV
+    resolution: "91 resoluciones distintas (1600x1200 la más frecuente) [L]"
+    capture: "internet (fotos de campo, catálogos, anuncios de producto) [L]"
+    license: "CC BY 4.0 declarada [H]; derechos de las fotos originales inciertos"
+    access: VERIFICADO, descargado en data/external/plantdoc_blueberry (fetch_github_subset.py)
+    status: VERIFICADO
+    role: Auxiliar
+    audit:
+      date: 2026-10-23
+      unreadable: 0
+      exact_duplicates: 1 (misma imagen en train y test → FUGA del split original)
+      box_rel_area: {median: 0.0368, p10: 0.0127, p90: 0.1267, ge_50pct: 0.011}
+      manual_review: "muestra con hojas decoloradas etiquetadas igual que sanas; hojas visibles sin caja"
+      splits: configs/splits/plantdoc_blueberry_seed0.csv (por grupos, 0 fugas)
+
+  - id: plantvillage_blueberry_healthy
+    name: PlantVillage raw/color/Blueberry___healthy
+    version: "commit 7f7ecc7e1e (spMohanty/PlantVillage-Dataset, master)"
+    url: https://github.com/spMohanty/PlantVillage-Dataset
+    consulted: 2026-10-23
+    crop: arándano
+    organ: hoja desprendida
+    classes: [Blueberry___healthy]
+    counts: {images: 1502}   # [L] auditado
+    annotation: etiqueta por imagen (carpeta)
+    resolution: "256x256 (todas) [L]"
+    capture: laboratorio, fondo gris uniforme
+    license: "CC BY-SA 3.0 según la ficha de Hugging Face mohanty/PlantVillage [H]; el repo de GitHub no tiene LICENSE [L]"
+    access: VERIFICADO, descargado en data/external/plantvillage_blueberry_healthy
+    status: VERIFICADO
+    role: Auxiliar (control de sesgo de dominio)
+    audit:
+      date: 2026-10-23
+      unreadable: 0
+      exact_duplicates: 0
+      near_duplicates_dhash_le4: "56 pares; revisión visual de 3 pares = hojas distintas (falsos positivos por fondo uniforme)"
+      splits: configs/splits/plantvillage_blueberry_healthy_seed0.csv
+    variants:
+      - {id: plant_village_blueberry_derived, url: "https://github.com/ai-agriculture-circuits-and-systems/Plant_Village_Blueberry", note: "healthy 3004 = 2x1502 (posible doble conteo) [I]; requiere Kaggle; Fuera de alcance inicial"}
+      - {id: plantvillage_mendeley_aug, url: "https://data.mendeley.com/datasets/tywbtsjrjv/1", note: "61.486 imágenes con aumentaciones, CC0; Fuera de alcance inicial"}
+      - {id: tfds_plant_village, url: "https://www.tensorflow.org/datasets/catalog/plant_village", note: "54.303 ejemplos; no declara licencia de imágenes"}
+
+  - id: strawberry_hybrid
+    name: Strawberry Disease Detection Dataset with Hybrid Data Augmentation
+    version: v1 (2025-09-23), doi:10.17632/k2ptxmfjhj.1
+    url: https://data.mendeley.com/datasets/k2ptxmfjhj/1
+    consulted: 2026-10-23
+    crop: fresa
+    classes: [Angular Leafspot, Anthracnose Fruit Rot, Blossom Blight, Gray Mold, Healthy Strawberry, Leaf Spot, Powdery Mildew Fruit, Powdery Mildew Leaf]
+    counts: {total: 5610, base: 2459, traditional_aug: 1559, synthetic_dalle3: 1018, note: "la suma 5036 ≠ 5610 (inconsistencia de la ficha)"}
+    annotation: polígonos COCO
+    license: CC BY-NC 4.0
+    status: PARCIALMENTE_VERIFICADO
+    role: Investigación complementaria → experimento auxiliar E4c (variante traditional, sin sintéticas)
+    audit: "DESCARGADO 2026-10-24 (data/external/strawberry_hybrid, sha256 zip cc1311b9…). Split del autor con fuga (360 grupos cruzan, 314 aumentadas en valid/test); asintomáticas de otra fuente (Pérez-Borrero) → clase confundida con la fuente. Ver reports/dataset_quality_report.md"
+
+  - id: thrip_leaf
+    name: Thrip_Leaf_Dataset
+    url: https://github.com/ZZL0897/thrip_leaf_dataset
+    consulted: 2026-10-23
+    crop: Spathiphyllum floribundum 'Clevelandii'
+    classes: "Megalurothrips usitatus (categorías no publicadas)"
+    counts: {images: 5618, annotations: 47726}   # README
+    annotation: LabelMe, COCO, YOLO
+    capture: cámara de crecimiento 25 °C, HR 50–70 %, 10.000 lux
+    license: "README: solo investigación académica no comercial; prohíbe redistribución, sublicencia y modificación para fines no académicos. El GPL-3.0 del repositorio cubre el código y no habilita los datos."
+    access: Quark Netdisk con contraseña por correo; sin publicación citada
+    status: BLOQUEADO_POR_LICENCIA
+    role: Bloqueado
+
+  - id: hyperspectral_blueberries
+    name: HyperspectralBlueberries
+    version: Zenodo 11200576 v1 (2024-05-15)
+    url: https://zenodo.org/records/11200576
+    consulted: 2026-10-23
+    crop: arándano
+    organ: fruto cosechado
+    classes: [normal, defective]
+    counts: {fruits: 420, scans: 10, per_scan: 42, labels: "por archivo/lote (Good/Bad Blueberry 1-42…)"}
+    format: "ENVI .bil + .hdr; 1600x1800 px, 462 bandas, 393.8–1010.6 nm (1 .hdr descargado) [L]"
+    size_gb: 27.79
+    license: CC BY 4.0 (datos); código en GitHub sin licencia
+    status: VERIFICADO (metadatos)
+    role: Fuera de alcance inicial
+    status_phase: DESCARTADO_PARA_FASE_INICIAL
+
+gaps:
+  botrytis_arandano: "Sin dataset visual público verificado. Plan: imágenes de AGRAR/clientes con confirmación agronómica (docs/11 §6)."
+  trips_arandano: "Sin datos; licencia del único candidato bloqueada; ~3 px por insecto a 30 cm con la cámara del robot."
+  dominio_robot: "Cero imágenes del X2 Ultra. Toda métrica pública es del dominio de origen."
+  lesion_level_labels: "Ningún dataset de arándano verificado anota lesiones; DrBerry parece anotar hojas."

@@ -1,0 +1,4 @@
+extends: _base.yaml
+id: E4c_05_originals_weighted_ce
+data: {include_augmented: false}
+loss: {name: weighted_ce, weight_power: 1.0, w_min: 0.25, w_max: 4.0}

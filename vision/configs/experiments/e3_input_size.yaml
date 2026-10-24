@@ -1,0 +1,22 @@
+# E3: ¿cuánta resolución de entrada hace falta? ESTADO: PREPARADO, depende de E1.
+id: E3
+status: planned
+depends_on: [E1]
+question: "¿Se conservan los síntomas al llevar imágenes con la densidad de la RGB-D del X2 (1280x720) a la entrada de la red?"
+simulation:
+  description: >
+    Reescalar las imágenes de prueba para que el objeto de interés tenga el tamaño
+    en px que tendría con la RGB-D del X2 a 0.15/0.30/0.50 m (tabla de docs/02 §5),
+    con el mismo tipo de compresión JPEG. Es una aproximación: no sustituye a las
+    imágenes reales del robot (E5).
+  distances_m: [0.15, 0.30, 0.50]
+variants:
+  - {name: imgsz_640, imgsz: 640}
+  - {name: imgsz_960, imgsz: 960}
+  - {name: imgsz_1280, imgsz: 1280}
+  - {name: tiles_640, imgsz: 640, tiling: {tile: 640, overlap: 0.2}}
+measure:
+  - recall por clase y por tamaño de caja en px
+  - falsos positivos por imagen
+  - latencia por imagen en el equipo de desarrollo (indicativa) y en PC2 (definitiva, E6)
+decision_rule: "elegir el menor tamaño cuyo recall por clase no caiga de forma relevante frente al mayor; registrar el umbral elegido en decision_log antes de ver el test"

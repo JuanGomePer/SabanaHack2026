@@ -1,0 +1,4 @@
+extends: _base.yaml
+id: E4c_01_resnet18_linear_probe
+model: {freeze_backbone: true}
+train: {lr: 0.001}

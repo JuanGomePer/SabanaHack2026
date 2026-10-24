@@ -1,0 +1,40 @@
+# SUPERADO (2026-10-24) por configs/experiments/drberry/E1_leaf_cls.yaml, que reutiliza el pipeline E4c.
+# Se conserva como alternativa de DETECCIÓN si la auditoría de DrBerry muestra cajas de lesión.
+# E1: baseline de detección sobre DrBerry. ESTADO: BLOQUEADO (datos no descargados).
+# No ejecutar hasta cumplir `preconditions`. Ningún valor de aquí es un resultado.
+id: E1
+status: blocked
+blocked_by: "ROBOFLOW_API_KEY no disponible; DrBerry sin descargar ni auditar"
+preconditions:
+  - DrBerry descargado con ACQUISITION.json
+  - auditoría sin ilegibles sin explicar; conteo por clase registrado en catalog.yaml
+  - significado de las cajas decidido (hoja o lesión) a partir de box_stats + revisión manual
+  - split por grupos sin fugas (configs/splits/drberry_*.csv)
+  - licencia de la herramienta de entrenamiento decidida (D-008: Ultralytics AGPL-3.0)
+data:
+  dataset_id: drberry_original_v1      # o drberry_gen3_20_v1 según la comparación
+  taxonomy: blueberry_leaf/drberry-v1
+  classes: [blueberry_leaf_alternaria, blueberry_leaf_powdery_mildew, blueberry_leaf_heliothis_damage, blueberry_leaf_no_visible_symptoms]
+  split_manifest: null                 # se fija tras la auditoría
+  extra_sources: []                    # ninguna en E1: medir primero el núcleo solo
+model:
+  family: detector ligero (p. ej. YOLO n/s)   # sin pesos descargados todavía
+  imgsz: 640
+  letterbox: true
+  seed: 0
+augmentation:                          # moderada; conserva el significado de las cajas
+  hsv: leve
+  flip_lr: true
+  scale: [0.8, 1.2]
+  jpeg_quality_sim: [60, 95]           # el robot entrega MJPEG
+  motion_blur: leve
+  mosaic: false                        # puede cortar hojas; evaluar aparte
+evaluation:
+  report_per_class: [precision, recall, mAP50, mAP50_95]
+  report_by_box_size_px: true
+  confusion_matrix: true
+  error_gallery: reports/E1/           # sin republicar imágenes restringidas
+  never: "presentar estas métricas como desempeño en el robot o la finca"
+control_E1c:
+  task: clasificación de recortes de hoja (mismas particiones)
+  purpose: saber si la detección aporta algo más que 'encontrar hoja + clasificar'

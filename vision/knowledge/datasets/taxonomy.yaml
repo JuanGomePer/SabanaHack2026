@@ -1,0 +1,96 @@
+# Taxonomía de clases v1 (2026-10-23). Ver docs/11_dataset_strategy.md.
+# Regla: una clase canónica = (cultivo, órgano, condición, nivel de anotación).
+# No se fusionan etiquetas que difieran en cualquiera de esos ejes.
+# confidence_equivalence: alta | media | baja | n/a
+
+first_model:
+  name: blueberry_leaf_condition_v1
+  task: detección de HOJAS de arándano con su condición visible (no localización de lesiones)
+  classes: [blueberry_leaf_alternaria, blueberry_leaf_powdery_mildew, blueberry_leaf_heliothis_damage, blueberry_leaf_no_visible_symptoms]
+  status: BLOQUEADO hasta descargar y auditar DrBerry (conteos por clase y significado de las cajas)
+  rule: si una clase tiene muy pocas instancias tras la auditoría, se excluye en vez de inflarla con otras fuentes
+
+classes:
+  blueberry_leaf_alternaria:
+    description: Hoja de arándano con síntomas que el anotador de DrBerry etiquetó como Alternaria
+    crop: arándano
+    organ: hoja
+    sources: [drberry_original_v1, drberry_gen3_20_v1, drberry_gen3_v1]
+    evidence: etiqueta visual de anotadores del proyecto DrBerry (criterio de confirmación no publicado)
+    maps_from: {drberry: Alternaria}
+    never_merge_with: [cualquier clase de fresa, PlantDoc 'Blueberry leaf']
+    annotation_level: caja ≈ hoja completa (hipótesis por 1 muestra pública; verificar con box_stats)
+    restrictions: CC BY 4.0, citar KDIR 2023
+    confidence_equivalence: alta (mismo cultivo, mismo órgano, misma fuente)
+
+  blueberry_leaf_powdery_mildew:
+    description: Hoja de arándano etiquetada como Oidio
+    crop: arándano
+    organ: hoja
+    sources: [drberry_*]
+    maps_from: {drberry: Oidio}
+    never_merge_with: [strawberry powdery_mildew_leaf, Squash Powdery mildew leaf (PlantDoc)]
+    confidence_equivalence: alta
+
+  blueberry_leaf_heliothis_damage:
+    description: Hoja de arándano con daño atribuido a larva de Heliothis
+    crop: arándano
+    organ: hoja
+    sources: [drberry_*]
+    maps_from: {drberry: Heliothis}
+    note: plaga, no enfermedad; útil para no confundir daño mecánico con enfermedad
+    confidence_equivalence: alta
+
+  blueberry_leaf_no_visible_symptoms:
+    description: Hoja de arándano que DrBerry etiquetó como 'Sana' (sin síntomas visibles según el anotador; no es un diagnóstico)
+    crop: arándano
+    organ: hoja
+    sources: [drberry_*]
+    maps_from: {drberry: Sana}
+    never_merge_with: [PlantVillage Blueberry___healthy, PlantDoc Blueberry leaf]
+    reason: PlantVillage es de laboratorio (atajo por fondo); PlantDoc 'Blueberry leaf' incluye hojas con decoloración/deficiencia
+    confidence_equivalence: alta
+
+  blueberry_leaf_healthy_lab:
+    description: Hoja de arándano sana fotografiada en laboratorio sobre fondo uniforme
+    crop: arándano
+    organ: hoja desprendida
+    sources: [plantvillage_blueberry_healthy]
+    maps_from: {plantvillage: Blueberry___healthy}
+    use: solo experimentos de control de sesgo de dominio; NO entra en el primer modelo
+    confidence_equivalence: n/a (clase separada a propósito)
+
+  blueberry_leaf_unspecified_condition:
+    description: Hoja de arándano anotada sin diagnóstico (puede estar sana, decolorada o con deficiencia)
+    crop: arándano
+    organ: hoja
+    sources: [plantdoc_blueberry]
+    maps_from: {plantdoc: Blueberry leaf}
+    use: posible detector de hojas o fuente de negativos SOLO tras revisión manual imagen por imagen
+    known_issues: [anotación incompleta, 1 duplicado train/test, imágenes de catálogos y anuncios]
+    confidence_equivalence: baja respecto a 'sana'
+
+  strawberry_gray_mold:
+    description: Moho gris en fresa (Afzaal 'gray_mold'; Hybrid 'Gray Mold')
+    crop: fresa
+    organ: fruto, flor y hoja
+    sources: [afzaal_strawberry, strawberry_hybrid]
+    maps_from: {afzaal: gray_mold, hybrid: Gray Mold}
+    never_merge_with: [cualquier clase de arándano]
+    is_not: blueberry_botrytis_confirmed
+    use: experimento separado E4 (métodos de segmentación); sus métricas se reportan como "en fresa"
+    confidence_equivalence: media entre Afzaal e Hybrid (Hybrid añade sintéticas; posible solapamiento de imágenes base)
+
+  thrips_spathiphyllum:
+    description: Megalurothrips usitatus sobre hojas de Spathiphyllum en cámara de crecimiento
+    crop: Spathiphyllum floribundum 'Clevelandii'
+    organ: hoja
+    sources: [thrip_leaf]
+    is_not: thrips_blueberry
+    status: BLOQUEADO_POR_LICENCIA
+    confidence_equivalence: n/a
+
+not_trainable_now:
+  blueberry_botrytis: No existe dataset visual público verificado de Botrytis en arándano. Requiere imágenes de AGRAR/clientes con confirmación agronómica.
+  thrips_blueberry: Sin datos; además ~3 px por insecto a 30 cm con la RGB-D del X2 (1280x720).
+  other_or_unknown: Sin definición operativa ni datos; no se entrena una clase "basura". Las detecciones de baja confianza se gestionan con umbrales y revisión humana.

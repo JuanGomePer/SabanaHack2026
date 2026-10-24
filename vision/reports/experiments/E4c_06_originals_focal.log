@@ -1,0 +1,18 @@
+[E4c_06_originals_focal] device=cuda train=2122 val=453 params=11180616 entrenables=11180616
+[E4c_06_originals_focal] muestras por clase (train): {'strawberry_gray_mold': 334, 'strawberry_asymptomatic': 402, 'strawberry_leaf_spot': 399, 'strawberry_flower_blossom_blight': 147, 'strawberry_fruit_powdery_mildew': 95, 'strawberry_leaf_angular_leafspot': 305, 'strawberry_fruit_anthracnose_rot': 67, 'strawberry_leaf_powdery_mildew': 373}
+[E4c_06_originals_focal] ep 01 tr_loss 0.605 val_loss 0.342 val_acc 0.857 dis_rec 0.807 alertFN@.5 0 (233s)
+[E4c_06_originals_focal] ep 02 tr_loss 0.066 val_loss 0.183 val_acc 0.943 dis_rec 0.856 alertFN@.5 0 (14s)
+[E4c_06_originals_focal] ep 03 tr_loss 0.036 val_loss 0.140 val_acc 0.956 dis_rec 0.919 alertFN@.5 0 (14s)
+[E4c_06_originals_focal] ep 04 tr_loss 0.028 val_loss 0.121 val_acc 0.971 dis_rec 0.936 alertFN@.5 0 (16s)
+[E4c_06_originals_focal] ep 05 tr_loss 0.018 val_loss 0.108 val_acc 0.967 dis_rec 0.919 alertFN@.5 0 (14s)
+[E4c_06_originals_focal] ep 06 tr_loss 0.008 val_loss 0.100 val_acc 0.958 dis_rec 0.896 alertFN@.5 0 (14s)
+[E4c_06_originals_focal] ep 07 tr_loss 0.005 val_loss 0.091 val_acc 0.967 dis_rec 0.945 alertFN@.5 0 (14s)
+[E4c_06_originals_focal] ep 08 tr_loss 0.005 val_loss 0.082 val_acc 0.971 dis_rec 0.926 alertFN@.5 0 (14s)
+[E4c_06_originals_focal] ep 09 tr_loss 0.005 val_loss 0.076 val_acc 0.980 dis_rec 0.964 alertFN@.5 0 (13s)
+[E4c_06_originals_focal] ep 10 tr_loss 0.005 val_loss 0.071 val_acc 0.978 dis_rec 0.957 alertFN@.5 0 (14s)
+[E4c_06_originals_focal] ep 11 tr_loss 0.002 val_loss 0.077 val_acc 0.976 dis_rec 0.945 alertFN@.5 0 (13s)
+[E4c_06_originals_focal] ep 12 tr_loss 0.003 val_loss 0.070 val_acc 0.980 dis_rec 0.959 alertFN@.5 0 (17s)
+[E4c_06_originals_focal] ep 13 tr_loss 0.003 val_loss 0.069 val_acc 0.985 dis_rec 0.974 alertFN@.5 0 (14s)
+[E4c_06_originals_focal] ep 14 tr_loss 0.002 val_loss 0.070 val_acc 0.985 dis_rec 0.974 alertFN@.5 0 (15s)
+[E4c_06_originals_focal] ep 15 tr_loss 0.002 val_loss 0.069 val_acc 0.985 dis_rec 0.974 alertFN@.5 0 (13s)
+[E4c_06_originals_focal] mejor época 15 | val macro-recall enfermedad 0.974 | umbral (max_f2) 0.87 | FN alerta 0 FP alerta 0

@@ -1,0 +1,57 @@
+# Entornos y cachés
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Datos: nunca se versionan imágenes ni datasets (licencias y tamaño)
+data/raw/*
+data/external/*
+data/processed/*
+data/robot_captures/*
+!data/**/.gitkeep
+*.zip
+*.tar
+*.tar.gz
+*.bag
+*.db3
+*.mcap
+
+# Pesos, exportaciones y ejecuciones de entrenamiento
+*.pt
+*.pth
+*.onnx
+*.engine
+*.plan
+*.ckpt
+*.safetensors
+runs/
+weights/
+wandb/
+mlruns/
+
+# Informes generados automáticamente (los informes redactados sí se versionan)
+reports/audits/
+
+# Credenciales
+.env
+.env.*
+*.pem
+*.key
+secrets*.yaml
+roboflow_api_key*
+
+# Calibraciones específicas de un robot (nunca al repositorio)
+*factory_calib*
+factory_calibration_params*.yml
+calibrations/
+# Informes de inspección del robot (revisar antes de versionar)
+inspections/
+
+# Paneles con imágenes de datasets de terceros (solo revisión local; no se republican)
+reports/figures_local/
+# Logs de ejecución pesados de notebooks
+notebooks/.ipynb_checkpoints/

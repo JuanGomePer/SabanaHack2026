@@ -1,0 +1,7 @@
+# Los scripts de shell se ejecutan en PC2 (Linux): siempre con fin de línea LF.
+*.sh text eol=lf
+# Notebooks y datos tabulares se tratan como texto normalizado.
+*.ipynb text
+*.csv text
+*.npz binary
+*.png binary

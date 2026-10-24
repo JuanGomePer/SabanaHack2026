@@ -1,0 +1,15 @@
+# E1 (ARÁNDANO) — BLOQUEADO hasta descargar y auditar DrBerry (ROBOFLOW_API_KEY).
+# Reutiliza el pipeline validado en E4c (fresa). Si la auditoría confirma que las cajas
+# cubren hojas completas, la tarea es CLASIFICACIÓN DE RECORTES DE HOJA (no localización
+# de lesiones). Requiere añadir DrBerry al manifiesto (scripts/build_manifest.py) con
+# recortes en data/processed/ trazables a la imagen y caja de origen.
+extends: ../aux_strawberry/_base.yaml
+id: E1_drberry_leaf_cls
+status: blocked
+data:
+  source_id: drberry_leaf_crops          # aún no existe en el manifiesto
+  include_augmented: false
+  healthy_class: blueberry_leaf_no_visible_symptoms
+  classes: [blueberry_leaf_no_visible_symptoms, blueberry_leaf_alternaria,
+            blueberry_leaf_powdery_mildew, blueberry_leaf_heliothis_damage]
+loss: {name: weighted_ce}               # desbalance esperado; comparar con ce y focal como en E4c

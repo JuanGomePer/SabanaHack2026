@@ -1,0 +1,2 @@
+extends: _base.yaml
+id: E4c_02_resnet18_adamw_ce

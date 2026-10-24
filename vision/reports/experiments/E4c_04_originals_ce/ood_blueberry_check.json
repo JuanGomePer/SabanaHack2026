@@ -1,0 +1,30 @@
+{
+  "plantvillage_blueberry_healthy": {
+    "n": 1502,
+    "mean_max_prob": 0.7159455418586731,
+    "frac_max_prob_ge_0.9": 0.19507323568575233,
+    "frac_alert_at_threshold": 0.1611185086551265,
+    "predicted_class_counts": {
+      "strawberry_asymptomatic": 799,
+      "strawberry_fruit_powdery_mildew": 7,
+      "strawberry_leaf_angular_leafspot": 665,
+      "strawberry_leaf_powdery_mildew": 9,
+      "strawberry_leaf_spot": 22
+    }
+  },
+  "plantdoc_blueberry": {
+    "n": 117,
+    "mean_max_prob": 0.6619372367858887,
+    "frac_max_prob_ge_0.9": 0.17094017094017094,
+    "frac_alert_at_threshold": 0.7692307692307693,
+    "predicted_class_counts": {
+      "strawberry_asymptomatic": 7,
+      "strawberry_gray_mold": 19,
+      "strawberry_fruit_anthracnose_rot": 23,
+      "strawberry_fruit_powdery_mildew": 22,
+      "strawberry_leaf_angular_leafspot": 31,
+      "strawberry_leaf_powdery_mildew": 10,
+      "strawberry_leaf_spot": 5
+    }
+  }
+}

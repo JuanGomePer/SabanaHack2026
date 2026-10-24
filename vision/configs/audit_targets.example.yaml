@@ -1,0 +1,11 @@
+# Copiar a configs/audit_targets.yaml y ajustar. Rutas relativas a vision/.
+targets:
+  - name: plantvillage_blueberry_healthy
+    path: data/external/plantvillage_blueberry_healthy
+  - name: plantdoc_blueberry
+    path: data/external/plantdoc_blueberry
+  # Cuando exista ROBOFLOW_API_KEY y se descargue:
+  # - name: drberry_original_v1
+  #   path: data/external/drberry-original-data_v1_yolov8
+  # - name: drberry_gen3_20_v1
+  #   path: data/external/drberry-gen-3-20_v1_yolov8

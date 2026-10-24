@@ -1,0 +1,4 @@
+extends: _base.yaml
+id: smoke_test
+data: {max_train: 256}
+train: {epochs: 1, patience: 1, num_workers: 2}

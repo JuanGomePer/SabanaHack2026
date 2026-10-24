@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "berryvision"
+version = "0.2.0"
+description = "Visión por computadora para inspección fitosanitaria de arándanos (AGRAR Berry Good Idea, Sabana Hack 2026)"
+readme = "README.md"
+requires-python = ">=3.10"
+# Dependencias mínimas para la auditoría de datos y el contrato de observación.
+dependencies = [
+    "pillow>=10",   # lectura de imágenes (HPND)
+    "pyyaml>=6",    # data.yaml de YOLO y configs (MIT)
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+# Se declarará al elegir el baseline (ver docs/05_estrategia_de_vision.md);
+# revisar la licencia AGPL-3.0 de Ultralytics antes de agregarla.
+# Entrenamiento (instalar torch/torchvision CUDA desde el índice de PyTorch, p. ej. cu126):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+train = ["torch>=2.4", "torchvision>=0.19", "numpy", "pandas", "scikit-learn", "matplotlib"]
+notebooks = ["ipykernel", "nbconvert", "nbformat"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
