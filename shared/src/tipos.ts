@@ -5,11 +5,22 @@
  */
 
 // ── Estado de una planta o de una celda del mapa ────────────────────────────
-export type EstadoCelda = 'ok' | 'riesgo' | 'alerta' | 'sin_dato';
+/**
+ * Ciclo de vida de una planta marcada:
+ * alerta (el robot la señaló) → en_revision (alguien va a mirarla en campo)
+ * → confirmada (sí está afectada) o de vuelta a ok/riesgo si fue falsa alarma.
+ */
+export type EstadoCelda =
+  | 'ok'
+  | 'riesgo'
+  | 'alerta'
+  | 'en_revision'
+  | 'confirmada'
+  | 'sin_dato';
 
 // ── Hallazgos del robot ─────────────────────────────────────────────────────
 export type TipoHallazgo = 'Botrytis' | 'Alternaria' | 'Oídio';
-export type RevisionHallazgo = 'pendiente' | 'confirmada' | 'falsa_alarma';
+export type RevisionHallazgo = 'pendiente' | 'en_revision' | 'confirmada' | 'falsa_alarma';
 
 /** Caja del hallazgo sobre la foto, en coordenadas normalizadas 0–1. */
 export interface BBox {
@@ -281,6 +292,7 @@ export interface SmsRespuesta {
 
 // ── Registro de incidentes ──────────────────────────────────────────────────
 export type AccionRegistro =
+  | 'en_revision'
   | 'confirmada'
   | 'falsa_alarma'
   | 'enviada_a_gafas'
@@ -396,6 +408,55 @@ export interface EquiposRespuesta {
     texto: string;
     telefono: string;
     correo: string;
+  };
+}
+
+// ── Series y análisis ───────────────────────────────────────────────────────
+export type RangoSerie = '24h' | '7d' | '30d';
+
+export interface PuntoClima {
+  /** ISO 8601 del momento que representa el punto. */
+  momento: string;
+  /** Etiqueta corta ya formateada para el eje ("14:00", "mar 21"). */
+  etiqueta: string;
+  /** % de humedad relativa, promedio del bloque. */
+  humedad: number;
+  /** °C, promedio del bloque. */
+  temperatura: number;
+}
+
+export interface ClimaDeNave {
+  nave: number;
+  humedad: number;
+  temperatura: number;
+  /** Camas de la nave por encima del umbral de riesgo. */
+  camasEnRiesgo: number;
+}
+
+export interface HallazgosDelDia {
+  /** ISO de medianoche del día. */
+  dia: string;
+  etiqueta: string;
+  total: number;
+  Botrytis: number;
+  Alternaria: number;
+  Oidio: number;
+}
+
+export interface SeriesRespuesta {
+  rango: RangoSerie;
+  clima: PuntoClima[];
+  porNave: ClimaDeNave[];
+  hallazgos: HallazgosDelDia[];
+  resumen: {
+    humedadMedia: number;
+    humedadMaxima: number;
+    temperaturaMedia: number;
+    temperaturaMaxima: number;
+    /** Horas del rango con la humedad por encima del umbral. */
+    horasSobreUmbral: number;
+    umbralHumedad: number;
+    totalHallazgos: number;
   };
 }
 

@@ -11,6 +11,7 @@ import { eventosRouter } from './eventos.js';
 import { demoRouter } from './demo.js';
 import { observacionesRouter } from './observaciones.js';
 import { smsRouter } from './sms.js';
+import { seriesRouter } from './series.js';
 import { vigiaRouter } from './vigia.js';
 
 export const apiRouter = Router();
@@ -27,4 +28,5 @@ apiRouter.use(eventosRouter);
 apiRouter.use(demoRouter);
 apiRouter.use(observacionesRouter);
 apiRouter.use(smsRouter);
+apiRouter.use(seriesRouter);
 apiRouter.use(vigiaRouter);

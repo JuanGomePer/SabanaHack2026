@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowRight, Camera, MessageSquare, Search } from 'lucide-react';
 import type { Alerta, RevisionHallazgo, TipoHallazgo } from '@vigia/shared/tipos';
 import { Boton } from '../components/Boton';
-import { Chip } from '../components/Chip';
+import { Chip, type TonoChip } from '../components/Chip';
 import { BarraConfianza } from '../components/BarraConfianza';
 import { ResumenSms, useSms } from '../components/AvisosSms';
 import { fechaHora, haceCuanto } from '../utilidades/formato';
@@ -20,13 +20,15 @@ const FILTROS: Array<{ id: Filtro; texto: string }> = [
 
 const TEXTO_REVISION: Record<RevisionHallazgo, string> = {
   pendiente: 'Por revisar',
-  confirmada: 'Confirmada',
+  en_revision: 'En revisión',
+  confirmada: 'Afectada',
   falsa_alarma: 'Falsa alarma',
 };
 
-const TONO_REVISION: Record<RevisionHallazgo, 'alerta' | 'ok' | 'neutro'> = {
+const TONO_REVISION: Record<RevisionHallazgo, TonoChip> = {
   pendiente: 'alerta',
-  confirmada: 'ok',
+  en_revision: 'revision',
+  confirmada: 'confirmada',
   falsa_alarma: 'neutro',
 };
 

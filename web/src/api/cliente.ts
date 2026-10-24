@@ -28,8 +28,10 @@ import type {
   RespuestaGafas,
   RespuestaVigia,
   Resumen,
+  RangoSerie,
   RevisionHallazgo,
   SimulacionRespuesta,
+  SeriesRespuesta,
   SmsRespuesta,
   VerificacionPasarela,
   VigiaInsightsRespuesta,
@@ -87,6 +89,9 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ tipo }),
     }),
+
+  /** Series del bloque para la pantalla de análisis. */
+  series: (rango: RangoSerie = '24h') => pedir<SeriesRespuesta>(`/series?rango=${rango}`),
 
   reiniciarDemo: () => pedir<{ ok: boolean }>('/demo/reiniciar', { method: 'POST' }),
 

@@ -1,12 +1,14 @@
 /**
  * Simulador de la demo.
  *
- * 1. A los pocos segundos de que el mapa se conecta, llega la alerta nueva
- *    en C14-P65 (el momento que se muestra en el pitch).
+ * 1. A los pocos segundos de que el mapa se conecta llega la primera alerta
+ *    (C14-P65, el momento que se muestra en el pitch) y detrás van cayendo
+ *    las demás del guion. No esperan a que nadie las revise: el robot sigue
+ *    su ronda pase lo que pase, y en pantalla se apilan.
  * 2. Cada cierto tiempo el programador de clima deja eventos nuevos en la
  *    lista "Qué está pasando".
  */
-import { ALERTA_DEMO } from '@vigia/shared/config';
+import { ALERTA_DEMO, GUION_ALERTAS_DEMO } from '@vigia/shared/config';
 import * as hallazgosRepo from '../repositories/hallazgos.js';
 import * as plantasRepo from '../repositories/plantas.js';
 import { anotarRegistro } from '../repositories/registro.js';
@@ -17,24 +19,45 @@ import { avisarPorSms, reiniciarSms } from './sms.js';
 import { generarInsightDeAlerta, revisarPatrones } from '../vigia/reglas.js';
 
 let programada = false;
-let yaLlego = false;
-let temporizador: NodeJS.Timeout | undefined;
+/** Pasos del guion ya lanzados, por índice. */
+const lanzados = new Set<number>();
+let temporizadores: NodeJS.Timeout[] = [];
 
-/** Lanza la alerta del demo tras `segundos`, una sola vez por arranque del proceso. */
+/**
+ * Programa toda la tanda de alertas, una sola vez por arranque del proceso.
+ * `segundos` es la demora de la primera (la configurable); las demás usan los
+ * tiempos del guion. Ninguna espera a que se revise la anterior.
+ */
 export function programarAlertaDemo(segundos: number): void {
-  if (programada || yaLlego) return;
+  if (programada) return;
   programada = true;
-  temporizador = setTimeout(() => {
-    lanzarAlertaDemo().catch((error) => console.error('[demo] no se pudo lanzar la alerta:', error));
-  }, segundos * 1000);
+
+  GUION_ALERTAS_DEMO.forEach((paso, indice) => {
+    const espera = indice === 0 ? segundos : paso.segundos;
+    temporizadores.push(
+      setTimeout(() => {
+        lanzarPaso(indice).catch((error) =>
+          console.error('[demo] no se pudo lanzar la alerta:', error),
+        );
+      }, espera * 1000),
+    );
+  });
 }
 
+/** Lanza la primera alerta del guion a mano (la del pitch). */
 export async function lanzarAlertaDemo(): Promise<void> {
-  if (yaLlego) return;
-  yaLlego = true;
+  await lanzarPaso(0);
+}
 
-  const hallazgo = await crearHallazgo(ALERTA_DEMO.cama, ALERTA_DEMO.planta, ALERTA_DEMO.tipo, {
-    confianza: 0.93,
+async function lanzarPaso(indice: number): Promise<void> {
+  if (lanzados.has(indice)) return;
+  lanzados.add(indice);
+
+  const paso = GUION_ALERTAS_DEMO[indice];
+  if (!paso) return;
+
+  const hallazgo = await crearHallazgo(paso.cama, paso.planta, paso.tipo, {
+    confianza: paso.confianza,
   });
 
   await anotarRegistro({
@@ -65,18 +88,21 @@ export async function lanzarAlertaDemo(): Promise<void> {
 
 /** Reinicia el demo para poder repetir el pitch sin reiniciar el servidor. */
 export async function reiniciarDemo(): Promise<void> {
-  if (temporizador) clearTimeout(temporizador);
-  temporizador = undefined;
+  for (const temporizador of temporizadores) clearTimeout(temporizador);
+  temporizadores = [];
   programada = false;
-  yaLlego = false;
+  lanzados.clear();
   reiniciarSms();
 
-  const plantaIds = await hallazgosRepo.eliminarHallazgosDeDemo(ALERTA_DEMO.cama, ALERTA_DEMO.planta);
-  for (const plantaId of plantaIds) {
-    const planta = await plantasRepo.obtenerPlanta(plantaId);
-    if (!planta) continue;
-    const estado = planta.humedad >= 85 ? 'riesgo' : 'ok';
-    await plantasRepo.actualizarEstadoPlanta(plantaId, { estado, hallazgoId: null });
+  // Se borran todas las del guion, no solo la primera.
+  for (const paso of GUION_ALERTAS_DEMO) {
+    const plantaIds = await hallazgosRepo.eliminarHallazgosDeDemo(paso.cama, paso.planta);
+    for (const plantaId of plantaIds) {
+      const planta = await plantasRepo.obtenerPlanta(plantaId);
+      if (!planta) continue;
+      const estado = planta.humedad >= 85 ? 'riesgo' : 'ok';
+      await plantasRepo.actualizarEstadoPlanta(plantaId, { estado, hallazgoId: null });
+    }
   }
 }
 

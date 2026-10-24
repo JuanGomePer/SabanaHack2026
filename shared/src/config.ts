@@ -116,6 +116,25 @@ export const TIPOS_SEMILLA: TipoHallazgo[] = [
 export const ALERTA_DEMO = { cama: 14, planta: 65, tipo: 'Botrytis' as TipoHallazgo };
 
 /**
+ * Las alertas llegan solas, una detrás de otra, sin esperar a que el encargado
+ * revise la anterior: el robot sigue su ronda pase lo que pase, y en pantalla
+ * se van apilando. La primera usa la demora configurable (`segundosAlertaDemo`);
+ * las demás, los segundos de aquí desde que el mapa se conecta.
+ */
+export const GUION_ALERTAS_DEMO: Array<{
+  segundos: number;
+  cama: number;
+  planta: number;
+  tipo: TipoHallazgo;
+  confianza: number;
+}> = [
+  { segundos: 3, cama: 14, planta: 65, tipo: 'Botrytis', confianza: 0.93 },
+  { segundos: 13, cama: 15, planta: 72, tipo: 'Botrytis', confianza: 0.86 },
+  { segundos: 24, cama: 9, planta: 23, tipo: 'Oídio', confianza: 0.81 },
+  { segundos: 38, cama: 21, planta: 58, tipo: 'Alternaria', confianza: 0.76 },
+];
+
+/**
  * Zonas con humedad por encima del umbral: rangos de plantas de una cama.
  * Con estos rangos el resumen da 48 plantas en riesgo y 3 camas con humedad
  * alta (13, 14 y 15, todas de la nave 5), como en el diseño.
@@ -267,7 +286,7 @@ export const SERVICIO_TECNICO = {
 
 /** Aviso obligatorio en la pantalla de equipos. */
 export const NOTA_DATOS_EJEMPLO =
-  'Datos de ejemplo. Las cifras y estados de esta pantalla son simulados por el prototipo, no son lecturas reales de los equipos.';
+  'Datos de ejemplo: las cifras y estados de esta pantalla todavía no vienen del sistema de control de los equipos.';
 
 // ── Historial de la semana (para el registro de incidencias) ────────────────
 /** Quiénes revisan los hallazgos en el historial de ejemplo. */
@@ -363,7 +382,7 @@ export const PLANTILLA_SMS =
 
 /** Aviso en la configuración de SMS cuando no hay pasarela conectada. */
 export const NOTA_SMS =
-  'Simulación. Ahora mismo no sale ningún mensaje: no hay pasarela conectada. Los envíos quedan en pantalla y en el registro para mostrar el flujo. Para mandarlos de verdad, configura el .env (ver NOTAS.md).';
+  'Ahora mismo no sale ningún mensaje: no hay pasarela conectada. Los envíos quedan en pantalla y en la bitácora. Para mandarlos de verdad, configura la pasarela en el .env del servidor.';
 
 /** Aviso cuando sí hay pasarela: los mensajes salen y se cobran. */
 export const NOTA_SMS_REAL =

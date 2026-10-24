@@ -14,6 +14,7 @@ import { Login } from './screens/Login';
 import { Bienvenida } from './screens/Bienvenida';
 import { Mapa } from './screens/Mapa';
 import { Alertas } from './screens/Alertas';
+import { Analisis } from './screens/Analisis';
 import { Equipos } from './screens/Equipos';
 import { Registro } from './screens/Registro';
 import { Configuracion } from './screens/Configuracion';
@@ -27,6 +28,10 @@ type Flujo = 'login' | 'bienvenida' | 'app';
 const TITULOS: Record<Pantalla, { titulo: string; subtitulo: string }> = {
   mapa: { titulo: '', subtitulo: '' },
   alertas: { titulo: 'Alertas', subtitulo: 'Todo lo que el robot encontró y está por revisar.' },
+  analisis: {
+    titulo: 'Análisis',
+    subtitulo: 'Cómo se ha movido el bloque: clima, hallazgos y carga por nave.',
+  },
   equipos: {
     titulo: 'Equipos y servicios',
     subtitulo: 'Lo que ofrece Agrar y qué está pasando en las naves ahora mismo.',
@@ -63,7 +68,8 @@ export function App() {
     cargar: flujo !== 'login',
     escuchar: flujo === 'app' && pantalla === 'mapa',
   });
-  const { mapa, alertas, registro, alertaNueva, descartarAlertaNueva, recargar } = cultivo;
+  const { mapa, alertas, registro, alertaNueva, alertasNuevas, descartarAlertaNueva, recargar } =
+    cultivo;
 
   const pendientes = useMemo(
     () => alertas.filter((a) => a.revision === 'pendiente').length,
@@ -166,6 +172,8 @@ export function App() {
             />
           )}
 
+          {pantalla === 'analisis' && <Analisis />}
+
           {pantalla === 'equipos' && <Equipos />}
 
           {pantalla === 'registro' && registro && <Registro datos={registro} />}
@@ -178,12 +186,33 @@ export function App() {
         </main>
       </div>
 
-      {alertaNueva && !plantaAbierta && (
-        <AvisoAlerta
-          alerta={alertaNueva}
-          alVerPlanta={() => abrirPlanta(alertaNueva.plantaId)}
-          alCerrar={descartarAlertaNueva}
-        />
+      {/*
+        Las alertas se apilan: el robot sigue su ronda aunque no hayas revisado
+        la anterior. Se muestran las tres más recientes y el resto se cuenta.
+      */}
+      {alertasNuevas.length > 0 && !plantaAbierta && (
+        <div className="pila-avisos">
+          {alertasNuevas.slice(0, 3).map((alerta, posicion) => (
+            <AvisoAlerta
+              key={alerta.id}
+              alerta={alerta}
+              atras={posicion}
+              alVerPlanta={() => abrirPlanta(alerta.plantaId)}
+              alCerrar={() => descartarAlertaNueva(alerta.id)}
+            />
+          ))}
+
+          {alertasNuevas.length > 3 && (
+            <button
+              type="button"
+              className="pila-avisos-resto txt-pequeno"
+              onClick={() => setPantalla('alertas')}
+            >
+              y {alertasNuevas.length - 3} alerta
+              {alertasNuevas.length - 3 === 1 ? '' : 's'} más sin revisar
+            </button>
+          )}
+        </div>
       )}
 
       {plantaAbierta && (

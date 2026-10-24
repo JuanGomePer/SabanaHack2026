@@ -4,12 +4,22 @@
  * (map, bell, wind, clipboard, sliders, leaf, bot).
  */
 
-import { Bell, Bot, ClipboardList, Leaf, Map, SlidersVertical, Wind } from 'lucide-react';
+import {
+  Bell,
+  Bot,
+  ChartLine,
+  ClipboardList,
+  Leaf,
+  Map,
+  SlidersVertical,
+  Wind,
+} from 'lucide-react';
 import type { EstadoRobot } from '@vigia/shared/tipos';
 
 export type Pantalla =
   | 'mapa'
   | 'alertas'
+  | 'analisis'
   | 'equipos'
   | 'registro'
   | 'configuracion'
@@ -18,6 +28,7 @@ export type Pantalla =
 const ITEMS: Array<{ id: Pantalla; texto: string; Icono: typeof Map }> = [
   { id: 'mapa', texto: 'Mapa', Icono: Map },
   { id: 'alertas', texto: 'Alertas', Icono: Bell },
+  { id: 'analisis', texto: 'Análisis', Icono: ChartLine },
   { id: 'equipos', texto: 'Equipos', Icono: Wind },
   { id: 'registro', texto: 'Registro', Icono: ClipboardList },
   { id: 'configuracion', texto: 'Configuración', Icono: SlidersVertical },

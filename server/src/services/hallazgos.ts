@@ -141,12 +141,21 @@ export async function revisarHallazgo(
 
   const planta = await plantasRepo.obtenerPlanta(existente.plantaId);
   if (planta) {
+    /**
+     * El estado de la planta sigue a la decisión:
+     * - tomar la alerta la pasa a "en revisión" (alguien va a mirarla),
+     * - confirmarla en campo la deja "afectada",
+     * - descartarla la devuelve a riesgo u ok según su humedad.
+     */
     const nuevoEstado =
       revision === 'falsa_alarma'
         ? planta.humedad >= configuracionActual().umbrales.humedadRiesgo
           ? 'riesgo'
           : 'ok'
-        : 'alerta';
+        : revision === 'en_revision'
+          ? 'en_revision'
+          : 'confirmada';
+
     await plantasRepo.actualizarEstadoPlanta(planta.id, {
       estado: nuevoEstado,
       hallazgoId: revision === 'falsa_alarma' ? null : id,
@@ -154,17 +163,21 @@ export async function revisarHallazgo(
     emitir({ tipo: 'estado_cambiado', plantaId: planta.id, estado: nuevoEstado });
   }
 
+  const etiqueta = etiquetaPlanta(existente.cama, existente.planta);
+  const notaPorDefecto =
+    revision === 'en_revision'
+      ? `${existente.tipo} en ${etiqueta}: tomada para revisar en campo.`
+      : revision === 'confirmada'
+        ? `${existente.tipo} confirmada en campo en ${etiqueta}.`
+        : `Marcada como falsa alarma en ${etiqueta}.`;
+
   await anotarRegistro({
     plantaId: existente.plantaId,
     cama: existente.cama,
     accion: revision,
     tipo: existente.tipo,
     usuario: USUARIO.nombre,
-    nota:
-      nota?.trim() ||
-      (revision === 'confirmada'
-        ? `${existente.tipo} confirmada en ${etiquetaPlanta(existente.cama, existente.planta)}.`
-        : `Marcada como falsa alarma en ${etiquetaPlanta(existente.cama, existente.planta)}.`),
+    nota: nota?.trim() || notaPorDefecto,
   });
 
   return { hallazgo: actualizado, alerta: aAlerta(actualizado) };
